@@ -6,21 +6,33 @@ This project is an Online Management System designed for the Parent and Teacher 
 
 ## Technologies Used
 
+- **TypeScript**: A strongly typed programming language that builds on JavaScript.
 - **Express.js**: A web application framework for Node.js, used to build the backend.
 - **Prisma**: An ORM (Object-Relational Mapping) tool that simplifies database interactions.
 - **MySQL**: A relational database management system used to store application data.
+- **JWT**: JSON Web Tokens for secure authentication.
+- **Nodemailer**: For sending emails (OTP verification).
 
 ## Project Structure
 
 ```
 backend/
 ├── prisma/
-│   └── schema.prisma       # Prisma schema for database models
+│   ├── schema.prisma       # Prisma schema for database models
+│   └── migrations/         # Database migrations
 ├── src/
 │   ├── api/                # Feature-based modules (routes, controllers, services)
 │   │   ├── announcements/
+│   │   │   ├── announcements.controller.ts
+│   │   │   ├── announcements.route.ts
+│   │   │   └── announcements.service.ts
 │   │   ├── attendance/
 │   │   ├── auth/
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── auth.route.ts
+│   │   │   ├── auth.service.ts
+│   │   │   ├── auth.test.ts
+│   │   │   └── auth.validation.ts
 │   │   ├── contributions/
 │   │   ├── meetings/
 │   │   ├── penalties/
@@ -28,19 +40,22 @@ backend/
 │   │   ├── students/
 │   │   └── users/
 │   ├── configs/
-│   │   └── prisma.js         # Prisma client instance
+│   │   └── prisma.ts         # Prisma client instance
 │   ├── middlewares/
-│   │   ├── auth.middleware.js
-│   │   ├── error.middleware.js
-│   │   └── validate.middleware.js
+│   │   ├── auth.middleware.ts
+│   │   ├── error.middleware.ts
+│   │   └── validate.middleware.ts
 │   ├── routes/
-│   │   └── index.js          # Main API router
+│   │   └── index.ts          # Main API router
+│   ├── types/
+│   │   └── environment.d.ts  # TypeScript environment declarations
 │   ├── utils/                # Utility functions and classes
-│   │   ├── ApiError.js
-│   │   ├── ApiResponse.js
-│   │   └── asyncHandler.js
-│   ├── app.js              # Express application setup and middleware
-│   └── server.js           # Server initialization
+│   │   ├── ApiError.ts
+│   │   ├── ApiResponse.ts
+│   │   ├── asyncHandler.ts
+│   │   └── email.ts
+│   ├── app.ts              # Express application setup and middleware
+│   └── server.ts           # Server initialization
 ├── .env                    # Environment variables (DB connection, JWT secret, etc.)
 ├── package.json            # Project dependencies and scripts
 └── README.md               # This file
@@ -132,64 +147,3 @@ Contributions are welcome! Please feel free to submit a pull request or open an 
 ## License
 
 This project is licensed under the MIT License. See the `LICENSE` file for more details.
-
-```
-backend
-├── prisma
-│   └── schema.prisma       # Database schema definition
-├── src
-│   ├── app.js              # Main application configuration
-│   ├── server.js           # Server setup and configuration
-│   ├── controllers          # Request handling logic
-│   │   └── index.js
-│   ├── middlewares          # Middleware functions
-│   │   └── index.js
-│   └── routes               # Application routes
-│       └── index.js
-├── .env                     # Environment variables
-├── package.json             # Project dependencies and scripts
-└── README.md                # Project documentation
-```
-
-## Setup Instructions
-
-1. **Clone the repository**:
-
-   ```
-   git clone <repository-url>
-   cd <repository-directory>
-   ```
-
-2. **Install dependencies**:
-
-   ```
-   npm install
-   ```
-
-3. **Configure environment variables**:
-
-   - Create a `.env` file in the root directory and add your database connection string and other necessary environment variables.
-
-4. **Run the application**:
-
-   ```
-   npm start
-   ```
-
-5. **Development mode**:
-   ```
-   npm run dev
-   ```
-
-## Usage
-
-- Access the application through the specified port (default is 3000).
-- Use the defined API endpoints to interact with the PTA management system.
-
-## Contribution
-
-Contributions are welcome! Please submit a pull request or open an issue for any suggestions or improvements.
-
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
