@@ -5,6 +5,7 @@ import otpGenerator from "otp-generator";
 import ApiError from "../../utils/ApiError";
 import sendEmail from "../../utils/email";
 import { Prisma, User } from "@prisma/client";
+import { AuthenticationError } from "../../utils/errors";
 
 interface JwtPayload {
   id: number;
@@ -148,8 +149,13 @@ export const login = async (
 ): Promise<{ user: User; token: string }> => {
   const user = await prisma.user.findUnique({ where: { email } });
 
-  if (!user || !(await bcrypt.compare(password, user.password))) {
-    throw new ApiError(401, "Incorrect email or password");
+  if (!user) {
+    throw new AuthenticationError("Incorrect email or password");
+  }
+
+  const isValidPassword = await bcrypt.compare(password, user.password);
+  if (!isValidPassword) {
+    throw new AuthenticationError("Incorrect email or password");
   }
 
   const token = generateToken(user.id);
