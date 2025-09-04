@@ -1,0 +1,179 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ENUMS
+enum UserRole {
+  ADMIN
+  PARENT
+}
+
+enum LinkStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  EXCUSED
+}
+
+// AUTHENTICATION & USER MANAGEMENT
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  role      UserRole @default(PARENT)
+
+  // Admin-specific relations
+  createdAnnouncements Announcement[]
+  createdMeetings      Meeting[]
+  createdProjects      Project[]
+  recordedAttendance   Attendance[] @relation("RecordedBy")
+
+  // Parent-specific relations
+  students      Student[]
+  attendances   Attendance[] @relation("ParentAttendance")
+  contributions Contribution[]
+  penalties     Penalty[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Student {
+  id     Int    @id @default(autoincrement())
+  name   String
+  grade  String
+  status LinkStatus @default(PENDING)
+
+  parentId Int
+  parent   User @relation(fields: [parentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// MEETINGS, ATTENDANCE & PENALTIES
+model Meeting {
+  id          Int      @id @default(autoincrement())
+  title       String
+  date        DateTime
+  minutes     String?  @db.Text
+  resolutions String?  @db.Text
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById Int
+
+  attendances Attendance[]
+  penalties   Penalty[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Attendance {
+  id        Int              @id @default(autoincrement())
+  status    AttendanceStatus
+
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meetingId Int
+
+  parent   User @relation("ParentAttendance", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId Int
+
+  recordedBy   User @relation("RecordedBy", fields: [recordedById], references: [id])
+  recordedById Int
+
+  hasPenalty Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([meetingId, parentId])
+}
+
+model Penalty {
+  id          Int      @id @default(autoincrement())
+  amount      Float
+  reason      String
+  isPaid      Boolean  @default(false)
+  paidAt      DateTime?
+
+  parent   User @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  parentId Int
+
+  meeting   Meeting? @relation(fields: [meetingId], references: [id])
+  meetingId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// FINANCIALS & PROJECTS
+model Project {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?  @db.Text
+  budget      Float
+  startDate   DateTime
+  endDate     DateTime?
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById Int
+
+  contributions Contribution[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Contribution {
+  id        Int      @id @default(autoincrement())
+  amount    Float
+  date      DateTime
+
+  parent   User @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  parentId Int
+
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ANNOUNCEMENTS
+model Announcement {
+  id      Int    @id @default(autoincrement())
+  title   String
+  content String @db.Text
+
+  createdBy   User @relation(fields: [createdById], references: [id])
+  createdById Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// OTP
+model Otp {
+  id        Int      @id @default(autoincrement())
+  email     String
+  otp       String
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
