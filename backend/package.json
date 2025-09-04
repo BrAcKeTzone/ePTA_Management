@@ -2,10 +2,11 @@
   "name": "epta-backend",
   "version": "1.0.0",
   "description": "Backend for the Online Management System for the Parent and Teacher Association of JHCSC Dumingag Campus.",
-  "main": "src/server.js",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "prisma:generate": "prisma generate",
     "test": "vitest run --coverage"
   },
