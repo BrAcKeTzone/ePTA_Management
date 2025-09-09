@@ -15,6 +15,22 @@ export const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json(new ApiResponse(200, result));
 });
 
+export const sendOtpForReset = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email } = req.body;
+    const result = await authService.sendOtpForReset(email);
+    res.status(200).json(new ApiResponse(200, result));
+  }
+);
+
+export const sendOtpForChange = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+    const result = await authService.sendOtpForChange(email, password);
+    res.status(200).json(new ApiResponse(200, result));
+  }
+);
+
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const result = await authService.register(req.body);
   res
@@ -30,18 +46,19 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
 export const resetPassword = asyncHandler(
   async (req: Request, res: Response) => {
-    const { email, password } = req.body;
-    const result = await authService.resetPassword(email, password);
+    const { email, otp, password } = req.body;
+    const result = await authService.resetPassword(email, otp, password);
     res.status(200).json(new ApiResponse(200, result));
   }
 );
 
 export const changePassword = asyncHandler(
   async (req: Request, res: Response) => {
-    const { email, oldPassword, newPassword } = req.body;
+    const { email, oldPassword, otp, newPassword } = req.body;
     const result = await authService.changePassword(
       email,
       oldPassword,
+      otp,
       newPassword
     );
     res.status(200).json(new ApiResponse(200, result));

@@ -15,6 +15,16 @@ router.post(
   authController.verifyOtp
 );
 router.post(
+  "/send-otp-reset",
+  validate(authValidation.sendOtpReset),
+  authController.sendOtpForReset
+);
+router.post(
+  "/send-otp-change",
+  validate(authValidation.sendOtpChange),
+  authController.sendOtpForChange
+);
+router.post(
   "/register",
   validate(authValidation.register),
   authController.register

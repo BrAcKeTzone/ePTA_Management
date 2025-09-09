@@ -81,6 +81,112 @@ export const sendOtp = async (email: string): Promise<{ message: string }> => {
   return { message: "OTP sent to your email." };
 };
 
+export const sendOtpForReset = async (
+  email: string
+): Promise<{ message: string }> => {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    throw new ApiError(404, "User with this email does not exist");
+  }
+
+  const otpOptions = {
+    upperCase: false,
+    specialChars: false,
+    digits: true,
+    lowerCaseAlphabets: false,
+    upperCaseAlphabets: false,
+  };
+  const otp = otpGenerator.generate(6, otpOptions);
+  const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  try {
+    await prisma.otp.create({
+      data: {
+        email,
+        otp,
+        createdAt: expires,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw new ApiError(400, "Failed to create OTP record");
+    }
+    throw error;
+  }
+
+  try {
+    await sendEmail({
+      email,
+      subject: "Your OTP for ePTA Password Reset",
+      message: `Your OTP for password reset is: ${otp}. It will expire in 10 minutes.`,
+    });
+  } catch (error) {
+    console.error(error);
+    throw new ApiError(
+      500,
+      "There was an error sending the email. Please try again later."
+    );
+  }
+
+  return { message: "OTP sent to your email for password reset." };
+};
+
+export const sendOtpForChange = async (
+  email: string,
+  password: string
+): Promise<{ message: string }> => {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    throw new ApiError(404, "User with this email does not exist");
+  }
+
+  const isValidPassword = await bcrypt.compare(password, user.password);
+  if (!isValidPassword) {
+    throw new ApiError(401, "Incorrect password");
+  }
+
+  const otpOptions = {
+    upperCase: false,
+    specialChars: false,
+    digits: true,
+    lowerCaseAlphabets: false,
+    upperCaseAlphabets: false,
+  };
+  const otp = otpGenerator.generate(6, otpOptions);
+  const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  try {
+    await prisma.otp.create({
+      data: {
+        email,
+        otp,
+        createdAt: expires,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      throw new ApiError(400, "Failed to create OTP record");
+    }
+    throw error;
+  }
+
+  try {
+    await sendEmail({
+      email,
+      subject: "Your OTP for ePTA Password Change",
+      message: `Your OTP for password change is: ${otp}. It will expire in 10 minutes.`,
+    });
+  } catch (error) {
+    console.error(error);
+    throw new ApiError(
+      500,
+      "There was an error sending the email. Please try again later."
+    );
+  }
+
+  return { message: "OTP sent to your email for password change." };
+};
+
 export const verifyOtp = async (
   email: string,
   otp: string
@@ -165,12 +271,31 @@ export const login = async (
 
 export const resetPassword = async (
   email: string,
+  otp: string,
   newPassword: string
 ): Promise<{ message: string }> => {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     throw new ApiError(404, "User not found");
   }
+
+  // Verify OTP
+  const otpRecord = await prisma.otp.findFirst({
+    where: {
+      email,
+      otp,
+      createdAt: {
+        gt: new Date(Date.now() - 10 * 60 * 1000), // Not expired
+      },
+    },
+  });
+
+  if (!otpRecord) {
+    throw new ApiError(400, "Invalid or expired OTP.");
+  }
+
+  // Delete the OTP after successful verification
+  await prisma.otp.delete({ where: { id: otpRecord.id } });
 
   const hashedPassword = await bcrypt.hash(newPassword, 12);
   await prisma.user.update({
@@ -184,6 +309,7 @@ export const resetPassword = async (
 export const changePassword = async (
   email: string,
   oldPassword: string,
+  otp: string,
   newPassword: string
 ): Promise<{ message: string }> => {
   const user = await prisma.user.findUnique({ where: { email } });
@@ -191,6 +317,24 @@ export const changePassword = async (
   if (!user || !(await bcrypt.compare(oldPassword, user.password))) {
     throw new ApiError(401, "Incorrect email or old password");
   }
+
+  // Verify OTP
+  const otpRecord = await prisma.otp.findFirst({
+    where: {
+      email,
+      otp,
+      createdAt: {
+        gt: new Date(Date.now() - 10 * 60 * 1000), // Not expired
+      },
+    },
+  });
+
+  if (!otpRecord) {
+    throw new ApiError(400, "Invalid or expired OTP.");
+  }
+
+  // Delete the OTP after successful verification
+  await prisma.otp.delete({ where: { id: otpRecord.id } });
 
   const hashedPassword = await bcrypt.hash(newPassword, 12);
   await prisma.user.update({
