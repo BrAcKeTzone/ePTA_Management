@@ -1,62 +1,230 @@
-import { apiClient } from "./apiClient";
+import { fetchClient } from "../utils/fetchClient";
+import { dummyDataService } from "../services/dummyDataService";
+import config from "../config";
 
-export const authAPI = {
+const API_BASE = "/api/auth";
+
+export const authApi = {
   // Login
   login: async (credentials) => {
-    return await apiClient.post("/auth/login", credentials);
-  },
+    if (config.USE_DUMMY_DATA) {
+      const response = await dummyDataService.login(
+        credentials.email,
+        credentials.password
+      );
+      return response;
+    }
 
-  // Register
-  register: async (userData) => {
-    return await apiClient.post("/auth/register", userData);
-  },
-
-  // Verify OTP
-  verifyOTP: async (email, otp) => {
-    return await apiClient.post("/auth/verify-otp", { email, otp });
-  },
-
-  // Resend OTP
-  resendOTP: async (email) => {
-    return await apiClient.post("/auth/resend-otp", { email });
-  },
-
-  // Forgot Password
-  forgotPassword: async (email) => {
-    return await apiClient.post("/auth/forgot-password", { email });
-  },
-
-  // Reset Password
-  resetPassword: async (token, password) => {
-    return await apiClient.post("/auth/reset-password", { token, password });
-  },
-
-  // Get Current User
-  getCurrentUser: async () => {
-    const response = await apiClient.get("/auth/me");
+    const response = await fetchClient.post(`${API_BASE}/login`, credentials);
     return response.data;
   },
 
-  // Update Profile
-  updateProfile: async (profileData) => {
-    return await apiClient.put("/auth/profile", profileData);
+  // Registration Process
+  register: async (userData) => {
+    if (config.USE_DUMMY_DATA) {
+      const response = await dummyDataService.register(userData);
+      return response;
+    }
+
+    const response = await fetchClient.post(`${API_BASE}/register`, userData);
+    return response.data;
   },
 
-  // Change Password
-  changePassword: async (currentPassword, newPassword) => {
-    return await apiClient.post("/auth/change-password", {
-      currentPassword,
+  // OTP Management (dummy implementation for demo)
+  sendOtp: async (email) => {
+    if (config.USE_DUMMY_DATA) {
+      // Simulate OTP sending
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return {
+        success: true,
+        message: "OTP sent successfully",
+        data: { otpSent: true },
+      };
+    }
+
+    const response = await fetchClient.post(`${API_BASE}/send-otp`, { email });
+    return response.data;
+  },
+
+  verifyOtp: async (email, otp) => {
+    if (config.USE_DUMMY_DATA) {
+      // Simulate OTP verification (accept any 6-digit number)
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      if (otp.length === 6 && /^\d+$/.test(otp)) {
+        return {
+          success: true,
+          message: "OTP verified successfully",
+          data: { verified: true },
+        };
+      } else {
+        throw new Error("Invalid OTP");
+      }
+    }
+
+    const response = await fetchClient.post(`${API_BASE}/verify-otp`, {
+      email,
+      otp,
+    });
+    return response.data;
+  },
+
+  // Password Reset
+  sendOtpForReset: async (email) => {
+    if (config.USE_DUMMY_DATA) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return {
+        success: true,
+        message: "Reset OTP sent successfully",
+        data: { otpSent: true },
+      };
+    }
+
+    const response = await fetchClient.post(`${API_BASE}/send-otp-reset`, {
+      email,
+    });
+    return response.data;
+  },
+
+  verifyOtpForReset: async (email, otp) => {
+    if (config.USE_DUMMY_DATA) {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      if (otp.length === 6 && /^\d+$/.test(otp)) {
+        return {
+          success: true,
+          message: "Reset OTP verified successfully",
+          data: { verified: true },
+        };
+      } else {
+        throw new Error("Invalid reset OTP");
+      }
+    }
+
+    const response = await fetchClient.post(`${API_BASE}/verify-otp-reset`, {
+      email,
+      otp,
+    });
+    return response.data;
+  },
+
+  resetPassword: async (email, otp, password) => {
+    if (config.USE_DUMMY_DATA) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return {
+        success: true,
+        message: "Password reset successfully",
+        data: { passwordReset: true },
+      };
+    }
+
+    const response = await fetchClient.post(`${API_BASE}/reset-password`, {
+      email,
+      otp,
+      password,
+    });
+    return response.data;
+  },
+
+  // Password Change
+  sendOtpForChange: async (email, password) => {
+    if (config.USE_DUMMY_DATA) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return {
+        success: true,
+        message: "Change OTP sent successfully",
+        data: { otpSent: true },
+      };
+    }
+
+    const response = await fetchClient.post(`${API_BASE}/send-otp-change`, {
+      email,
+      password,
+    });
+    return response.data;
+  },
+
+  verifyOtpForChange: async (email, otp) => {
+    if (config.USE_DUMMY_DATA) {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      if (otp.length === 6 && /^\d+$/.test(otp)) {
+        return {
+          success: true,
+          message: "Change OTP verified successfully",
+          data: { verified: true },
+        };
+      } else {
+        throw new Error("Invalid change OTP");
+      }
+    }
+
+    const response = await fetchClient.post(`${API_BASE}/verify-otp-change`, {
+      email,
+      otp,
+    });
+    return response.data;
+  },
+
+  changePassword: async (email, oldPassword, otp, newPassword) => {
+    if (config.USE_DUMMY_DATA) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return {
+        success: true,
+        message: "Password changed successfully",
+        data: { passwordChanged: true },
+      };
+    }
+
+    const response = await fetchClient.post(`${API_BASE}/change-password`, {
+      email,
+      oldPassword,
+      otp,
       newPassword,
     });
+    return response.data;
   },
 
-  // Refresh Token
-  refreshToken: async () => {
-    return await apiClient.post("/auth/refresh");
+  // Profile Management
+  getProfile: async () => {
+    if (config.USE_DUMMY_DATA) {
+      // Get current user from localStorage (simulated)
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        const user = JSON.parse(userData);
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        return {
+          success: true,
+          data: user,
+        };
+      } else {
+        throw new Error("No user profile found");
+      }
+    }
+
+    const response = await fetchClient.get(`${API_BASE}/profile`);
+    return response.data;
   },
 
-  // Logout
-  logout: async () => {
-    return await apiClient.post("/auth/logout");
+  updateProfile: async (profileData) => {
+    if (config.USE_DUMMY_DATA) {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // Update local storage user data
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        const user = JSON.parse(userData);
+        const updatedUser = { ...user, ...profileData };
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+
+        return {
+          success: true,
+          message: "Profile updated successfully",
+          data: updatedUser,
+        };
+      } else {
+        throw new Error("No user profile found");
+      }
+    }
+
+    const response = await fetchClient.put(`${API_BASE}/profile`, profileData);
+    return response.data;
   },
 };

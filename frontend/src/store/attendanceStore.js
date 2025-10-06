@@ -1,235 +1,147 @@
 import { create } from "zustand";
-import { attendanceAPI } from "../api/attendanceAPI";
+import { attendanceApi } from "../api/attendanceApi";
 
-const useAttendanceStore = create((set, get) => ({
+export const useAttendanceStore = create((set, get) => ({
+  // State
+  meetings: [],
   attendance: [],
-  currentAttendance: null,
+  penalties: [],
+  selectedMeeting: null,
   loading: false,
   error: null,
 
-  // Fetch all attendance records (admin)
-  fetchAttendance: async (filters = {}) => {
+  // Actions
+  fetchMeetings: async () => {
     try {
       set({ loading: true, error: null });
-      const response = await attendanceAPI.getAll(filters);
-      set({ attendance: response.data, loading: false });
-      return response;
+      const response = await attendanceApi.getMeetings();
+      set({ meetings: response.data || [], loading: false });
     } catch (error) {
-      set({ loading: false, error: error.message });
+      set({
+        error: error.response?.data?.message || "Failed to fetch meetings",
+        loading: false,
+      });
+    }
+  },
+
+  createMeeting: async (meetingData) => {
+    try {
+      set({ loading: true, error: null });
+      await attendanceApi.createMeeting(meetingData);
+      // Refresh meetings list
+      await get().fetchMeetings();
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to create meeting",
+        loading: false,
+      });
       throw error;
     }
   },
 
-  // Fetch user's attendance records (parent)
+  updateMeeting: async (meetingId, meetingData) => {
+    try {
+      set({ loading: true, error: null });
+      await attendanceApi.updateMeeting(meetingId, meetingData);
+      // Refresh meetings list
+      await get().fetchMeetings();
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to update meeting",
+        loading: false,
+      });
+      throw error;
+    }
+  },
+
+  deleteMeeting: async (meetingId) => {
+    try {
+      set({ loading: true, error: null });
+      await attendanceApi.deleteMeeting(meetingId);
+      // Refresh meetings list
+      await get().fetchMeetings();
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to delete meeting",
+        loading: false,
+      });
+      throw error;
+    }
+  },
+
+  fetchAttendanceForMeeting: async (meetingId) => {
+    try {
+      set({ loading: true, error: null });
+      const response = await attendanceApi.getAttendanceByMeeting(meetingId);
+      set({
+        attendance: response.data || [],
+        selectedMeeting: meetingId,
+        loading: false,
+      });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to fetch attendance",
+        loading: false,
+      });
+    }
+  },
+
+  recordAttendance: async (attendanceData) => {
+    try {
+      set({ loading: true, error: null });
+      await attendanceApi.recordAttendance(attendanceData);
+      // Refresh attendance for current meeting
+      if (get().selectedMeeting) {
+        await get().fetchAttendanceForMeeting(get().selectedMeeting);
+      }
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to record attendance",
+        loading: false,
+      });
+      throw error;
+    }
+  },
+
+  // Parent-specific actions
   fetchMyAttendance: async () => {
     try {
       set({ loading: true, error: null });
-      const response = await attendanceAPI.getMy();
-      set({ attendance: response.data, loading: false });
-      return response;
+      const response = await attendanceApi.getMyAttendance();
+      set({ attendance: response.data || [], loading: false });
     } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Fetch attendance by meeting ID
-  fetchAttendanceByMeeting: async (meetingId) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await attendanceAPI.getByMeeting(meetingId);
-      set({ attendance: response.data, loading: false });
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Get single attendance record
-  getAttendance: async (id) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await attendanceAPI.getById(id);
-      set({ currentAttendance: response.data, loading: false });
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Create attendance record
-  createAttendance: async (attendanceData) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await attendanceAPI.create(attendanceData);
-      const newAttendance = response.data;
-
-      set((state) => ({
-        attendance: [...state.attendance, newAttendance],
+      set({
+        error: error.response?.data?.message || "Failed to fetch attendance",
         loading: false,
-      }));
-
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
+      });
     }
   },
 
-  // Update attendance record
-  updateAttendance: async (id, attendanceData) => {
+  fetchMyPenalties: async () => {
     try {
       set({ loading: true, error: null });
-      const response = await attendanceAPI.update(id, attendanceData);
-      const updatedAttendance = response.data;
-
-      set((state) => ({
-        attendance: state.attendance.map((item) =>
-          item.id === id ? updatedAttendance : item
-        ),
-        currentAttendance:
-          state.currentAttendance?.id === id
-            ? updatedAttendance
-            : state.currentAttendance,
+      const response = await attendanceApi.getMyPenalties();
+      set({ penalties: response.data || [], loading: false });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to fetch penalties",
         loading: false,
-      }));
-
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
+      });
     }
   },
 
-  // Delete attendance record
-  deleteAttendance: async (id) => {
-    try {
-      set({ loading: true, error: null });
-      await attendanceAPI.delete(id);
-
-      set((state) => ({
-        attendance: state.attendance.filter((item) => item.id !== id),
-        currentAttendance:
-          state.currentAttendance?.id === id ? null : state.currentAttendance,
-        loading: false,
-      }));
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Bulk update attendance (for marking multiple users at once)
-  bulkUpdateAttendance: async (attendanceUpdates) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await attendanceAPI.bulkUpdate(attendanceUpdates);
-
-      // Refresh attendance data
-      const { fetchAttendance } = get();
-      await fetchAttendance();
-
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Mark attendance for a meeting
-  markAttendance: async (meetingId, userId, status, notes = "") => {
-    try {
-      set({ loading: true, error: null });
-      const response = await attendanceAPI.markAttendance(
-        meetingId,
-        userId,
-        status,
-        notes
-      );
-      const newAttendance = response.data;
-
-      set((state) => ({
-        attendance: state.attendance.map((item) =>
-          item.meetingId === meetingId && item.userId === userId
-            ? newAttendance
-            : item
-        ),
-        loading: false,
-      }));
-
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Submit excuse for absence
-  submitExcuse: async (attendanceId, excuseReason) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await attendanceAPI.submitExcuse(
-        attendanceId,
-        excuseReason
-      );
-      const updatedAttendance = response.data;
-
-      set((state) => ({
-        attendance: state.attendance.map((item) =>
-          item.id === attendanceId ? updatedAttendance : item
-        ),
-        loading: false,
-      }));
-
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Get attendance statistics
-  getAttendanceStats: async (userId = null) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await attendanceAPI.getStats(userId);
-      set({ loading: false });
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Export attendance report
-  exportAttendance: async (filters = {}) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await attendanceAPI.export(filters);
-      set({ loading: false });
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Clear current attendance
-  clearCurrentAttendance: () => set({ currentAttendance: null }),
-
-  // Clear error
+  // Utility actions
   clearError: () => set({ error: null }),
 
-  // Reset store
-  reset: () =>
+  setSelectedMeeting: (meetingId) => set({ selectedMeeting: meetingId }),
+
+  resetState: () =>
     set({
+      meetings: [],
       attendance: [],
-      currentAttendance: null,
+      penalties: [],
+      selectedMeeting: null,
       loading: false,
       error: null,
     }),
 }));
-
-export { useAttendanceStore };

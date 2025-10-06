@@ -1,486 +1,330 @@
-import { useState, useEffect } from "react";
-import { useAnnouncementsStore } from "../../store/announcementsStore";
-import { useAuthStore } from "../../store/authStore";
-import { Card } from "../../components/UI/Card";
-import { Badge } from "../../components/UI/Badge";
-import { Button } from "../../components/UI/Button";
-import { Modal } from "../../components/UI/Modal";
+import React, { useState, useEffect } from "react";
+import { announcementsApi } from "../../api/announcementsApi";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import Pagination from "../../components/Pagination";
+import { formatDate } from "../../utils/formatDate";
 
-export default function ParentAnnouncements() {
-  const { user } = useAuthStore();
-  const { announcements, fetchAnnouncements, loading } =
-    useAnnouncementsStore();
-
-  const [filter, setFilter] = useState("all"); // all, unread, important
-  const [sortBy, setSortBy] = useState("date"); // date, title, priority
-  const [sortOrder, setSortOrder] = useState("desc"); // asc, desc
-  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
-  const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
+const Announcements = () => {
+  const [announcements, setAnnouncements] = useState([]);
+  const [filteredAnnouncements, setFilteredAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filter, setFilter] = useState("all"); // all, unread, featured
+  const [readStatus, setReadStatus] = useState({});
+  const itemsPerPage = 10;
 
   useEffect(() => {
     fetchAnnouncements();
-  }, [fetchAnnouncements]);
+    fetchReadStatus();
+  }, []);
 
-  // Filter and sort announcements
-  const filteredAnnouncements = announcements
-    .filter((announcement) => {
-      if (filter === "all") return true;
-      if (filter === "unread") return !announcement.readBy?.includes(user?.id);
-      if (filter === "important")
-        return (
-          announcement.priority === "HIGH" || announcement.priority === "URGENT"
+  useEffect(() => {
+    filterAnnouncements();
+  }, [announcements, filter, readStatus]);
+
+  const fetchAnnouncements = async () => {
+    try {
+      setLoading(true);
+      const response = await announcementsApi.getActiveAnnouncements();
+      setAnnouncements(response.data || []);
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchReadStatus = async () => {
+    try {
+      const response = await announcementsApi.getMyReadStatus();
+      const statusMap = {};
+      response.data?.forEach((item) => {
+        statusMap[item.announcementId] = item.isRead;
+      });
+      setReadStatus(statusMap);
+    } catch (error) {
+      console.error("Error fetching read status:", error);
+    }
+  };
+
+  const filterAnnouncements = () => {
+    let filtered = [...announcements];
+
+    switch (filter) {
+      case "unread":
+        filtered = filtered.filter(
+          (announcement) => !readStatus[announcement.id]
         );
-      return true;
-    })
-    .sort((a, b) => {
-      let aValue, bValue;
+        break;
+      case "featured":
+        filtered = filtered.filter((announcement) => announcement.isFeatured);
+        break;
+      case "all":
+      default:
+        // No filtering needed
+        break;
+    }
 
-      if (sortBy === "date") {
-        aValue = new Date(a.createdAt);
-        bValue = new Date(b.createdAt);
-      } else if (sortBy === "title") {
-        aValue = a.title.toLowerCase();
-        bValue = b.title.toLowerCase();
-      } else if (sortBy === "priority") {
-        const priorityOrder = { URGENT: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
-        aValue = priorityOrder[a.priority] || 0;
-        bValue = priorityOrder[b.priority] || 0;
-      }
+    // Sort by priority and date
+    filtered.sort((a, b) => {
+      // First by featured status
+      if (a.isFeatured && !b.isFeatured) return -1;
+      if (!a.isFeatured && b.isFeatured) return 1;
 
-      if (sortOrder === "asc") {
-        return aValue > bValue ? 1 : -1;
-      } else {
-        return aValue < bValue ? 1 : -1;
-      }
+      // Then by priority
+      const priorityOrder = { urgent: 3, high: 2, normal: 1 };
+      const aPriority = priorityOrder[a.priority] || 1;
+      const bPriority = priorityOrder[b.priority] || 1;
+      if (aPriority !== bPriority) return bPriority - aPriority;
+
+      // Finally by date (newest first)
+      return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
-  // Calculate statistics
-  const totalAnnouncements = announcements.length;
-  const unreadCount = announcements.filter(
-    (a) => !a.readBy?.includes(user?.id)
-  ).length;
-  const importantCount = announcements.filter(
-    (a) => a.priority === "HIGH" || a.priority === "URGENT"
-  ).length;
-  const thisWeekCount = announcements.filter((a) => {
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    return new Date(a.createdAt) > weekAgo;
-  }).length;
+    setFilteredAnnouncements(filtered);
+    setCurrentPage(1);
+  };
 
-  const handleAnnouncementClick = (announcement) => {
-    setSelectedAnnouncement(announcement);
-    setShowAnnouncementModal(true);
+  const handleMarkAsRead = async (announcementId) => {
+    if (readStatus[announcementId]) return; // Already read
 
-    // Mark as read if not already read
-    if (!announcement.readBy?.includes(user?.id)) {
-      // TODO: Call API to mark as read
-      console.log("Marking announcement as read:", announcement.id);
+    try {
+      await announcementsApi.markAnnouncementAsRead(announcementId);
+      setReadStatus((prev) => ({
+        ...prev,
+        [announcementId]: true,
+      }));
+    } catch (error) {
+      console.error("Error marking announcement as read:", error);
     }
+  };
+
+  const isExpired = (expiryDate) => {
+    if (!expiryDate) return false;
+    return new Date(expiryDate) < new Date();
   };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case "URGENT":
+      case "urgent":
         return "bg-red-100 text-red-800 border-red-200";
-      case "HIGH":
+      case "high":
         return "bg-orange-100 text-orange-800 border-orange-200";
-      case "MEDIUM":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "LOW":
-        return "bg-green-100 text-green-800 border-green-200";
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return "bg-blue-100 text-blue-800 border-blue-200";
     }
   };
 
-  const getPriorityIcon = (priority) => {
-    switch (priority) {
-      case "URGENT":
-        return "🚨";
-      case "HIGH":
-        return "⚠️";
-      case "MEDIUM":
-        return "📢";
-      case "LOW":
-        return "ℹ️";
-      default:
-        return "📄";
-    }
-  };
+  // Pagination
+  const totalPages = Math.ceil(filteredAnnouncements.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentAnnouncements = filteredAnnouncements.slice(
+    startIndex,
+    endIndex
+  );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Announcements</h1>
-            <p className="text-gray-600">
-              Stay updated with PTA news and important information
-            </p>
-          </div>
-          <Button href="/parent/dashboard" variant="outline">
-            ← Back to Dashboard
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Announcements
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-1">
+          Stay updated with the latest PTA announcements
+        </p>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-blue-600">
-              {totalAnnouncements}
-            </p>
-            <p className="text-sm text-gray-600">Total Announcements</p>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-orange-600">{unreadCount}</p>
-            <p className="text-sm text-gray-600">Unread</p>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-red-600">{importantCount}</p>
-            <p className="text-sm text-gray-600">Important</p>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="text-center">
-            <p className="text-2xl font-bold text-green-600">{thisWeekCount}</p>
-            <p className="text-sm text-gray-600">This Week</p>
-          </div>
-        </Card>
-      </div>
-
-      {/* Filters and Controls */}
-      <Card className="p-6">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center space-x-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Filter
-              </label>
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Announcements</option>
-                <option value="unread">Unread Only</option>
-                <option value="important">Important Only</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Sort by
-              </label>
-              <select
-                value={`${sortBy}-${sortOrder}`}
-                onChange={(e) => {
-                  const [newSortBy, newSortOrder] = e.target.value.split("-");
-                  setSortBy(newSortBy);
-                  setSortOrder(newSortOrder);
-                }}
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="date-desc">Date (Newest First)</option>
-                <option value="date-asc">Date (Oldest First)</option>
-                <option value="priority-desc">Priority (High to Low)</option>
-                <option value="priority-asc">Priority (Low to High)</option>
-                <option value="title-asc">Title (A-Z)</option>
-                <option value="title-desc">Title (Z-A)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="text-sm text-gray-600">
-            Showing {filteredAnnouncements.length} of {totalAnnouncements}{" "}
-            announcements
-          </div>
+      {/* Filter Controls */}
+      <div className="flex flex-wrap gap-4 items-center justify-between">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setFilter("all")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              filter === "all"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+            }`}
+          >
+            All Announcements
+          </button>
+          <button
+            onClick={() => setFilter("unread")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              filter === "unread"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+            }`}
+          >
+            Unread ({announcements.filter((a) => !readStatus[a.id]).length})
+          </button>
+          <button
+            onClick={() => setFilter("featured")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              filter === "featured"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+            }`}
+          >
+            Featured
+          </button>
         </div>
-      </Card>
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          Showing {currentAnnouncements.length} of{" "}
+          {filteredAnnouncements.length} announcements
+        </div>
+      </div>
 
       {/* Announcements List */}
       <div className="space-y-4">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        ) : filteredAnnouncements.length > 0 ? (
-          filteredAnnouncements.map((announcement) => {
-            const isUnread = !announcement.readBy?.includes(user?.id);
-
-            return (
-              <Card
-                key={announcement.id}
-                className={`p-6 cursor-pointer hover:shadow-md transition-shadow ${
-                  isUnread ? "border-l-4 border-blue-500 bg-blue-50" : ""
-                }`}
-                onClick={() => handleAnnouncementClick(announcement)}
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-2">
-                      <span className="text-2xl">
-                        {getPriorityIcon(announcement.priority)}
-                      </span>
-                      <h3
-                        className={`text-lg font-semibold ${
-                          isUnread ? "text-gray-900" : "text-gray-700"
-                        }`}
-                      >
-                        {announcement.title}
-                      </h3>
-                      {isUnread && (
-                        <Badge variant="info" size="sm">
-                          New
-                        </Badge>
-                      )}
-                    </div>
-
-                    <p className="text-gray-600 mb-3 line-clamp-2">
-                      {announcement.content.substring(0, 200)}
-                      {announcement.content.length > 200 && "..."}
-                    </p>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <span className="flex items-center space-x-1">
-                          <span>📅</span>
-                          <span>
-                            {new Date(
-                              announcement.createdAt
-                            ).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </span>
-                        </span>
-
-                        {announcement.author && (
-                          <span className="flex items-center space-x-1">
-                            <span>👤</span>
-                            <span>{announcement.author.name}</span>
-                          </span>
-                        )}
-
-                        {announcement.category && (
-                          <span className="flex items-center space-x-1">
-                            <span>🏷️</span>
-                            <span>{announcement.category}</span>
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full border ${getPriorityColor(
-                            announcement.priority
-                          )}`}
-                        >
-                          {announcement.priority}
-                        </span>
-
-                        {announcement.attachments &&
-                          announcement.attachments.length > 0 && (
-                            <Badge variant="outline" size="sm">
-                              📎 {announcement.attachments.length}
-                            </Badge>
-                          )}
-                      </div>
-                    </div>
-                  </div>
+        {currentAnnouncements.map((announcement) => (
+          <div
+            key={announcement.id}
+            className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 transition-all cursor-pointer ${
+              !readStatus[announcement.id] ? "border-l-4 border-l-blue-500" : ""
+            } ${isExpired(announcement.expiryDate) ? "opacity-75" : ""}`}
+            onClick={() => handleMarkAsRead(announcement.id)}
+          >
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <h3
+                    className={`text-lg font-semibold ${
+                      !readStatus[announcement.id]
+                        ? "text-gray-900 dark:text-white"
+                        : "text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    {announcement.title}
+                  </h3>
+                  {!readStatus[announcement.id] && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                      New
+                    </span>
+                  )}
                 </div>
-              </Card>
-            );
-          })
-        ) : (
-          <Card className="p-12">
-            <div className="text-center">
-              <div className="text-gray-400 text-6xl mb-4">📢</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No Announcements Found
-              </h3>
-              <p className="text-gray-600">
-                {filter === "all"
-                  ? "No announcements have been posted yet."
-                  : `No ${filter} announcements found.`}
-              </p>
-              {filter !== "all" && (
-                <Button
-                  onClick={() => setFilter("all")}
-                  variant="outline"
-                  className="mt-4"
-                >
-                  View All Announcements
-                </Button>
-              )}
+                <div className="flex items-center space-x-2">
+                  {announcement.isFeatured && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                      ⭐ Featured
+                    </span>
+                  )}
+                  <span
+                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(
+                      announcement.priority
+                    )}`}
+                  >
+                    {announcement.priority}
+                  </span>
+                  {isExpired(announcement.expiryDate) && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                      Expired
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="prose max-w-none">
+                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                  {announcement.content}
+                </p>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
+                  Posted on {formatDate(announcement.createdAt)}
+                  {announcement.expiryDate && (
+                    <span
+                      className={
+                        isExpired(announcement.expiryDate)
+                          ? "text-red-600 dark:text-red-400"
+                          : ""
+                      }
+                    >
+                      {" • "}Expires on {formatDate(announcement.expiryDate)}
+                    </span>
+                  )}
+                </div>
+                {!readStatus[announcement.id] && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleMarkAsRead(announcement.id);
+                    }}
+                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                  >
+                    Mark as read
+                  </button>
+                )}
+              </div>
             </div>
-          </Card>
-        )}
+          </div>
+        ))}
       </div>
 
-      {/* Announcement Detail Modal */}
-      <Modal
-        isOpen={showAnnouncementModal}
-        onClose={() => setShowAnnouncementModal(false)}
-        title={selectedAnnouncement?.title}
-        size="lg"
-      >
-        {selectedAnnouncement && (
-          <div className="space-y-4">
-            {/* Header Info */}
-            <div className="flex items-center justify-between pb-4 border-b">
-              <div className="flex items-center space-x-3">
-                <span className="text-2xl">
-                  {getPriorityIcon(selectedAnnouncement.priority)}
-                </span>
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900">
-                    {selectedAnnouncement.title}
-                  </h2>
-                  <div className="flex items-center space-x-4 text-sm text-gray-500 mt-1">
-                    <span>
-                      📅{" "}
-                      {new Date(
-                        selectedAnnouncement.createdAt
-                      ).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                    {selectedAnnouncement.author && (
-                      <span>👤 {selectedAnnouncement.author.name}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <span
-                className={`px-3 py-1 text-sm font-medium rounded-full border ${getPriorityColor(
-                  selectedAnnouncement.priority
-                )}`}
-              >
-                {selectedAnnouncement.priority}
-              </span>
-            </div>
-
-            {/* Content */}
-            <div className="prose max-w-none">
-              <div className="whitespace-pre-wrap text-gray-700">
-                {selectedAnnouncement.content}
-              </div>
-            </div>
-
-            {/* Category and Tags */}
-            {(selectedAnnouncement.category ||
-              selectedAnnouncement.tags?.length > 0) && (
-              <div className="flex items-center space-x-4 pt-4 border-t">
-                {selectedAnnouncement.category && (
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm font-medium text-gray-700">
-                      Category:
-                    </span>
-                    <Badge variant="outline">
-                      {selectedAnnouncement.category}
-                    </Badge>
-                  </div>
-                )}
-                {selectedAnnouncement.tags &&
-                  selectedAnnouncement.tags.length > 0 && (
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-gray-700">
-                        Tags:
-                      </span>
-                      <div className="flex space-x-1">
-                        {selectedAnnouncement.tags.map((tag, index) => (
-                          <Badge key={index} variant="outline" size="sm">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-              </div>
-            )}
-
-            {/* Attachments */}
-            {selectedAnnouncement.attachments &&
-              selectedAnnouncement.attachments.length > 0 && (
-                <div className="pt-4 border-t">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    Attachments:
-                  </h4>
-                  <div className="space-y-2">
-                    {selectedAnnouncement.attachments.map(
-                      (attachment, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center space-x-2 p-2 bg-gray-50 rounded"
-                        >
-                          <span>📎</span>
-                          <span className="text-sm text-blue-600 hover:underline cursor-pointer">
-                            {attachment.name || `Attachment ${index + 1}`}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            ({attachment.size || "Unknown size"})
-                          </span>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div>
-              )}
-
-            {/* Actions */}
-            <div className="flex justify-end pt-4 border-t">
-              <Button
-                onClick={() => setShowAnnouncementModal(false)}
-                variant="outline"
-              >
-                Close
-              </Button>
-            </div>
-          </div>
-        )}
-      </Modal>
-
-      {/* Important Announcements Notice */}
-      {importantCount > 0 && (
-        <Card className="p-6 border-l-4 border-red-500 bg-red-50">
-          <div className="flex items-start space-x-3">
-            <div className="text-red-500 text-xl">🚨</div>
-            <div className="flex-1">
-              <h3 className="text-lg font-semibold text-red-900 mb-2">
-                Important Announcements
-              </h3>
-              <p className="text-red-700 mb-4">
-                You have {importantCount} important{" "}
-                {importantCount === 1 ? "announcement" : "announcements"}
-                that require your attention. Please review them carefully.
-              </p>
-              {filter !== "important" && (
-                <Button
-                  onClick={() => setFilter("important")}
-                  variant="danger"
-                  size="sm"
-                >
-                  View Important Announcements
-                </Button>
-              )}
-            </div>
-          </div>
-        </Card>
+      {/* Empty State */}
+      {filteredAnnouncements.length === 0 && (
+        <div className="text-center py-12">
+          <div className="text-gray-400 text-6xl mb-4">📢</div>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+            No announcements found
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400">
+            {filter === "unread"
+              ? "You're all caught up! No unread announcements."
+              : filter === "featured"
+              ? "No featured announcements at the moment."
+              : "No announcements have been posted yet."}
+          </p>
+        </div>
       )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
+
+      {/* Help Information */}
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+          About Announcements
+        </h3>
+        <div className="text-blue-800 dark:text-blue-200 space-y-2">
+          <p>• Click on any announcement to mark it as read</p>
+          <p>
+            • Featured announcements appear at the top and are marked with a
+            star
+          </p>
+          <p>
+            • Urgent and high priority announcements require immediate attention
+          </p>
+          <p>
+            • Some announcements may have expiry dates after which they become
+            inactive
+          </p>
+          <p>
+            • New announcements are highlighted with a blue border on the left
+          </p>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default Announcements;

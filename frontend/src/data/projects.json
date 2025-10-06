@@ -1,0 +1,238 @@
+{
+  "projects": [
+    {
+      "id": "proj1",
+      "title": "Library Enhancement Project",
+      "description": "Improving school library facilities with new books, computers, and comfortable reading spaces for students.",
+      "category": "infrastructure",
+      "status": "active",
+      "priority": "high",
+      "organizer": "1",
+      "organizerName": "Maria Santos",
+      "targetAmount": 250000,
+      "currentAmount": 75000,
+      "startDate": "2025-09-01",
+      "endDate": "2025-12-31",
+      "createdAt": "2025-08-15T10:00:00.000Z",
+      "updatedAt": "2025-10-06T14:30:00.000Z",
+      "participants": ["2", "3", "5", "6"],
+      "milestones": [
+        {
+          "id": "m1",
+          "title": "Books Purchase",
+          "description": "Purchase 500 new books for various subjects",
+          "targetAmount": 100000,
+          "status": "completed",
+          "completedAt": "2025-09-30T00:00:00.000Z"
+        },
+        {
+          "id": "m2",
+          "title": "Computer Setup",
+          "description": "Install 10 new computers for digital library",
+          "targetAmount": 120000,
+          "status": "in_progress"
+        },
+        {
+          "id": "m3",
+          "title": "Reading Area",
+          "description": "Create comfortable reading spaces",
+          "targetAmount": 30000,
+          "status": "pending"
+        }
+      ],
+      "documents": [
+        {
+          "id": "doc1",
+          "name": "Library Enhancement Proposal.pdf",
+          "type": "proposal",
+          "url": "/documents/library-proposal.pdf",
+          "uploadedBy": "1",
+          "uploadedAt": "2025-08-15T10:00:00.000Z",
+          "size": "2.5 MB"
+        },
+        {
+          "id": "doc2",
+          "name": "Budget Breakdown.xlsx",
+          "type": "budget",
+          "url": "/documents/budget-breakdown.xlsx",
+          "uploadedBy": "1",
+          "uploadedAt": "2025-08-20T11:30:00.000Z",
+          "size": "1.2 MB"
+        }
+      ],
+      "updates": [
+        {
+          "id": "up1",
+          "title": "Books Purchased Successfully",
+          "description": "We have successfully purchased 500 new books covering various subjects including Math, Science, English, and Filipino literature.",
+          "date": "2025-09-30T16:00:00.000Z",
+          "author": "1",
+          "authorName": "Maria Santos"
+        },
+        {
+          "id": "up2",
+          "title": "Computer Installation Started",
+          "description": "Installation of new computers has begun. Expected completion by end of October.",
+          "date": "2025-10-05T09:00:00.000Z",
+          "author": "1",
+          "authorName": "Maria Santos"
+        }
+      ]
+    },
+    {
+      "id": "proj2",
+      "title": "Christmas Program 2025",
+      "description": "Annual Christmas celebration program featuring student performances, games, and community bonding activities.",
+      "category": "event",
+      "status": "active",
+      "priority": "normal",
+      "organizer": "1",
+      "organizerName": "Maria Santos",
+      "targetAmount": 50000,
+      "currentAmount": 20000,
+      "startDate": "2025-10-01",
+      "endDate": "2025-12-25",
+      "createdAt": "2025-09-20T14:00:00.000Z",
+      "updatedAt": "2025-10-06T11:00:00.000Z",
+      "participants": ["2", "4", "6"],
+      "milestones": [
+        {
+          "id": "m4",
+          "title": "Program Planning",
+          "description": "Complete program schedule and participant assignments",
+          "targetAmount": 5000,
+          "status": "completed",
+          "completedAt": "2025-10-01T00:00:00.000Z"
+        },
+        {
+          "id": "m5",
+          "title": "Decoration Setup",
+          "description": "Purchase and setup Christmas decorations",
+          "targetAmount": 25000,
+          "status": "in_progress"
+        },
+        {
+          "id": "m6",
+          "title": "Food and Refreshments",
+          "description": "Arrange catering and refreshments for the event",
+          "targetAmount": 20000,
+          "status": "pending"
+        }
+      ],
+      "documents": [
+        {
+          "id": "doc3",
+          "name": "Christmas Program Schedule.pdf",
+          "type": "schedule",
+          "url": "/documents/christmas-schedule.pdf",
+          "uploadedBy": "1",
+          "uploadedAt": "2025-09-25T15:00:00.000Z",
+          "size": "1.8 MB"
+        }
+      ],
+      "updates": [
+        {
+          "id": "up3",
+          "title": "Volunteer Registration Open",
+          "description": "We are now accepting volunteer registrations for various activities during the Christmas program.",
+          "date": "2025-10-03T10:00:00.000Z",
+          "author": "1",
+          "authorName": "Maria Santos"
+        }
+      ]
+    },
+    {
+      "id": "proj3",
+      "title": "School Garden Project",
+      "description": "Creating a sustainable school garden to teach students about agriculture and provide fresh vegetables for school feeding program.",
+      "category": "education",
+      "status": "planning",
+      "priority": "normal",
+      "organizer": "1",
+      "organizerName": "Maria Santos",
+      "targetAmount": 75000,
+      "currentAmount": 15000,
+      "startDate": "2025-11-01",
+      "endDate": "2026-03-31",
+      "createdAt": "2025-10-01T09:00:00.000Z",
+      "updatedAt": "2025-10-06T08:30:00.000Z",
+      "participants": ["3", "5"],
+      "milestones": [
+        {
+          "id": "m7",
+          "title": "Site Preparation",
+          "description": "Prepare and clear the designated garden area",
+          "targetAmount": 20000,
+          "status": "pending"
+        },
+        {
+          "id": "m8",
+          "title": "Tools and Materials",
+          "description": "Purchase gardening tools and materials",
+          "targetAmount": 30000,
+          "status": "pending"
+        },
+        {
+          "id": "m9",
+          "title": "Seeds and Plants",
+          "description": "Buy seeds and seedlings for planting",
+          "targetAmount": 25000,
+          "status": "pending"
+        }
+      ],
+      "documents": [
+        {
+          "id": "doc4",
+          "name": "Garden Layout Plan.pdf",
+          "type": "plan",
+          "url": "/documents/garden-layout.pdf",
+          "uploadedBy": "1",
+          "uploadedAt": "2025-10-01T09:30:00.000Z",
+          "size": "3.1 MB"
+        }
+      ],
+      "updates": [
+        {
+          "id": "up4",
+          "title": "Project Proposal Submitted",
+          "description": "The school garden project proposal has been submitted and is awaiting final approval.",
+          "date": "2025-10-01T14:00:00.000Z",
+          "author": "1",
+          "authorName": "Maria Santos"
+        }
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "id": "infrastructure",
+      "name": "Infrastructure",
+      "description": "School building and facility improvements",
+      "color": "#3B82F6"
+    },
+    {
+      "id": "event",
+      "name": "Events",
+      "description": "School events and celebrations",
+      "color": "#10B981"
+    },
+    {
+      "id": "education",
+      "name": "Education",
+      "description": "Educational programs and activities",
+      "color": "#8B5CF6"
+    },
+    {
+      "id": "health",
+      "name": "Health & Safety",
+      "description": "Health and safety related projects",
+      "color": "#F59E0B"
+    },
+    {
+      "id": "technology",
+      "name": "Technology",
+      "description": "Technology upgrades and digital initiatives",
+      "color": "#EF4444"
+    }
+  ]
+}

@@ -1,317 +1,416 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
-import { useAttendanceStore } from "../../store/attendanceStore";
-import { useContributionsStore } from "../../store/contributionsStore";
-import { useAnnouncementsStore } from "../../store/announcementsStore";
-import { Card } from "../../components/UI/Card";
-import { Button } from "../../components/UI/Button";
-import { StatsCard } from "../../components/UI/StatsCard";
-import { Badge } from "../../components/UI/Badge";
+import DashboardCard from "../../components/DashboardCard";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import { attendanceApi } from "../../api/attendanceApi";
+import { contributionsApi } from "../../api/contributionsApi";
+import { projectsApi } from "../../api/projectsApi";
+import { announcementsApi } from "../../api/announcementsApi";
+import { clearanceApi } from "../../api/clearanceApi";
 
-export default function ParentDashboard() {
+const ParentDashboard = () => {
   const { user } = useAuthStore();
-  const { attendance, fetchMyAttendance } = useAttendanceStore();
-  const { contributions, fetchMyContributions } = useContributionsStore();
-  const { announcements, fetchAnnouncements } = useAnnouncementsStore();
-
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [stats, setStats] = useState({
+    attendanceRate: 0,
+    totalPenalties: 0,
+    totalContributions: 0,
+    outstandingBalance: 0,
+    clearanceStatus: "unknown",
+    unreadAnnouncements: 0,
+    recentMeetings: 0,
+    activeProjects: 0,
+  });
+  const [recentAnnouncements, setRecentAnnouncements] = useState([]);
+  const [upcomingMeetings, setUpcomingMeetings] = useState([]);
 
   useEffect(() => {
-    const loadData = async () => {
-      try {
-        await Promise.all([
-          fetchMyAttendance(),
-          fetchMyContributions(),
-          fetchAnnouncements(),
-        ]);
-      } catch (error) {
-        console.error("Failed to load dashboard data:", error);
-      } finally {
-        setLoading(false);
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
       }
-    };
 
-    loadData();
-  }, [fetchMyAttendance, fetchMyContributions, fetchAnnouncements]);
+      // Fetch all dashboard data
+      const [
+        attendanceResponse,
+        penaltiesResponse,
+        contributionsResponse,
+        balanceResponse,
+        clearanceResponse,
+        announcementsResponse,
+        unreadCountResponse,
+        projectsResponse,
+        upcomingMeetingsResponse,
+      ] = await Promise.allSettled([
+        attendanceApi.getMyAttendance(),
+        attendanceApi.getMyPenalties(),
+        contributionsApi.getMyContributions(),
+        contributionsApi.getMyBalance(),
+        clearanceApi.getMyClearanceStatus(),
+        announcementsApi.getActiveAnnouncements({ limit: 5 }),
+        announcementsApi.getUnreadCount(),
+        projectsApi.getActiveProjects({ limit: 3 }),
+        attendanceApi.getUpcomingMeetings({ limit: 3 }),
+      ]);
 
-  // Calculate statistics
-  const totalMeetings = attendance.length;
-  const presentCount = attendance.filter((a) => a.status === "PRESENT").length;
-  const attendanceRate =
-    totalMeetings > 0 ? ((presentCount / totalMeetings) * 100).toFixed(1) : 0;
-  const totalContributions = contributions.reduce(
-    (sum, c) => sum + c.amount,
-    0
-  );
-  const pendingPenalties = attendance.filter((a) => a.hasPenalty).length;
+      // Process responses and update stats
+      let newStats = { ...stats };
+
+      if (attendanceResponse.status === "fulfilled") {
+        const attendanceData = attendanceResponse.value.data;
+        const totalMeetings = attendanceData?.total || 0;
+        const attendedMeetings = attendanceData?.attended || 0;
+        newStats.attendanceRate =
+          totalMeetings > 0
+            ? Math.round((attendedMeetings / totalMeetings) * 100)
+            : 0;
+        newStats.recentMeetings = attendanceData?.recentMeetings || 0;
+      }
+
+      if (penaltiesResponse.status === "fulfilled") {
+        newStats.totalPenalties =
+          penaltiesResponse.value.data?.totalAmount || 0;
+      }
+
+      if (contributionsResponse.status === "fulfilled") {
+        newStats.totalContributions =
+          contributionsResponse.value.data?.totalPaid || 0;
+      }
+
+      if (balanceResponse.status === "fulfilled") {
+        newStats.outstandingBalance =
+          balanceResponse.value.data?.outstanding || 0;
+      }
+
+      if (clearanceResponse.status === "fulfilled") {
+        newStats.clearanceStatus =
+          clearanceResponse.value.data?.status || "unknown";
+      }
+
+      if (unreadCountResponse.status === "fulfilled") {
+        newStats.unreadAnnouncements =
+          unreadCountResponse.value.data?.count || 0;
+      }
+
+      if (projectsResponse.status === "fulfilled") {
+        newStats.activeProjects = projectsResponse.value.data?.length || 0;
+      }
+
+      if (announcementsResponse.status === "fulfilled") {
+        setRecentAnnouncements(announcementsResponse.value.data || []);
+      }
+
+      if (upcomingMeetingsResponse.status === "fulfilled") {
+        setUpcomingMeetings(upcomingMeetingsResponse.value.data || []);
+      }
+
+      setStats(newStats);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const handleQuickAction = (action) => {
+    switch (action) {
+      case "attendance":
+        navigate("/parent/attendance");
+        break;
+      case "contributions":
+        navigate("/parent/contributions");
+        break;
+      case "announcements":
+        navigate("/parent/announcements");
+        break;
+      case "clearance":
+        navigate("/parent/clearance");
+        break;
+      case "projects":
+        navigate("/parent/projects");
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleRefresh = () => {
+    fetchDashboardData(true);
+  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner />
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="flex items-center justify-between">
+      {/* Header with Refresh */}
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
+        <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Parent Dashboard
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Welcome back, {user?.name}!
             </h1>
-            <p className="text-gray-600">Welcome back, {user?.name}</p>
+            <p className="text-gray-600 dark:text-gray-300 mt-1">
+              PTA Management System - Parent Dashboard
+            </p>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-600">JHCSC Dumingag Campus</p>
-            <p className="text-sm text-gray-600">PTA Management System</p>
-          </div>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          >
+            <span className={refreshing ? "animate-spin" : ""}>🔄</span>
+            <span>{refreshing ? "Refreshing..." : "Refresh"}</span>
+          </button>
         </div>
       </div>
 
-      {/* Stats Overview */}
+      {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard
+        <DashboardCard
           title="Attendance Rate"
-          value={`${attendanceRate}%`}
+          value={`${stats.attendanceRate}%`}
           icon="📊"
-          trend={attendanceRate >= 80 ? "Good standing" : "Needs improvement"}
-          trendUp={attendanceRate >= 80}
+          color={
+            stats.attendanceRate >= 80
+              ? "green"
+              : stats.attendanceRate >= 60
+              ? "yellow"
+              : "red"
+          }
+          href="/parent/attendance"
         />
-        <StatsCard
-          title="Total Contributions"
-          value={`₱${totalContributions.toLocaleString()}`}
-          icon="💰"
-          trend="This year"
-          trendUp={true}
-        />
-        <StatsCard
-          title="Meetings Attended"
-          value={`${presentCount}/${totalMeetings}`}
-          icon="✅"
-          trend="Total meetings"
-          trendUp={true}
-        />
-        <StatsCard
-          title="Pending Penalties"
-          value={pendingPenalties}
+        <DashboardCard
+          title="Total Penalties"
+          value={`₱${stats.totalPenalties.toLocaleString()}`}
           icon="⚠️"
-          trend={pendingPenalties === 0 ? "All clear" : "Action needed"}
-          trendUp={pendingPenalties === 0}
+          color={stats.totalPenalties === 0 ? "green" : "red"}
+          href="/parent/attendance"
+        />
+        <DashboardCard
+          title="Contributions Paid"
+          value={`₱${stats.totalContributions.toLocaleString()}`}
+          icon="💰"
+          color="blue"
+          href="/parent/contributions"
+        />
+        <DashboardCard
+          title="Outstanding Balance"
+          value={`₱${stats.outstandingBalance.toLocaleString()}`}
+          icon="💳"
+          color={stats.outstandingBalance === 0 ? "green" : "orange"}
+          href="/parent/contributions"
         />
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Attendance */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Recent Attendance
-            </h3>
-            <Button size="sm" variant="outline" href="/parent/attendance">
-              View All
-            </Button>
-          </div>
-          <div className="space-y-3">
-            {attendance.slice(0, 5).map((record) => (
-              <div
-                key={record.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-              >
-                <div>
-                  <p className="font-medium text-gray-900">
-                    {record.meeting?.title}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {new Date(record.meeting?.date).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge
-                    variant={
-                      record.status === "PRESENT"
-                        ? "success"
-                        : record.status === "EXCUSED"
-                        ? "warning"
-                        : "danger"
-                    }
-                  >
-                    {record.status}
-                  </Badge>
-                  {record.hasPenalty && (
-                    <Badge variant="danger" size="sm">
-                      Penalty
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            ))}
-            {attendance.length === 0 && (
-              <p className="text-gray-500 text-center py-4">
-                No attendance records found.
-              </p>
-            )}
-          </div>
-        </Card>
-
-        {/* Recent Contributions */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Recent Contributions
-            </h3>
-            <Button size="sm" variant="outline" href="/parent/contributions">
-              View All
-            </Button>
-          </div>
-          <div className="space-y-3">
-            {contributions.slice(0, 5).map((contribution) => (
-              <div
-                key={contribution.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-              >
-                <div>
-                  <p className="font-medium text-gray-900">
-                    {contribution.project?.name || "General Fund"}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {new Date(contribution.date).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="font-medium text-green-600">
-                    ₱{contribution.amount.toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            ))}
-            {contributions.length === 0 && (
-              <p className="text-gray-500 text-center py-4">
-                No contributions recorded yet.
-              </p>
-            )}
-          </div>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <DashboardCard
+          title="Clearance Status"
+          value={stats.clearanceStatus === "cleared" ? "Cleared" : "Pending"}
+          icon="✅"
+          color={stats.clearanceStatus === "cleared" ? "green" : "yellow"}
+          href="/parent/clearance"
+        />
+        <DashboardCard
+          title="Unread Announcements"
+          value={stats.unreadAnnouncements}
+          icon="📢"
+          color={stats.unreadAnnouncements > 0 ? "orange" : "blue"}
+          href="/parent/announcements"
+        />
+        <DashboardCard
+          title="Recent Meetings"
+          value={stats.recentMeetings}
+          icon="📅"
+          color="indigo"
+          href="/parent/attendance"
+        />
+        <DashboardCard
+          title="Active Projects"
+          value={stats.activeProjects}
+          icon="📋"
+          color="purple"
+          href="/parent/projects"
+        />
       </div>
 
-      {/* Latest Announcements */}
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">
-            Latest Announcements
-          </h3>
-          <Button size="sm" variant="outline" href="/parent/announcements">
-            View All
-          </Button>
-        </div>
-        <div className="space-y-4">
-          {announcements.slice(0, 3).map((announcement) => (
-            <div
-              key={announcement.id}
-              className="border-l-4 border-blue-500 pl-4 py-2"
+      {/* Recent Announcements */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+        <div className="p-6 border-b dark:border-gray-700">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold dark:text-white">
+              Recent Announcements
+            </h2>
+            <button
+              onClick={() => handleQuickAction("announcements")}
+              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
             >
-              <h4 className="font-medium text-gray-900">
-                {announcement.title}
-              </h4>
-              <p className="text-gray-600 mt-1">
-                {announcement.content.substring(0, 150)}...
-              </p>
-              <p className="text-sm text-gray-500 mt-2">
-                {new Date(announcement.createdAt).toLocaleDateString()}
-              </p>
+              View All
+            </button>
+          </div>
+        </div>
+        <div className="p-6">
+          {recentAnnouncements.length > 0 ? (
+            <div className="space-y-4">
+              {recentAnnouncements.map((announcement) => (
+                <div
+                  key={announcement.id}
+                  className="border-l-4 border-blue-400 bg-blue-50 dark:bg-blue-900/20 p-4 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                  onClick={() => handleQuickAction("announcements")}
+                >
+                  <div className="flex">
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                        {announcement.title}
+                      </h3>
+                      <div className="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                        {announcement.content.length > 150
+                          ? `${announcement.content.substring(0, 150)}...`
+                          : announcement.content}
+                      </div>
+                      <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+                        {new Date(announcement.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-          {announcements.length === 0 && (
-            <p className="text-gray-500 text-center py-4">
-              No announcements available.
+          ) : (
+            <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+              No recent announcements
             </p>
           )}
         </div>
-      </Card>
+      </div>
 
-      {/* My Students */}
-      {user?.students && user.students.length > 0 && (
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            My Children
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {user.students.map((student) => (
-              <div key={student.id} className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 font-medium text-lg">
-                      {student.name.charAt(0).toUpperCase()}
+      {/* Upcoming Meetings */}
+      {upcomingMeetings.length > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
+          <div className="p-6 border-b dark:border-gray-700">
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold dark:text-white">
+                Upcoming Meetings
+              </h2>
+              <button
+                onClick={() => handleQuickAction("attendance")}
+                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+              >
+                View All
+              </button>
+            </div>
+          </div>
+          <div className="p-6">
+            <div className="space-y-4">
+              {upcomingMeetings.map((meeting) => (
+                <div
+                  key={meeting.id}
+                  className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-medium text-gray-900 dark:text-white">
+                        {meeting.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                        {meeting.description}
+                      </p>
+                      <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        <span>
+                          📅 {new Date(meeting.date).toLocaleDateString()}
+                        </span>
+                        <span>🕒 {meeting.time}</span>
+                        <span>📍 {meeting.location}</span>
+                      </div>
+                    </div>
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        meeting.type === "emergency"
+                          ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                          : meeting.type === "special"
+                          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                          : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                      }`}
+                    >
+                      {meeting.type}
                     </span>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{student.name}</p>
-                    <p className="text-sm text-gray-600">
-                      Grade {student.grade}
-                    </p>
-                    <Badge
-                      variant={
-                        student.status === "APPROVED"
-                          ? "success"
-                          : student.status === "PENDING"
-                          ? "warning"
-                          : "danger"
-                      }
-                      size="sm"
-                    >
-                      {student.status}
-                    </Badge>
-                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </Card>
+        </div>
       )}
 
       {/* Quick Actions */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Quick Actions
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Button
-            href="/parent/attendance"
-            className="h-20 flex flex-col items-center justify-center"
-            variant="outline"
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <button
+            onClick={() => handleQuickAction("attendance")}
+            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left block transition-colors"
           >
-            <span className="text-2xl mb-1">📊</span>
-            <span className="text-sm">View Attendance</span>
-          </Button>
-          <Button
-            href="/parent/contributions"
-            className="h-20 flex flex-col items-center justify-center"
-            variant="outline"
+            <div className="text-2xl mb-2">📊</div>
+            <div className="font-medium dark:text-white">View Attendance</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              Check meeting attendance and penalties
+            </div>
+          </button>
+          <button
+            onClick={() => handleQuickAction("contributions")}
+            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left block transition-colors"
           >
-            <span className="text-2xl mb-1">💰</span>
-            <span className="text-sm">View Contributions</span>
-          </Button>
-          <Button
-            href="/parent/announcements"
-            className="h-20 flex flex-col items-center justify-center"
-            variant="outline"
+            <div className="text-2xl mb-2">💰</div>
+            <div className="font-medium dark:text-white">
+              View Contributions
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              Check payment history and balance
+            </div>
+          </button>
+          <button
+            onClick={() => handleQuickAction("announcements")}
+            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left block transition-colors"
           >
-            <span className="text-2xl mb-1">📢</span>
-            <span className="text-sm">Announcements</span>
-          </Button>
-          <Button
-            href="/parent/profile"
-            className="h-20 flex flex-col items-center justify-center"
-            variant="outline"
+            <div className="text-2xl mb-2">📢</div>
+            <div className="font-medium dark:text-white">
+              Read Announcements
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              View latest PTA announcements
+            </div>
+          </button>
+          <button
+            onClick={() => handleQuickAction("clearance")}
+            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left block transition-colors"
           >
-            <span className="text-2xl mb-1">👤</span>
-            <span className="text-sm">My Profile</span>
-          </Button>
+            <div className="text-2xl mb-2">✅</div>
+            <div className="font-medium dark:text-white">Check Clearance</div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              Verify clearance status
+            </div>
+          </button>
         </div>
-      </Card>
+      </div>
     </div>
   );
-}
+};
+
+export default ParentDashboard;

@@ -1,0 +1,322 @@
+{
+  "clearanceRequests": [
+    {
+      "id": "clear1",
+      "studentId": "student6",
+      "parentId": "5",
+      "studentName": "Sofia Marie Lopez",
+      "parentName": "Carmen Lopez",
+      "clearanceType": "graduation",
+      "academicYear": "2025-2026",
+      "status": "pending",
+      "submittedAt": "2025-10-01T09:00:00.000Z",
+      "processedAt": null,
+      "processedBy": null,
+      "notes": "Student is graduating this academic year",
+      "requirements": [
+        {
+          "id": "req1",
+          "name": "PTA Dues Clearance",
+          "description": "All PTA monthly dues must be paid",
+          "status": "completed",
+          "completedAt": "2025-09-30T16:00:00.000Z",
+          "verifiedBy": "1"
+        },
+        {
+          "id": "req2",
+          "name": "Library Clearance",
+          "description": "No pending library books or fines",
+          "status": "pending",
+          "completedAt": null,
+          "verifiedBy": null
+        },
+        {
+          "id": "req3",
+          "name": "Financial Clearance",
+          "description": "All school fees and contributions settled",
+          "status": "completed",
+          "completedAt": "2025-09-28T14:30:00.000Z",
+          "verifiedBy": "1"
+        },
+        {
+          "id": "req4",
+          "name": "Community Service",
+          "description": "Required community service hours completed",
+          "status": "pending",
+          "completedAt": null,
+          "verifiedBy": null
+        }
+      ],
+      "documents": [
+        {
+          "id": "cdoc1",
+          "name": "Graduation Application Form.pdf",
+          "type": "application",
+          "url": "/documents/graduation-application.pdf",
+          "uploadedAt": "2025-10-01T09:00:00.000Z",
+          "size": "1.5 MB"
+        }
+      ]
+    },
+    {
+      "id": "clear2",
+      "studentId": "student3",
+      "parentId": "3",
+      "studentName": "Carlos Antonio Reyes",
+      "parentName": "Ana Reyes",
+      "clearanceType": "transfer",
+      "academicYear": "2025-2026",
+      "status": "approved",
+      "submittedAt": "2025-09-15T11:30:00.000Z",
+      "processedAt": "2025-09-25T15:00:00.000Z",
+      "processedBy": "1",
+      "notes": "Student transferring to another school",
+      "requirements": [
+        {
+          "id": "req5",
+          "name": "PTA Dues Clearance",
+          "description": "All PTA monthly dues must be paid",
+          "status": "completed",
+          "completedAt": "2025-09-20T10:00:00.000Z",
+          "verifiedBy": "1"
+        },
+        {
+          "id": "req6",
+          "name": "Library Clearance",
+          "description": "No pending library books or fines",
+          "status": "completed",
+          "completedAt": "2025-09-22T14:00:00.000Z",
+          "verifiedBy": "1"
+        },
+        {
+          "id": "req7",
+          "name": "Financial Clearance",
+          "description": "All school fees and contributions settled",
+          "status": "completed",
+          "completedAt": "2025-09-18T09:30:00.000Z",
+          "verifiedBy": "1"
+        }
+      ],
+      "documents": [
+        {
+          "id": "cdoc2",
+          "name": "Transfer Request Form.pdf",
+          "type": "transfer",
+          "url": "/documents/transfer-request.pdf",
+          "uploadedAt": "2025-09-15T11:30:00.000Z",
+          "size": "1.2 MB"
+        },
+        {
+          "id": "cdoc3",
+          "name": "Clearance Certificate.pdf",
+          "type": "certificate",
+          "url": "/documents/clearance-certificate.pdf",
+          "uploadedAt": "2025-09-25T15:00:00.000Z",
+          "size": "800 KB"
+        }
+      ]
+    },
+    {
+      "id": "clear3",
+      "studentId": "student4",
+      "parentId": "4",
+      "studentName": "Isabella Grace Garcia",
+      "parentName": "Robert Garcia",
+      "clearanceType": "general",
+      "academicYear": "2025-2026",
+      "status": "rejected",
+      "submittedAt": "2025-09-28T13:15:00.000Z",
+      "processedAt": "2025-10-03T16:30:00.000Z",
+      "processedBy": "1",
+      "notes": "Outstanding PTA dues need to be settled before clearance can be processed",
+      "rejectionReason": "Pending financial obligations",
+      "requirements": [
+        {
+          "id": "req8",
+          "name": "PTA Dues Clearance",
+          "description": "All PTA monthly dues must be paid",
+          "status": "pending",
+          "completedAt": null,
+          "verifiedBy": null
+        },
+        {
+          "id": "req9",
+          "name": "Library Clearance",
+          "description": "No pending library books or fines",
+          "status": "completed",
+          "completedAt": "2025-09-30T11:00:00.000Z",
+          "verifiedBy": "1"
+        },
+        {
+          "id": "req10",
+          "name": "Financial Clearance",
+          "description": "All school fees and contributions settled",
+          "status": "pending",
+          "completedAt": null,
+          "verifiedBy": null
+        }
+      ],
+      "documents": [
+        {
+          "id": "cdoc4",
+          "name": "General Clearance Request.pdf",
+          "type": "general",
+          "url": "/documents/general-clearance.pdf",
+          "uploadedAt": "2025-09-28T13:15:00.000Z",
+          "size": "900 KB"
+        }
+      ]
+    },
+    {
+      "id": "clear4",
+      "studentId": "student1",
+      "parentId": "2",
+      "studentName": "John Miguel Dela Cruz",
+      "parentName": "Juan Dela Cruz",
+      "clearanceType": "general",
+      "academicYear": "2025-2026",
+      "status": "approved",
+      "submittedAt": "2025-10-02T08:00:00.000Z",
+      "processedAt": "2025-10-05T14:00:00.000Z",
+      "processedBy": "1",
+      "notes": "All requirements completed successfully",
+      "requirements": [
+        {
+          "id": "req11",
+          "name": "PTA Dues Clearance",
+          "description": "All PTA monthly dues must be paid",
+          "status": "completed",
+          "completedAt": "2025-10-02T10:00:00.000Z",
+          "verifiedBy": "1"
+        },
+        {
+          "id": "req12",
+          "name": "Library Clearance",
+          "description": "No pending library books or fines",
+          "status": "completed",
+          "completedAt": "2025-10-03T15:30:00.000Z",
+          "verifiedBy": "1"
+        },
+        {
+          "id": "req13",
+          "name": "Financial Clearance",
+          "description": "All school fees and contributions settled",
+          "status": "completed",
+          "completedAt": "2025-10-01T16:00:00.000Z",
+          "verifiedBy": "1"
+        }
+      ],
+      "documents": [
+        {
+          "id": "cdoc5",
+          "name": "General Clearance Request.pdf",
+          "type": "general",
+          "url": "/documents/general-clearance-john.pdf",
+          "uploadedAt": "2025-10-02T08:00:00.000Z",
+          "size": "1.1 MB"
+        },
+        {
+          "id": "cdoc6",
+          "name": "Clearance Certificate.pdf",
+          "type": "certificate",
+          "url": "/documents/clearance-certificate-john.pdf",
+          "uploadedAt": "2025-10-05T14:00:00.000Z",
+          "size": "750 KB"
+        }
+      ]
+    }
+  ],
+  "clearanceTypes": [
+    {
+      "id": "graduation",
+      "name": "Graduation Clearance",
+      "description": "Required for graduating students",
+      "requirements": [
+        "PTA Dues Clearance",
+        "Library Clearance",
+        "Financial Clearance",
+        "Community Service"
+      ],
+      "processingTime": "5-7 business days",
+      "isActive": true
+    },
+    {
+      "id": "transfer",
+      "name": "Transfer Clearance",
+      "description": "Required for students transferring to another school",
+      "requirements": [
+        "PTA Dues Clearance",
+        "Library Clearance",
+        "Financial Clearance"
+      ],
+      "processingTime": "3-5 business days",
+      "isActive": true
+    },
+    {
+      "id": "general",
+      "name": "General Clearance",
+      "description": "General clearance for various purposes",
+      "requirements": [
+        "PTA Dues Clearance",
+        "Library Clearance",
+        "Financial Clearance"
+      ],
+      "processingTime": "2-3 business days",
+      "isActive": true
+    },
+    {
+      "id": "good_moral",
+      "name": "Good Moral Character",
+      "description": "Certificate of good moral character",
+      "requirements": [
+        "Disciplinary Clearance",
+        "Academic Standing",
+        "Community Involvement"
+      ],
+      "processingTime": "3-5 business days",
+      "isActive": true
+    }
+  ],
+  "clearanceRequirements": [
+    {
+      "id": "pta_dues",
+      "name": "PTA Dues Clearance",
+      "description": "All PTA monthly dues and special contributions must be paid in full",
+      "type": "financial",
+      "mandatory": true,
+      "verificationMethod": "payment_records"
+    },
+    {
+      "id": "library",
+      "name": "Library Clearance",
+      "description": "No pending library books, materials, or outstanding fines",
+      "type": "academic",
+      "mandatory": true,
+      "verificationMethod": "library_system"
+    },
+    {
+      "id": "financial",
+      "name": "Financial Clearance",
+      "description": "All school fees, tuition, and other financial obligations settled",
+      "type": "financial",
+      "mandatory": true,
+      "verificationMethod": "accounting_records"
+    },
+    {
+      "id": "community_service",
+      "name": "Community Service",
+      "description": "Required community service hours completed as per school policy",
+      "type": "academic",
+      "mandatory": false,
+      "verificationMethod": "service_records"
+    },
+    {
+      "id": "disciplinary",
+      "name": "Disciplinary Clearance",
+      "description": "No pending disciplinary cases or violations",
+      "type": "conduct",
+      "mandatory": true,
+      "verificationMethod": "disciplinary_records"
+    }
+  ]
+}

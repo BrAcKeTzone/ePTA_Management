@@ -1,9 +1,20 @@
-export default function App() {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <h1 className="text-4xl font-bold text-blue-600">
-        Hello, Tailwind CSS 4.0 with Vite and React!
-      </h1>
-    </div>
-  );
-}
+import React, { useEffect } from "react";
+import { useAuthStore } from "./store/authStore";
+import AppRoutes from "./routes/AppRoutes";
+
+const App = () => {
+  const { initializeAuth } = useAuthStore();
+
+  useEffect(() => {
+    // Initialize auth state from localStorage if available
+    try {
+      initializeAuth();
+    } catch (error) {
+      console.error("Failed to initialize auth:", error);
+    }
+  }, [initializeAuth]);
+
+  return <AppRoutes />;
+};
+
+export default App;

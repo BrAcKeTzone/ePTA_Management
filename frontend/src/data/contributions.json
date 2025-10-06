@@ -1,0 +1,126 @@
+{
+  "contributions": [
+    {
+      "id": "cont1",
+      "parentId": "2",
+      "studentId": "student1",
+      "type": "monthly_dues",
+      "amount": 150.0,
+      "dueDate": "2025-10-31",
+      "paidDate": "2025-10-05",
+      "status": "paid",
+      "paymentMethod": "cash",
+      "receiptNumber": "PTA-2025-001",
+      "description": "October 2025 Monthly Dues",
+      "academicYear": "2025-2026",
+      "semester": "1st"
+    },
+    {
+      "id": "cont2",
+      "parentId": "2",
+      "studentId": "student2",
+      "type": "monthly_dues",
+      "amount": 150.0,
+      "dueDate": "2025-10-31",
+      "paidDate": "2025-10-05",
+      "status": "paid",
+      "paymentMethod": "cash",
+      "receiptNumber": "PTA-2025-002",
+      "description": "October 2025 Monthly Dues",
+      "academicYear": "2025-2026",
+      "semester": "1st"
+    },
+    {
+      "id": "cont3",
+      "parentId": "3",
+      "studentId": "student3",
+      "type": "monthly_dues",
+      "amount": 150.0,
+      "dueDate": "2025-10-31",
+      "status": "pending",
+      "description": "October 2025 Monthly Dues",
+      "academicYear": "2025-2026",
+      "semester": "1st"
+    },
+    {
+      "id": "cont4",
+      "parentId": "4",
+      "studentId": "student4",
+      "type": "special_project",
+      "amount": 500.0,
+      "dueDate": "2025-11-15",
+      "status": "pending",
+      "description": "Library Enhancement Project",
+      "academicYear": "2025-2026",
+      "semester": "1st"
+    },
+    {
+      "id": "cont5",
+      "parentId": "5",
+      "studentId": "student6",
+      "type": "monthly_dues",
+      "amount": 150.0,
+      "dueDate": "2025-10-31",
+      "paidDate": "2025-10-02",
+      "status": "paid",
+      "paymentMethod": "gcash",
+      "receiptNumber": "PTA-2025-003",
+      "description": "October 2025 Monthly Dues",
+      "academicYear": "2025-2026",
+      "semester": "1st"
+    },
+    {
+      "id": "cont6",
+      "parentId": "6",
+      "studentId": "student7",
+      "type": "enrollment_fee",
+      "amount": 200.0,
+      "dueDate": "2025-09-30",
+      "paidDate": "2025-09-28",
+      "status": "paid",
+      "paymentMethod": "bank_transfer",
+      "receiptNumber": "PTA-2025-004",
+      "description": "PTA Enrollment Fee SY 2025-2026",
+      "academicYear": "2025-2026",
+      "semester": "1st"
+    },
+    {
+      "id": "cont7",
+      "parentId": "2",
+      "studentId": "student1",
+      "type": "special_project",
+      "amount": 300.0,
+      "dueDate": "2025-12-01",
+      "status": "pending",
+      "description": "Christmas Program Fund",
+      "academicYear": "2025-2026",
+      "semester": "1st"
+    }
+  ],
+  "contributionTypes": [
+    {
+      "id": "monthly_dues",
+      "name": "Monthly Dues",
+      "description": "Regular monthly contribution for PTA activities",
+      "amount": 150.0,
+      "frequency": "monthly",
+      "mandatory": true
+    },
+    {
+      "id": "enrollment_fee",
+      "name": "PTA Enrollment Fee",
+      "description": "One-time enrollment fee for new academic year",
+      "amount": 200.0,
+      "frequency": "yearly",
+      "mandatory": true
+    },
+    {
+      "id": "special_project",
+      "name": "Special Projects",
+      "description": "Voluntary contributions for special school projects",
+      "amount": 0,
+      "frequency": "as_needed",
+      "mandatory": false
+    }
+  ]
+}

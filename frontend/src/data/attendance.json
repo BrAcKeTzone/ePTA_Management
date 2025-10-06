@@ -1,0 +1,110 @@
+{
+  "meetings": [
+    {
+      "id": "meeting1",
+      "title": "PTA General Assembly Meeting",
+      "description": "First quarter general assembly meeting to discuss upcoming school activities and budget allocation.",
+      "date": "2025-10-15",
+      "time": "14:00",
+      "endTime": "16:00",
+      "location": "JHCSC Audio Visual Room",
+      "type": "general",
+      "status": "scheduled",
+      "maxAttendees": 100,
+      "currentAttendees": 0,
+      "agenda": [
+        "Welcome and Opening Prayer",
+        "Reading of Minutes from Previous Meeting",
+        "Financial Report",
+        "Discussion of School Improvement Projects",
+        "New Business",
+        "Adjournment"
+      ],
+      "organizer": "1",
+      "createdAt": "2025-09-15T10:00:00.000Z"
+    },
+    {
+      "id": "meeting2",
+      "title": "Fund Raising Committee Meeting",
+      "description": "Planning meeting for the upcoming school fair and fundraising activities.",
+      "date": "2025-10-08",
+      "time": "15:30",
+      "endTime": "17:00",
+      "location": "Faculty Lounge",
+      "type": "committee",
+      "status": "completed",
+      "maxAttendees": 20,
+      "currentAttendees": 15,
+      "agenda": [
+        "Review of Previous Fundraising Activities",
+        "School Fair Planning",
+        "Budget Allocation",
+        "Volunteer Assignments"
+      ],
+      "organizer": "1",
+      "createdAt": "2025-09-01T09:00:00.000Z"
+    },
+    {
+      "id": "meeting3",
+      "title": "Academic Committee Meeting",
+      "description": "Discussion on academic programs and student performance improvement initiatives.",
+      "date": "2025-10-20",
+      "time": "13:00",
+      "endTime": "15:00",
+      "location": "Library Conference Room",
+      "type": "committee",
+      "status": "scheduled",
+      "maxAttendees": 15,
+      "currentAttendees": 0,
+      "agenda": [
+        "Review of Academic Performance",
+        "Tutoring Program Discussion",
+        "Library Enhancement Project",
+        "Study Materials Procurement"
+      ],
+      "organizer": "1",
+      "createdAt": "2025-09-20T11:00:00.000Z"
+    }
+  ],
+  "attendance": [
+    {
+      "id": "att1",
+      "meetingId": "meeting2",
+      "parentId": "2",
+      "studentId": "student1",
+      "status": "present",
+      "timeIn": "2025-10-08T15:25:00.000Z",
+      "timeOut": "2025-10-08T17:05:00.000Z",
+      "notes": "Volunteered for school fair booth"
+    },
+    {
+      "id": "att2",
+      "meetingId": "meeting2",
+      "parentId": "3",
+      "studentId": "student3",
+      "status": "present",
+      "timeIn": "2025-10-08T15:30:00.000Z",
+      "timeOut": "2025-10-08T17:00:00.000Z",
+      "notes": "Offered help with decorations"
+    },
+    {
+      "id": "att3",
+      "meetingId": "meeting2",
+      "parentId": "4",
+      "studentId": "student4",
+      "status": "absent",
+      "reason": "Work commitment",
+      "notes": "Sent representative"
+    },
+    {
+      "id": "att4",
+      "meetingId": "meeting2",
+      "parentId": "5",
+      "studentId": "student6",
+      "status": "present",
+      "timeIn": "2025-10-08T15:35:00.000Z",
+      "timeOut": "2025-10-08T16:45:00.000Z",
+      "notes": "Early departure due to family emergency"
+    }
+  ]
+}

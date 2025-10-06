@@ -1,124 +1,150 @@
-import { apiClient } from "./apiClient";
+import { fetchClient } from "../utils/fetchClient";
+import config from "../config";
+import { dummyDataService } from "../services/dummyDataService";
 
-export const contributionsAPI = {
-  // Get all contributions (admin)
-  getAll: async (filters = {}) => {
-    const params = new URLSearchParams(filters);
-    return await apiClient.get(`/contributions?${params}`);
+export const contributionsApi = {
+  // Admin functions
+  recordContribution: async (contributionData) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.recordContribution(contributionData);
+    }
+    return await fetchClient.post("/api/contributions", contributionData);
   },
 
-  // Get user's contributions (parent)
-  getMy: async () => {
-    return await apiClient.get("/contributions/my");
-  },
-
-  // Get contributions by project
-  getByProject: async (projectId) => {
-    return await apiClient.get(`/contributions/project/${projectId}`);
-  },
-
-  // Get contribution by ID
-  getById: async (id) => {
-    return await apiClient.get(`/contributions/${id}`);
-  },
-
-  // Create new contribution
-  create: async (contributionData) => {
-    return await apiClient.post("/contributions", contributionData);
-  },
-
-  // Update contribution
-  update: async (id, contributionData) => {
-    return await apiClient.put(`/contributions/${id}`, contributionData);
-  },
-
-  // Delete contribution
-  delete: async (id) => {
-    return await apiClient.delete(`/contributions/${id}`);
-  },
-
-  // Verify contribution (admin)
-  verify: async (id, verificationData) => {
-    return await apiClient.post(
-      `/contributions/${id}/verify`,
-      verificationData
+  updateContribution: async (contributionId, contributionData) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.updateContribution(
+        contributionId,
+        contributionData
+      );
+    }
+    return await fetchClient.put(
+      `/api/contributions/${contributionId}`,
+      contributionData
     );
   },
 
-  // Upload receipt
-  uploadReceipt: async (contributionId, receiptFile) => {
-    const formData = new FormData();
-    formData.append("receipt", receiptFile);
+  deleteContribution: async (contributionId) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.deleteContribution(contributionId);
+    }
+    return await fetchClient.delete(`/api/contributions/${contributionId}`);
+  },
 
-    return await apiClient.post(
-      `/contributions/${contributionId}/receipt`,
-      formData,
+  getAllContributions: async (params = {}) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.getAllContributions(params);
+    }
+    const queryString = new URLSearchParams(params).toString();
+    return await fetchClient.get(`/api/contributions?${queryString}`);
+  },
+
+  getContributionsByParent: async (parentId, params = {}) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.getContributionsByParent(parentId, params);
+    }
+    const queryString = new URLSearchParams(params).toString();
+    return await fetchClient.get(
+      `/api/contributions/parent/${parentId}?${queryString}`
+    );
+  },
+
+  getContributionsByProject: async (projectId, params = {}) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.getContributionsByProject(
+        projectId,
+        params
+      );
+    }
+    const queryString = new URLSearchParams(params).toString();
+    return await fetchClient.get(
+      `/api/contributions/project/${projectId}?${queryString}`
+    );
+  },
+
+  verifyContribution: async (contributionId) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.verifyContribution(contributionId);
+    }
+    return await fetchClient.patch(
+      `/api/contributions/${contributionId}/verify`
+    );
+  },
+
+  // Parent functions
+  getMyContributions: async (params = {}) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.getMyContributions(params);
+    }
+    const queryString = new URLSearchParams(params).toString();
+    return await fetchClient.get(
+      `/api/contributions/my-contributions?${queryString}`
+    );
+  },
+
+  getMyBalance: async () => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.getMyBalance();
+    }
+    return await fetchClient.get("/api/contributions/my-balance");
+  },
+
+  getPaymentBasis: async () => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.getPaymentBasis();
+    }
+    return await fetchClient.get("/api/contributions/payment-basis");
+  },
+
+  // Financial reports
+  generateFinancialReport: async (params = {}) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.generateFinancialReport(params);
+    }
+    const queryString = new URLSearchParams(params).toString();
+    return await fetchClient.get(
+      `/api/contributions/reports/financial?${queryString}`
+    );
+  },
+
+  exportFinancialReportPDF: async (params = {}) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.exportFinancialReportPDF(params);
+    }
+    const queryString = new URLSearchParams(params).toString();
+    return await fetchClient.get(
+      `/api/contributions/reports/financial/pdf?${queryString}`,
       {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        responseType: "blob",
       }
     );
   },
 
-  // Get contribution statistics
-  getStats: async (userId = null, projectId = null) => {
-    const params = new URLSearchParams();
-    if (userId) params.append("userId", userId);
-    if (projectId) params.append("projectId", projectId);
-
-    return await apiClient.get(`/contributions/stats?${params}`);
-  },
-
-  // Export contributions report
-  export: async (filters = {}) => {
-    const params = new URLSearchParams(filters);
-    return await apiClient.get(`/contributions/export?${params}`, {
-      responseType: "blob",
-    });
-  },
-
-  // Get recent contributions
-  getRecent: async (limit = 5) => {
-    return await apiClient.get(`/contributions/recent?limit=${limit}`);
-  },
-
-  // Get top contributors
-  getTopContributors: async (period = "month", limit = 10) => {
-    return await apiClient.get(
-      `/contributions/top-contributors?period=${period}&limit=${limit}`
+  exportFinancialReportCSV: async (params = {}) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.exportFinancialReportCSV(params);
+    }
+    const queryString = new URLSearchParams(params).toString();
+    return await fetchClient.get(
+      `/api/contributions/reports/financial/csv?${queryString}`,
+      {
+        responseType: "blob",
+      }
     );
   },
 
-  // Search contributions
-  search: async (query) => {
-    return await apiClient.get(
-      `/contributions/search?q=${encodeURIComponent(query)}`
-    );
+  // Payment basis settings (Admin only)
+  updatePaymentBasisSettings: async (settings) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.updatePaymentBasisSettings(settings);
+    }
+    return await fetchClient.put("/api/contributions/payment-basis", settings);
   },
 
-  // Get contribution summary by date range
-  getSummary: async (startDate, endDate) => {
-    return await apiClient.get("/contributions/summary", {
-      params: { startDate, endDate },
-    });
-  },
-
-  // Get contribution trends
-  getTrends: async (period = "month") => {
-    return await apiClient.get(`/contributions/trends?period=${period}`);
-  },
-
-  // Get contributions by status
-  getByStatus: async (status) => {
-    return await apiClient.get(`/contributions/status/${status}`);
-  },
-
-  // Bulk verify contributions
-  bulkVerify: async (contributionIds, verificationData) => {
-    return await apiClient.post("/contributions/bulk-verify", {
-      contributionIds,
-      ...verificationData,
-    });
+  getPaymentBasisSettings: async () => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.getPaymentBasisSettings();
+    }
+    return await fetchClient.get("/api/contributions/payment-basis-settings");
   },
 };

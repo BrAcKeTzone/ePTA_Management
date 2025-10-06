@@ -1,260 +1,236 @@
 import { create } from "zustand";
-import { contributionsAPI } from "../api/contributionsAPI";
+import { contributionsApi } from "../api/contributionsApi";
 
-const useContributionsStore = create((set, get) => ({
+export const useContributionsStore = create((set, get) => ({
+  // State
   contributions: [],
-  currentContribution: null,
+  myContributions: [],
+  balance: {},
+  paymentBasis: {},
   loading: false,
   error: null,
 
-  // Fetch all contributions (admin)
-  fetchContributions: async (filters = {}) => {
+  // Admin actions
+  fetchAllContributions: async (params = {}) => {
     try {
       set({ loading: true, error: null });
-      const response = await contributionsAPI.getAll(filters);
-      set({ contributions: response.data, loading: false });
-      return response;
+      const response = await contributionsApi.getAllContributions(params);
+      set({ contributions: response.data || [], loading: false });
     } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Fetch user's contributions (parent)
-  fetchMyContributions: async () => {
-    try {
-      set({ loading: true, error: null });
-      const response = await contributionsAPI.getMy();
-      set({ contributions: response.data, loading: false });
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Fetch contributions by project
-  fetchContributionsByProject: async (projectId) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await contributionsAPI.getByProject(projectId);
-      set({ contributions: response.data, loading: false });
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Get single contribution
-  getContribution: async (id) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await contributionsAPI.getById(id);
-      set({ currentContribution: response.data, loading: false });
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Add new contribution
-  addContribution: async (contributionData) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await contributionsAPI.create(contributionData);
-      const newContribution = response.data;
-
-      set((state) => ({
-        contributions: [newContribution, ...state.contributions],
+      set({
+        error: error.response?.data?.message || "Failed to fetch contributions",
         loading: false,
-      }));
-
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
+      });
     }
   },
 
-  // Update contribution
-  updateContribution: async (id, contributionData) => {
+  recordContribution: async (contributionData) => {
     try {
       set({ loading: true, error: null });
-      const response = await contributionsAPI.update(id, contributionData);
-      const updatedContribution = response.data;
-
-      set((state) => ({
-        contributions: state.contributions.map((item) =>
-          item.id === id ? updatedContribution : item
-        ),
-        currentContribution:
-          state.currentContribution?.id === id
-            ? updatedContribution
-            : state.currentContribution,
+      await contributionsApi.recordContribution(contributionData);
+      // Refresh contributions list
+      await get().fetchAllContributions();
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to record contribution",
         loading: false,
-      }));
-
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
+      });
       throw error;
     }
   },
 
-  // Delete contribution
-  deleteContribution: async (id) => {
+  updateContribution: async (contributionId, contributionData) => {
     try {
       set({ loading: true, error: null });
-      await contributionsAPI.delete(id);
-
-      set((state) => ({
-        contributions: state.contributions.filter((item) => item.id !== id),
-        currentContribution:
-          state.currentContribution?.id === id
-            ? null
-            : state.currentContribution,
-        loading: false,
-      }));
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Verify contribution
-  verifyContribution: async (id, verificationData) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await contributionsAPI.verify(id, verificationData);
-      const updatedContribution = response.data;
-
-      set((state) => ({
-        contributions: state.contributions.map((item) =>
-          item.id === id ? updatedContribution : item
-        ),
-        currentContribution:
-          state.currentContribution?.id === id
-            ? updatedContribution
-            : state.currentContribution,
-        loading: false,
-      }));
-
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
-  },
-
-  // Upload receipt
-  uploadReceipt: async (contributionId, receiptFile) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await contributionsAPI.uploadReceipt(
+      await contributionsApi.updateContribution(
         contributionId,
-        receiptFile
+        contributionData
       );
-      const updatedContribution = response.data;
-
-      set((state) => ({
-        contributions: state.contributions.map((item) =>
-          item.id === contributionId ? updatedContribution : item
-        ),
-        currentContribution:
-          state.currentContribution?.id === contributionId
-            ? updatedContribution
-            : state.currentContribution,
+      // Refresh contributions list
+      await get().fetchAllContributions();
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to update contribution",
         loading: false,
-      }));
-
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
+      });
       throw error;
     }
   },
 
-  // Get contribution statistics
-  getContributionStats: async (userId = null, projectId = null) => {
+  verifyContribution: async (contributionId) => {
     try {
       set({ loading: true, error: null });
-      const response = await contributionsAPI.getStats(userId, projectId);
+      await contributionsApi.verifyContribution(contributionId);
+      // Refresh contributions list
+      await get().fetchAllContributions();
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to verify contribution",
+        loading: false,
+      });
+      throw error;
+    }
+  },
+
+  deleteContribution: async (contributionId) => {
+    try {
+      set({ loading: true, error: null });
+      await contributionsApi.deleteContribution(contributionId);
+      // Refresh contributions list
+      await get().fetchAllContributions();
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to delete contribution",
+        loading: false,
+      });
+      throw error;
+    }
+  },
+
+  // Parent actions
+  fetchMyContributions: async (params = {}) => {
+    try {
+      set({ loading: true, error: null });
+      const response = await contributionsApi.getMyContributions(params);
+      set({ myContributions: response.data || [], loading: false });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to fetch contributions",
+        loading: false,
+      });
+    }
+  },
+
+  fetchMyBalance: async () => {
+    try {
+      set({ loading: true, error: null });
+      const response = await contributionsApi.getMyBalance();
+      set({ balance: response.data || {}, loading: false });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to fetch balance",
+        loading: false,
+      });
+    }
+  },
+
+  fetchPaymentBasis: async () => {
+    try {
+      set({ loading: true, error: null });
+      const response = await contributionsApi.getPaymentBasis();
+      set({ paymentBasis: response.data || {}, loading: false });
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to fetch payment basis",
+        loading: false,
+      });
+    }
+  },
+
+  // Report generation
+  generateFinancialReport: async (params = {}) => {
+    try {
+      set({ loading: true, error: null });
+      const response = await contributionsApi.generateFinancialReport(params);
+      set({ loading: false });
+      return response.data;
+    } catch (error) {
+      set({
+        error: error.response?.data?.message || "Failed to generate report",
+        loading: false,
+      });
+      throw error;
+    }
+  },
+
+  exportFinancialReportPDF: async (params = {}) => {
+    try {
+      set({ loading: true, error: null });
+      const response = await contributionsApi.exportFinancialReportPDF(params);
       set({ loading: false });
       return response;
     } catch (error) {
-      set({ loading: false, error: error.message });
+      set({
+        error: error.response?.data?.message || "Failed to export PDF",
+        loading: false,
+      });
       throw error;
     }
   },
 
-  // Export contributions report
-  exportContributions: async (filters = {}) => {
+  exportFinancialReportCSV: async (params = {}) => {
     try {
       set({ loading: true, error: null });
-      const response = await contributionsAPI.export(filters);
+      const response = await contributionsApi.exportFinancialReportCSV(params);
       set({ loading: false });
       return response;
     } catch (error) {
-      set({ loading: false, error: error.message });
+      set({
+        error: error.response?.data?.message || "Failed to export CSV",
+        loading: false,
+      });
       throw error;
     }
   },
 
-  // Get recent contributions
-  getRecentContributions: async (limit = 5) => {
+  // Payment basis management
+  updatePaymentBasisSettings: async (settings) => {
     try {
       set({ loading: true, error: null });
-      const response = await contributionsAPI.getRecent(limit);
-      set({ loading: false });
-      return response;
+      await contributionsApi.updatePaymentBasisSettings(settings);
+      // Refresh payment basis
+      await get().fetchPaymentBasis();
     } catch (error) {
-      set({ loading: false, error: error.message });
+      set({
+        error:
+          error.response?.data?.message || "Failed to update payment basis",
+        loading: false,
+      });
       throw error;
     }
   },
 
-  // Get top contributors
-  getTopContributors: async (period = "month", limit = 10) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await contributionsAPI.getTopContributors(period, limit);
-      set({ loading: false });
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
+  // Statistics and summaries
+  getContributionSummary: () => {
+    const { contributions } = get();
+    return {
+      total: contributions.length,
+      totalAmount: contributions.reduce((sum, c) => sum + c.amount, 0),
+      verified: contributions.filter((c) => c.isVerified).length,
+      verifiedAmount: contributions
+        .filter((c) => c.isVerified)
+        .reduce((sum, c) => sum + c.amount, 0),
+      pending: contributions.filter((c) => !c.isVerified).length,
+      pendingAmount: contributions
+        .filter((c) => !c.isVerified)
+        .reduce((sum, c) => sum + c.amount, 0),
+    };
   },
 
-  // Search contributions
-  searchContributions: async (query) => {
-    try {
-      set({ loading: true, error: null });
-      const response = await contributionsAPI.search(query);
-      set({ contributions: response.data, loading: false });
-      return response;
-    } catch (error) {
-      set({ loading: false, error: error.message });
-      throw error;
-    }
+  getMyContributionSummary: () => {
+    const { myContributions, balance } = get();
+    return {
+      total: myContributions.length,
+      totalPaid: balance.totalPaid || 0,
+      outstanding: balance.outstanding || 0,
+      totalRequired: balance.totalRequired || 0,
+      completionRate:
+        balance.totalRequired > 0
+          ? Math.round((balance.totalPaid / balance.totalRequired) * 100)
+          : 0,
+    };
   },
 
-  // Clear current contribution
-  clearCurrentContribution: () => set({ currentContribution: null }),
-
-  // Clear error
+  // Utility actions
   clearError: () => set({ error: null }),
 
-  // Reset store
-  reset: () =>
+  resetState: () =>
     set({
       contributions: [],
-      currentContribution: null,
+      myContributions: [],
+      balance: {},
+      paymentBasis: {},
       loading: false,
       error: null,
     }),
 }));
-
-export { useContributionsStore };

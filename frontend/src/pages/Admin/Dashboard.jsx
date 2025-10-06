@@ -1,23 +1,147 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuthStore } from "../../store/authStore";
-import { useStatsStore } from "../../store/statsStore";
-import { Card } from "../../components/UI/Card";
-import { Button } from "../../components/UI/Button";
-import { StatsCard } from "../../components/UI/StatsCard";
-import { ChartContainer } from "../../components/UI/ChartContainer";
+import DashboardCard from "../../components/DashboardCard";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import { userApi } from "../../api/userApi";
+import { attendanceApi } from "../../api/attendanceApi";
+import { contributionsApi } from "../../api/contributionsApi";
+import { projectsApi } from "../../api/projectsApi";
+import { announcementsApi } from "../../api/announcementsApi";
+import { clearanceApi } from "../../api/clearanceApi";
+import { studentsApi } from "../../api/studentsApi";
 
-export default function AdminDashboard() {
+const AdminDashboard = () => {
   const { user } = useAuthStore();
-  const { stats, loading, fetchStats } = useStatsStore();
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    totalParents: 0,
+    totalStudents: 0,
+    pendingParentLinks: 0,
+    recentMeetings: 0,
+    totalContributions: 0,
+    pendingPayments: 0,
+    activeProjects: 0,
+    activeAnnouncements: 0,
+    clearanceRequests: 0,
+    totalContributionAmount: 0,
+  });
 
   useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch all dashboard statistics
+      const [
+        usersResponse,
+        studentsResponse,
+        meetingsResponse,
+        contributionsResponse,
+        projectsResponse,
+        announcementsResponse,
+        clearanceResponse,
+      ] = await Promise.allSettled([
+        userApi.getAllUsers({ role: "PARENT" }),
+        studentsApi.getAllStudents(),
+        attendanceApi.getMeetings(),
+        contributionsApi.getAllContributions(),
+        projectsApi.getAllProjects({ status: "active" }),
+        announcementsApi.getActiveAnnouncements(),
+        clearanceApi.getAllClearanceRequests({ status: "pending" }),
+      ]);
+
+      // Process responses and update stats
+      const newStats = { ...stats };
+
+      if (usersResponse.status === "fulfilled") {
+        const usersData = usersResponse.value?.data || {};
+        const users = usersData.users || [];
+        newStats.totalParents = users.filter(
+          (user) => user.role === "PARENT"
+        ).length;
+      }
+
+      if (studentsResponse.status === "fulfilled") {
+        const studentsData = studentsResponse.value?.data || {};
+        const students = studentsData.students || [];
+        newStats.totalStudents = students.length;
+      }
+
+      if (meetingsResponse.status === "fulfilled") {
+        const meetings = meetingsResponse.value?.data || [];
+        // Count meetings in the last 30 days
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        newStats.recentMeetings = meetings.filter(
+          (meeting) => new Date(meeting.date) >= thirtyDaysAgo
+        ).length;
+      }
+
+      if (contributionsResponse.status === "fulfilled") {
+        const contributionsData = contributionsResponse.value?.data || {};
+        const contributions = contributionsData.contributions || [];
+        newStats.totalContributions = contributions.length;
+        newStats.totalContributionAmount = contributions.reduce(
+          (sum, contrib) => sum + (contrib.amount || 0),
+          0
+        );
+        newStats.pendingPayments = contributions.filter(
+          (contrib) => contrib.status === "pending"
+        ).length;
+      }
+
+      if (projectsResponse.status === "fulfilled") {
+        const projectsData = projectsResponse.value?.data || {};
+        const projects = projectsData.projects || [];
+        newStats.activeProjects = projects.length;
+      }
+
+      if (announcementsResponse.status === "fulfilled") {
+        const announcementsData = announcementsResponse.value?.data || {};
+        const announcements = announcementsData.announcements || [];
+        newStats.activeAnnouncements = announcements.length;
+      }
+
+      if (clearanceResponse.status === "fulfilled") {
+        const clearanceData = clearanceResponse.value?.data || {};
+        const clearanceRequests = clearanceData.requests || [];
+        newStats.clearanceRequests = clearanceRequests.length;
+      }
+
+      setStats(newStats);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuickAction = (action) => {
+    switch (action) {
+      case "addParent":
+        window.location.href = "/admin/users?action=add";
+        break;
+      case "recordAttendance":
+        window.location.href = "/admin/attendance";
+        break;
+      case "recordPayment":
+        window.location.href = "/admin/contributions?action=add";
+        break;
+      case "postAnnouncement":
+        window.location.href = "/admin/announcements?action=add";
+        break;
+      default:
+        break;
+    }
+  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+      <div className="flex items-center justify-center h-64">
+        <LoadingSpinner />
       </div>
     );
   }
@@ -25,177 +149,219 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white shadow rounded-lg p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Admin Dashboard
-            </h1>
-            <p className="text-gray-600">Welcome back, {user?.name}</p>
-          </div>
-          <div className="flex space-x-3">
-            <Button onClick={() => window.location.reload()}>
-              Refresh Data
-            </Button>
-          </div>
-        </div>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Welcome back, {user?.name}!
+        </h1>
+        <p className="text-gray-600 dark:text-gray-300 mt-1">
+          PTA Management System - Administrator Dashboard
+        </p>
       </div>
 
-      {/* Stats Overview */}
+      {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatsCard
+        <DashboardCard
           title="Total Parents"
-          value={stats?.totalParents || 0}
+          value={stats.totalParents}
           icon="👥"
-          trend="+12%"
-          trendUp={true}
+          color="blue"
+          href="/admin/users"
         />
-        <StatsCard
+        <DashboardCard
           title="Total Students"
-          value={stats?.totalStudents || 0}
+          value={stats.totalStudents}
           icon="🎓"
-          trend="+8%"
-          trendUp={true}
+          color="green"
+          href="/admin/students"
         />
-        <StatsCard
-          title="This Month Meetings"
-          value={stats?.monthlyMeetings || 0}
+        <DashboardCard
+          title="Pending Clearance"
+          value={stats.clearanceRequests}
+          icon="✅"
+          color="yellow"
+          href="/admin/clearance"
+        />
+        <DashboardCard
+          title="Active Projects"
+          value={stats.activeProjects}
+          icon="📋"
+          color="purple"
+          href="/admin/projects"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <DashboardCard
+          title="Recent Meetings"
+          value={stats.recentMeetings}
           icon="📅"
-          trend="+15%"
-          trendUp={true}
+          color="indigo"
+          href="/admin/attendance"
         />
-        <StatsCard
-          title="Pending Penalties"
-          value={stats?.pendingPenalties || 0}
-          icon="⚠️"
-          trend="-5%"
-          trendUp={false}
+        <DashboardCard
+          title="Total Collected"
+          value={`₱${stats.totalContributionAmount.toLocaleString()}`}
+          icon="💰"
+          color="green"
+          href="/admin/contributions"
         />
-      </div>
-
-      {/* Charts and Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Attendance Chart */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Monthly Attendance Overview
-          </h3>
-          <ChartContainer
-            type="line"
-            data={stats?.attendanceChart}
-            height={300}
-          />
-        </Card>
-
-        {/* Contributions Chart */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Monthly Contributions
-          </h3>
-          <ChartContainer
-            type="bar"
-            data={stats?.contributionsChart}
-            height={300}
-          />
-        </Card>
-      </div>
-
-      {/* Recent Activities */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Meetings */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Recent Meetings
-            </h3>
-            <Button size="sm" variant="outline" href="/admin/meetings">
-              View All
-            </Button>
-          </div>
-          <div className="space-y-3">
-            {stats?.recentMeetings?.slice(0, 5).map((meeting) => (
-              <div
-                key={meeting.id}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-              >
-                <div>
-                  <p className="font-medium text-gray-900">{meeting.title}</p>
-                  <p className="text-sm text-gray-600">
-                    {new Date(meeting.date).toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="text-sm text-gray-600">
-                  {meeting.attendances?.length || 0} attendees
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Recent Announcements */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Recent Announcements
-            </h3>
-            <Button size="sm" variant="outline" href="/admin/announcements">
-              View All
-            </Button>
-          </div>
-          <div className="space-y-3">
-            {stats?.recentAnnouncements?.slice(0, 5).map((announcement) => (
-              <div key={announcement.id} className="p-3 bg-gray-50 rounded-lg">
-                <p className="font-medium text-gray-900">
-                  {announcement.title}
-                </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  {announcement.content.substring(0, 100)}...
-                </p>
-                <p className="text-xs text-gray-500 mt-2">
-                  {new Date(announcement.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            ))}
-          </div>
-        </Card>
+        <DashboardCard
+          title="Active Announcements"
+          value={stats.activeAnnouncements}
+          icon="📢"
+          color="orange"
+          href="/admin/announcements"
+        />
+        <DashboardCard
+          title="Pending Payments"
+          value={stats.pendingPayments}
+          icon="⏳"
+          color="red"
+          href="/admin/contributions?filter=pending"
+        />
       </div>
 
       {/* Quick Actions */}
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
           Quick Actions
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Button
-            href="/admin/meetings/new"
-            className="h-20 flex flex-col items-center justify-center"
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <button
+            onClick={() => handleQuickAction("addParent")}
+            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
           >
-            <span className="text-2xl mb-1">📅</span>
-            <span className="text-sm">New Meeting</span>
-          </Button>
-          <Button
-            href="/admin/announcements/new"
-            className="h-20 flex flex-col items-center justify-center"
+            <div className="text-2xl mb-2">👥</div>
+            <div className="font-medium text-gray-900 dark:text-white">
+              Add New Parent
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              Register a new parent account
+            </div>
+          </button>
+          <button
+            onClick={() => handleQuickAction("recordAttendance")}
+            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
           >
-            <span className="text-2xl mb-1">📢</span>
-            <span className="text-sm">New Announcement</span>
-          </Button>
-          <Button
-            href="/admin/contributions/new"
-            className="h-20 flex flex-col items-center justify-center"
+            <div className="text-2xl mb-2">📅</div>
+            <div className="font-medium text-gray-900 dark:text-white">
+              Record Attendance
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              Mark meeting attendance
+            </div>
+          </button>
+          <button
+            onClick={() => handleQuickAction("recordPayment")}
+            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
           >
-            <span className="text-2xl mb-1">💰</span>
-            <span className="text-sm">Record Contribution</span>
-          </Button>
-          <Button
-            href="/admin/reports"
-            className="h-20 flex flex-col items-center justify-center"
+            <div className="text-2xl mb-2">💰</div>
+            <div className="font-medium text-gray-900 dark:text-white">
+              Record Payment
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              Log contribution payment
+            </div>
+          </button>
+          <button
+            onClick={() => handleQuickAction("postAnnouncement")}
+            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
           >
-            <span className="text-2xl mb-1">📊</span>
-            <span className="text-sm">Generate Report</span>
-          </Button>
+            <div className="text-2xl mb-2">📢</div>
+            <div className="font-medium text-gray-900 dark:text-white">
+              Post Announcement
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              Create new announcement
+            </div>
+          </button>
         </div>
-      </Card>
+      </div>
+
+      {/* Recent Activity Summary */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            System Overview
+          </h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-300">
+                Total Members
+              </span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {stats.totalParents}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-300">
+                Students Enrolled
+              </span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {stats.totalStudents}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-300">
+                Active Projects
+              </span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {stats.activeProjects}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-300">
+                Recent Meetings
+              </span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {stats.recentMeetings}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Financial Summary
+          </h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-300">
+                Total Collected
+              </span>
+              <span className="font-medium text-green-600">
+                ₱{stats.totalContributionAmount.toLocaleString()}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-300">
+                Total Contributions
+              </span>
+              <span className="font-medium text-gray-900 dark:text-white">
+                {stats.totalContributions}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-300">
+                Pending Payments
+              </span>
+              <span className="font-medium text-red-600">
+                {stats.pendingPayments}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600 dark:text-gray-300">
+                Clearance Requests
+              </span>
+              <span className="font-medium text-yellow-600">
+                {stats.clearanceRequests}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default AdminDashboard;

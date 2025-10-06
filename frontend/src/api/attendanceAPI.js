@@ -1,89 +1,121 @@
-import { apiClient } from "./apiClient";
+import { fetchClient } from "../utils/fetchClient";
+import config from "../config";
+import { dummyDataService } from "../services/dummyDataService";
 
-export const attendanceAPI = {
-  // Get all attendance records (admin)
-  getAll: async (filters = {}) => {
-    const params = new URLSearchParams(filters);
-    return await apiClient.get(`/attendance?${params}`);
+export const attendanceApi = {
+  // Admin functions
+  getAttendanceByMeeting: async (meetingId) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.getAttendanceByMeeting(meetingId);
+    }
+    return await fetchClient.get(`/api/attendance/meeting/${meetingId}`);
   },
 
-  // Get user's attendance records (parent)
-  getMy: async () => {
-    return await apiClient.get("/attendance/my");
+  recordAttendance: async (attendanceData) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.recordAttendance(attendanceData);
+    }
+    return await fetchClient.post("/api/attendance/record", attendanceData);
   },
 
-  // Get attendance by meeting ID
-  getByMeeting: async (meetingId) => {
-    return await apiClient.get(`/attendance/meeting/${meetingId}`);
+  updateAttendance: async (attendanceId, attendanceData) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.updateAttendance(
+        attendanceId,
+        attendanceData
+      );
+    }
+    return await fetchClient.put(
+      `/api/attendance/${attendanceId}`,
+      attendanceData
+    );
   },
 
-  // Get attendance by ID
-  getById: async (id) => {
-    return await apiClient.get(`/attendance/${id}`);
+  deleteAttendance: async (attendanceId) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.deleteAttendance(attendanceId);
+    }
+    return await fetchClient.delete(`/api/attendance/${attendanceId}`);
   },
 
-  // Create attendance record
-  create: async (attendanceData) => {
-    return await apiClient.post("/attendance", attendanceData);
+  getAllAttendance: async (params = {}) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.getAllAttendance(params);
+    }
+    const queryString = new URLSearchParams(params).toString();
+    return await fetchClient.get(`/api/attendance?${queryString}`);
   },
 
-  // Update attendance record
-  update: async (id, attendanceData) => {
-    return await apiClient.put(`/attendance/${id}`, attendanceData);
+  // Parent functions
+  getMyAttendance: async (params = {}) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.getMyAttendance(params);
+    }
+    const queryString = new URLSearchParams(params).toString();
+    return await fetchClient.get(
+      `/api/attendance/my-attendance?${queryString}`
+    );
   },
 
-  // Delete attendance record
-  delete: async (id) => {
-    return await apiClient.delete(`/attendance/${id}`);
+  getMyPenalties: async () => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.getMyPenalties();
+    }
+    return await fetchClient.get("/api/attendance/my-penalties");
   },
 
-  // Bulk update attendance
-  bulkUpdate: async (attendanceUpdates) => {
-    return await apiClient.post("/attendance/bulk-update", {
-      updates: attendanceUpdates,
-    });
+  // Meeting management
+  createMeeting: async (meetingData) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.createMeeting(meetingData);
+    }
+    return await fetchClient.post("/api/meetings", meetingData);
   },
 
-  // Mark attendance for a meeting
-  markAttendance: async (meetingId, userId, status, notes = "") => {
-    return await apiClient.post("/attendance/mark", {
-      meetingId,
-      userId,
-      status,
-      notes,
-    });
+  getMeetings: async (params = {}) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.getMeetings(params);
+    }
+    const queryString = new URLSearchParams(params).toString();
+    return await fetchClient.get(`/api/meetings?${queryString}`);
   },
 
-  // Submit excuse for absence
-  submitExcuse: async (attendanceId, excuseReason) => {
-    return await apiClient.post(`/attendance/${attendanceId}/excuse`, {
-      excuseReason,
-    });
+  getUpcomingMeetings: async (params = {}) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.getUpcomingMeetings(params);
+    }
+    const queryString = new URLSearchParams(params).toString();
+    return await fetchClient.get(`/api/meetings/upcoming?${queryString}`);
   },
 
-  // Get attendance statistics
-  getStats: async (userId = null) => {
-    const params = userId ? `?userId=${userId}` : "";
-    return await apiClient.get(`/attendance/stats${params}`);
+  updateMeeting: async (meetingId, meetingData) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.updateMeeting(meetingId, meetingData);
+    }
+    return await fetchClient.put(`/api/meetings/${meetingId}`, meetingData);
   },
 
-  // Export attendance report
-  export: async (filters = {}) => {
-    const params = new URLSearchParams(filters);
-    return await apiClient.get(`/attendance/export?${params}`, {
-      responseType: "blob",
-    });
+  deleteMeeting: async (meetingId) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.deleteMeeting(meetingId);
+    }
+    return await fetchClient.delete(`/api/meetings/${meetingId}`);
   },
 
-  // Get attendance summary by date range
-  getSummary: async (startDate, endDate) => {
-    return await apiClient.get("/attendance/summary", {
-      params: { startDate, endDate },
-    });
+  // Penalty calculation
+  calculatePenalties: async (parentId) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.calculatePenalties(parentId);
+    }
+    return await fetchClient.post(
+      `/api/attendance/calculate-penalties/${parentId}`
+    );
   },
 
-  // Get attendance trends
-  getTrends: async (period = "month") => {
-    return await apiClient.get(`/attendance/trends?period=${period}`);
+  recalculateAllPenalties: async () => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.recalculateAllPenalties();
+    }
+    return await fetchClient.post("/api/attendance/recalculate-all-penalties");
   },
 };

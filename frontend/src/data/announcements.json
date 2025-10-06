@@ -1,0 +1,128 @@
+{
+  "announcements": [
+    {
+      "id": "ann1",
+      "title": "PTA General Assembly Meeting - October 15, 2025",
+      "content": "Dear Parents and Guardians,\n\nYou are cordially invited to attend the PTA General Assembly Meeting on October 15, 2025, at 2:00 PM in the JHCSC Audio Visual Room.\n\nAgenda:\n- Welcome and Opening Prayer\n- Reading of Minutes from Previous Meeting\n- Financial Report\n- Discussion of School Improvement Projects\n- New Business\n- Adjournment\n\nYour presence and participation are highly valued.\n\nThank you.",
+      "priority": "high",
+      "category": "meeting",
+      "authorId": "1",
+      "authorName": "Maria Santos",
+      "publishDate": "2025-10-01T08:00:00.000Z",
+      "expiryDate": "2025-10-15T18:00:00.000Z",
+      "status": "published",
+      "isFeatured": true,
+      "views": 45,
+      "attachments": [
+        {
+          "name": "meeting-agenda.pdf",
+          "url": "/documents/meeting-agenda.pdf",
+          "type": "pdf"
+        }
+      ],
+      "targetAudience": ["parents", "admin"]
+    },
+    {
+      "id": "ann2",
+      "title": "School Fair Fundraising Event - November 20, 2025",
+      "content": "Join us for the JHCSC School Fair on November 20, 2025! This annual fundraising event will feature games, food booths, performances, and exciting prizes.\n\nEvent Details:\n- Date: November 20, 2025\n- Time: 9:00 AM - 5:00 PM\n- Venue: JHCSC School Grounds\n\nWe need volunteers for various activities. Please contact the PTA office if you can help.\n\nLet's make this year's school fair the best one yet!",
+      "priority": "normal",
+      "category": "event",
+      "authorId": "1",
+      "authorName": "Maria Santos",
+      "publishDate": "2025-09-25T10:00:00.000Z",
+      "expiryDate": "2025-11-20T17:00:00.000Z",
+      "status": "published",
+      "isFeatured": true,
+      "views": 78,
+      "attachments": [],
+      "targetAudience": ["parents", "students"]
+    },
+    {
+      "id": "ann3",
+      "title": "Monthly Dues Payment Reminder",
+      "content": "This is a friendly reminder that October 2025 monthly dues are now due. Please settle your payment by October 31, 2025.\n\nPayment Details:\n- Amount: ₱150.00 per student\n- Payment Methods: Cash, GCash, Bank Transfer\n- Payment Location: PTA Office or during meetings\n\nFor GCash payments, please send to: 09123456789 (Maria Santos)\nFor bank transfers, use account: BPI 1234567890\n\nThank you for your continued support!",
+      "priority": "normal",
+      "category": "payment",
+      "authorId": "1",
+      "authorName": "Maria Santos",
+      "publishDate": "2025-10-01T09:00:00.000Z",
+      "expiryDate": "2025-10-31T23:59:00.000Z",
+      "status": "published",
+      "isFeatured": false,
+      "views": 92,
+      "attachments": [],
+      "targetAudience": ["parents"]
+    },
+    {
+      "id": "ann4",
+      "title": "Library Enhancement Project Update",
+      "content": "We are pleased to announce the launch of our Library Enhancement Project! This initiative aims to improve our school library with new books, computers, and reading spaces.\n\nProject Goals:\n- Purchase 500 new books\n- Install 10 new computers\n- Create comfortable reading areas\n- Implement digital library system\n\nTarget Amount: ₱250,000\nCurrent Progress: ₱75,000 (30%)\n\nSpecial contribution opportunities are available. Thank you to all parents who have already contributed!",
+      "priority": "normal",
+      "category": "project",
+      "authorId": "1",
+      "authorName": "Maria Santos",
+      "publishDate": "2025-09-30T14:00:00.000Z",
+      "expiryDate": "2025-12-31T23:59:00.000Z",
+      "status": "published",
+      "isFeatured": true,
+      "views": 67,
+      "attachments": [
+        {
+          "name": "library-project-proposal.pdf",
+          "url": "/documents/library-project-proposal.pdf",
+          "type": "pdf"
+        }
+      ],
+      "targetAudience": ["parents", "admin"]
+    },
+    {
+      "id": "ann5",
+      "title": "Christmas Program Planning",
+      "content": "The Christmas season is approaching! The PTA is now planning for this year's Christmas program.\n\nPlanning Meeting:\n- Date: October 25, 2025\n- Time: 3:00 PM\n- Venue: Music Room\n\nWe need volunteers for:\n- Stage decoration\n- Costume preparation\n- Sound and lighting\n- Food preparation\n- Program coordination\n\nPlease join us in making this Christmas celebration memorable for our students!",
+      "priority": "normal",
+      "category": "event",
+      "authorId": "1",
+      "authorName": "Maria Santos",
+      "publishDate": "2025-10-03T11:00:00.000Z",
+      "expiryDate": "2025-12-25T23:59:00.000Z",
+      "status": "published",
+      "isFeatured": false,
+      "views": 34,
+      "attachments": [],
+      "targetAudience": ["parents"]
+    }
+  ],
+  "categories": [
+    {
+      "id": "meeting",
+      "name": "Meetings",
+      "description": "PTA meetings and assemblies",
+      "color": "#3B82F6"
+    },
+    {
+      "id": "event",
+      "name": "Events",
+      "description": "School events and activities",
+      "color": "#10B981"
+    },
+    {
+      "id": "payment",
+      "name": "Payments",
+      "description": "Payment reminders and financial matters",
+      "color": "#F59E0B"
+    },
+    {
+      "id": "project",
+      "name": "Projects",
+      "description": "School improvement projects",
+      "color": "#8B5CF6"
+    },
+    {
+      "id": "general",
+      "name": "General",
+      "description": "General announcements",
+      "color": "#6B7280"
+    }
+  ]
+}
