@@ -190,7 +190,7 @@ export const sendOtpForChange = async (
 export const verifyOtp = async (
   email: string,
   otp: string
-): Promise<{ message: string }> => {
+): Promise<{ message: string; verified: boolean }> => {
   const otpRecord = await prisma.otp.findFirst({
     where: {
       email,
@@ -205,10 +205,13 @@ export const verifyOtp = async (
     throw new ApiError(400, "Invalid or expired OTP.");
   }
 
-  // Delete the OTP after successful verification
-  await prisma.otp.delete({ where: { id: otpRecord.id } });
+  // Mark this OTP as verified but don't delete it yet
+  await prisma.otp.update({
+    where: { id: otpRecord.id },
+    data: { verified: true },
+  });
 
-  return { message: "Email verified successfully." };
+  return { message: "Email verified successfully.", verified: true };
 };
 
 interface RegisterData {
@@ -223,6 +226,21 @@ export const register = async (
 ): Promise<{ user: User; token: string }> => {
   const { email, password, name, phone } = userData;
 
+  // Check if OTP has been verified for this email
+  const otpRecord = await prisma.otp.findFirst({
+    where: {
+      email,
+      verified: true,
+      createdAt: {
+        gt: new Date(Date.now() - 10 * 60 * 1000), // Not expired
+      },
+    },
+  });
+
+  if (!otpRecord) {
+    throw new ApiError(400, "Email not verified. Please verify your email with OTP first.");
+  }
+
   const hashedPassword = await bcrypt.hash(password, 12);
 
   let user: User;
@@ -235,6 +253,10 @@ export const register = async (
         phone,
       },
     });
+    
+    // Delete the OTP after successful registration
+    await prisma.otp.delete({ where: { id: otpRecord.id } });
+    
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
@@ -269,17 +291,16 @@ export const login = async (
   return { user, token };
 };
 
-export const resetPassword = async (
+// Function to verify OTP specifically for password reset
+export const verifyOtpForReset = async (
   email: string,
-  otp: string,
-  newPassword: string
-): Promise<{ message: string }> => {
+  otp: string
+): Promise<{ message: string; verified: boolean }> => {
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     throw new ApiError(404, "User not found");
   }
 
-  // Verify OTP
   const otpRecord = await prisma.otp.findFirst({
     where: {
       email,
@@ -294,7 +315,84 @@ export const resetPassword = async (
     throw new ApiError(400, "Invalid or expired OTP.");
   }
 
-  // Delete the OTP after successful verification
+  // Mark this OTP as verified but don't delete it yet
+  await prisma.otp.update({
+    where: { id: otpRecord.id },
+    data: { verified: true },
+  });
+
+  return {
+    message: "OTP verified successfully for password reset.",
+    verified: true,
+  };
+};
+
+// Function to verify OTP specifically for password change
+export const verifyOtpForChange = async (
+  email: string,
+  otp: string
+): Promise<{ message: string; verified: boolean }> => {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  const otpRecord = await prisma.otp.findFirst({
+    where: {
+      email,
+      otp,
+      createdAt: {
+        gt: new Date(Date.now() - 10 * 60 * 1000), // Not expired
+      },
+    },
+  });
+
+  if (!otpRecord) {
+    throw new ApiError(400, "Invalid or expired OTP.");
+  }
+
+  // Mark this OTP as verified but don't delete it yet
+  await prisma.otp.update({
+    where: { id: otpRecord.id },
+    data: { verified: true },
+  });
+
+  return {
+    message: "OTP verified successfully for password change.",
+    verified: true,
+  };
+};
+
+export const resetPassword = async (
+  email: string,
+  otp: string,
+  newPassword: string
+): Promise<{ message: string }> => {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Check if OTP exists and has been verified
+  const otpRecord = await prisma.otp.findFirst({
+    where: {
+      email,
+      otp,
+      verified: true,
+      createdAt: {
+        gt: new Date(Date.now() - 10 * 60 * 1000), // Not expired
+      },
+    },
+  });
+
+  if (!otpRecord) {
+    throw new ApiError(
+      400,
+      "OTP not verified or expired. Please verify OTP first."
+    );
+  }
+
+  // Delete the OTP after successful password reset
   await prisma.otp.delete({ where: { id: otpRecord.id } });
 
   const hashedPassword = await bcrypt.hash(newPassword, 12);
@@ -318,11 +416,12 @@ export const changePassword = async (
     throw new ApiError(401, "Incorrect email or old password");
   }
 
-  // Verify OTP
+  // Check if OTP has been verified
   const otpRecord = await prisma.otp.findFirst({
     where: {
       email,
       otp,
+      verified: true,
       createdAt: {
         gt: new Date(Date.now() - 10 * 60 * 1000), // Not expired
       },
@@ -330,10 +429,13 @@ export const changePassword = async (
   });
 
   if (!otpRecord) {
-    throw new ApiError(400, "Invalid or expired OTP.");
+    throw new ApiError(
+      400,
+      "OTP not verified or expired. Please verify OTP first."
+    );
   }
 
-  // Delete the OTP after successful verification
+  // Delete the OTP after successful password change
   await prisma.otp.delete({ where: { id: otpRecord.id } });
 
   const hashedPassword = await bcrypt.hash(newPassword, 12);

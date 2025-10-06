@@ -9,6 +9,16 @@ export const verifyOtp = Joi.object().keys({
   otp: Joi.string().required(),
 });
 
+export const verifyOtpForReset = Joi.object().keys({
+  email: Joi.string().email().required(),
+  otp: Joi.string().required(),
+});
+
+export const verifyOtpForChange = Joi.object().keys({
+  email: Joi.string().email().required(),
+  otp: Joi.string().required(),
+});
+
 export const sendOtpReset = Joi.object().keys({
   email: Joi.string().email().required(),
 });

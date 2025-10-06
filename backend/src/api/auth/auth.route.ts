@@ -20,9 +20,19 @@ router.post(
   authController.sendOtpForReset
 );
 router.post(
+  "/verify-otp-reset",
+  validate(authValidation.verifyOtpForReset),
+  authController.verifyOtpForReset
+);
+router.post(
   "/send-otp-change",
   validate(authValidation.sendOtpChange),
   authController.sendOtpForChange
+);
+router.post(
+  "/verify-otp-change",
+  validate(authValidation.verifyOtpForChange),
+  authController.verifyOtpForChange
 );
 router.post(
   "/register",
