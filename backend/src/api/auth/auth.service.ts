@@ -238,8 +238,15 @@ export const register = async (
   });
 
   if (!otpRecord) {
-    throw new ApiError(400, "Email not verified. Please verify your email with OTP first.");
+    throw new ApiError(
+      400,
+      "Email not verified. Please verify your email with OTP first."
+    );
   }
+
+  // Check if this is the first user in the system
+  const userCount = await prisma.user.count();
+  const isFirstUser = userCount === 0;
 
   const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -251,12 +258,13 @@ export const register = async (
         password: hashedPassword,
         name,
         phone,
+        // First user automatically becomes an admin
+        role: isFirstUser ? "ADMIN" : "PARENT",
       },
     });
-    
+
     // Delete the OTP after successful registration
     await prisma.otp.delete({ where: { id: otpRecord.id } });
-    
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {

@@ -64,7 +64,10 @@ backend/
 ## Features
 
 - **User Management**: Secure registration and login for parents and admins.
+  - **First User Auto-Admin**: The first user to register automatically becomes an admin.
+  - **OTP Verification**: All registrations require email verification via OTP.
 - **Role-Based Access Control (RBAC)**: Differentiated permissions for admins and parents.
+- **Student Management**: Comprehensive student record management with search, filtering, and status tracking.
 - **Attendance Tracking**: Record and view attendance for PTA meetings and events.
 - **Penalty System**: Automatically calculate and manage penalties for absences.
 - **Contribution Management**: Track financial contributions and payments.

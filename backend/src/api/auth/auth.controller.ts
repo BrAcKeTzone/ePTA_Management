@@ -12,7 +12,9 @@ export const sendOtp = asyncHandler(async (req: Request, res: Response) => {
 export const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
   const { email, otp } = req.body;
   const result = await authService.verifyOtp(email, otp);
-  res.status(200).json(new ApiResponse(200, result, "Email verified successfully"));
+  res
+    .status(200)
+    .json(new ApiResponse(200, result, "Email verified successfully"));
 });
 
 export const verifyOtpForReset = asyncHandler(

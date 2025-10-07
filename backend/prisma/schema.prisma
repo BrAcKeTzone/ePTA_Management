@@ -28,6 +28,15 @@ enum AttendanceStatus {
   EXCUSED
 }
 
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  GRADUATED
+  TRANSFERRED
+  DROPPED
+  SUSPENDED
+}
+
 // AUTHENTICATION & USER MANAGEMENT
 model User {
   id        Int      @id @default(autoincrement())
@@ -54,16 +63,30 @@ model User {
 }
 
 model Student {
-  id     Int    @id @default(autoincrement())
-  name   String
-  grade  String
-  status LinkStatus @default(PENDING)
+  id             Int           @id @default(autoincrement())
+  studentId      String        @unique
+  firstName      String
+  lastName       String
+  middleName     String?
+  academicYear   String        // e.g., "2023-2024", "2024-2025"
+  yearLevel      String        // e.g., "1st Year", "2nd Year", "3rd Year", "4th Year"
+  program        String        // e.g., "BSIT", "BSCS", "BSED", etc.
+  section        String?       // e.g., "A", "B", "C"
+  status         StudentStatus @default(ACTIVE)
+  linkStatus     LinkStatus    @default(PENDING)
+  enrollmentDate DateTime      @default(now())
+  email          String?       @unique
+  phone          String?
 
   parentId Int
   parent   User @relation(fields: [parentId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([studentId])
+  @@index([lastName, firstName])
+  @@index([parentId])
 }
 
 // MEETINGS, ATTENDANCE & PENALTIES
