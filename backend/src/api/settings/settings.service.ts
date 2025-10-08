@@ -1,5 +1,5 @@
 import { PrismaClient, Settings } from "@prisma/client";
-import { ApiError } from "../../utils/ApiError";
+import ApiError from "../../utils/ApiError";
 import prisma from "../../configs/prisma";
 
 const SYSTEM_CONFIG_KEY = "system_config";

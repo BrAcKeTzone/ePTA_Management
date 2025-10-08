@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { ApiError } from "../utils/ApiError";
+import ApiError from "../utils/ApiError";
 import prisma from "../configs/prisma";
 import asyncHandler from "../utils/asyncHandler";
 

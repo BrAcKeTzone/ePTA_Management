@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import asyncHandler from "../../utils/asyncHandler";
-import { ApiResponse } from "../../utils/ApiResponse";
+import ApiResponse from "../../utils/ApiResponse";
 import * as settingsService from "./settings.service";
-import { ApiError } from "../../utils/ApiError";
+import ApiError from "../../utils/ApiError";
 
 /**
  * @desc    Get system settings

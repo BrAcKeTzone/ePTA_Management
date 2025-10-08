@@ -37,6 +37,23 @@ enum StudentStatus {
   SUSPENDED
 }
 
+enum MeetingType {
+  GENERAL
+  SPECIAL
+  EMERGENCY
+  COMMITTEE
+  ANNUAL
+  QUARTERLY
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  CANCELLED
+  POSTPONED
+}
+
 // AUTHENTICATION & USER MANAGEMENT
 model User {
   id        Int      @id @default(autoincrement())
@@ -97,26 +114,83 @@ model Student {
 
 // MEETINGS, ATTENDANCE & PENALTIES
 model Meeting {
-  id          Int      @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   title       String
+  description String?       @db.Text
+  meetingType MeetingType   @default(GENERAL)
+  status      MeetingStatus @default(SCHEDULED)
+  
+  // Scheduling
   date        DateTime
-  minutes     String?  @db.Text
-  resolutions String?  @db.Text
-
+  startTime   String        // Format: HH:MM (24-hour)
+  endTime     String?       // Format: HH:MM (24-hour)
+  venue       String
+  isVirtual   Boolean       @default(false)
+  meetingLink String?       // For virtual meetings
+  
+  // Agenda & Documentation
+  agenda         String?  @db.Text
+  minutes        String?  @db.Text
+  resolutions    String?  @db.Text
+  minutesAddedAt DateTime?
+  minutesAddedBy Int?
+  
+  // Attendance & Quorum
+  expectedAttendees Int      @default(0)
+  actualAttendees   Int      @default(0)
+  quorumReached     Boolean  @default(false)
+  quorumPercentage  Float?
+  
+  // Notifications
+  notificationSent     Boolean  @default(false)
+  notificationSentAt   DateTime?
+  reminderSent         Boolean  @default(false)
+  reminderSentAt       DateTime?
+  
+  // Relations
   createdBy   User   @relation(fields: [createdById], references: [id])
   createdById Int
 
-  attendances Attendance[]
-  penalties   Penalty[]
+  attendances  Attendance[]
+  penalties    Penalty[]
+  attachments  MeetingAttachment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  @@index([date])
+  @@index([status])
+  @@index([meetingType])
+  @@index([createdById])
+}
+
+model MeetingAttachment {
+  id        Int    @id @default(autoincrement())
+  fileName  String
+  fileUrl   String
+  fileType  String // e.g., "pdf", "doc", "image"
+  fileSize  Int    // in bytes
+  uploadedBy Int
+  
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  meetingId Int
+  
+  createdAt DateTime @default(now())
+  
+  @@index([meetingId])
 }
 
 model Attendance {
   id        Int              @id @default(autoincrement())
-  status    AttendanceStatus
+  status    AttendanceStatus @default(ABSENT)
 
+  // Check-in/Check-out tracking
+  checkInTime  DateTime?
+  checkOutTime DateTime?
+  isLate       Boolean  @default(false)
+  lateMinutes  Int      @default(0)
+
+  // Relations
   meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
   meetingId Int
 
@@ -126,62 +200,327 @@ model Attendance {
   recordedBy   User @relation("RecordedBy", fields: [recordedById], references: [id])
   recordedById Int
 
-  hasPenalty Boolean @default(false)
+  // Penalty tracking
+  hasPenalty      Boolean  @default(false)
+  penaltyAmount   Float?
+  penaltyApplied  Boolean  @default(false)
+  penaltyAppliedAt DateTime?
+
+  // Additional notes
+  remarks String? @db.Text
+  excuseReason String? @db.Text
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([meetingId, parentId])
+  @@index([status])
+  @@index([parentId])
+  @@index([meetingId])
+  @@index([hasPenalty])
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  GCASH
+  PAYMAYA
+  CHECK
+  OTHER
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+  WAIVED
+  OVERDUE
 }
 
 model Penalty {
-  id          Int      @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   amount      Float
-  reason      String
-  isPaid      Boolean  @default(false)
-  paidAt      DateTime?
-
+  reason      String        @db.Text
+  
+  // Payment tracking
+  paymentStatus PaymentStatus @default(UNPAID)
+  isPaid        Boolean       @default(false)
+  amountPaid    Float         @default(0)
+  balance       Float
+  paidAt        DateTime?
+  
+  // Payment details
+  paymentMethod   PaymentMethod?
+  paymentReference String?       // Reference number, check number, transaction ID
+  paymentNotes     String?       @db.Text
+  
+  // Due date and reminders
+  dueDate          DateTime?
+  isOverdue        Boolean       @default(false)
+  daysOverdue      Int           @default(0)
+  reminderSent     Boolean       @default(false)
+  reminderSentAt   DateTime?
+  lastReminderDate DateTime?
+  reminderCount    Int           @default(0)
+  
+  // Waiver/Discount
+  isWaived      Boolean   @default(false)
+  waivedAt      DateTime?
+  waivedBy      Int?
+  waiverReason  String?   @db.Text
+  discountAmount Float?   @default(0)
+  discountReason String?  @db.Text
+  
+  // Relations
   parent   User @relation(fields: [parentId], references: [id], onDelete: Cascade)
   parentId Int
 
   meeting   Meeting? @relation(fields: [meetingId], references: [id])
   meetingId Int?
+  
+  payments PenaltyPayment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  @@index([parentId])
+  @@index([meetingId])
+  @@index([paymentStatus])
+  @@index([isPaid])
+  @@index([isOverdue])
+  @@index([dueDate])
+}
+
+model PenaltyPayment {
+  id        Int           @id @default(autoincrement())
+  amount    Float
+  method    PaymentMethod
+  reference String?       // Transaction reference
+  notes     String?       @db.Text
+  
+  penalty   Penalty @relation(fields: [penaltyId], references: [id], onDelete: Cascade)
+  penaltyId Int
+  
+  recordedBy   Int     // Admin who recorded the payment
+  
+  createdAt DateTime @default(now())
+  
+  @@index([penaltyId])
 }
 
 // FINANCIALS & PROJECTS
-model Project {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?  @db.Text
-  budget      Float
-  startDate   DateTime
-  endDate     DateTime?
+enum ProjectStatus {
+  PLANNING       // In planning phase
+  ACTIVE         // Currently active
+  ON_HOLD        // Temporarily paused
+  COMPLETED      // Successfully completed
+  CANCELLED      // Project cancelled
+}
 
+enum ProjectPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Project {
+  id          Int            @id @default(autoincrement())
+  name        String
+  description String?        @db.Text
+  
+  // Financial tracking
+  budget          Float
+  totalRaised     Float      @default(0)
+  totalExpenses   Float      @default(0)
+  balance         Float      // Budget - totalExpenses
+  
+  // Status and priority
+  status          ProjectStatus   @default(PLANNING)
+  priority        ProjectPriority @default(MEDIUM)
+  
+  // Timeline
+  startDate       DateTime
+  endDate         DateTime?
+  completedDate   DateTime?
+  
+  // Goals and targets
+  fundingGoal     Float?         // Specific fundraising target
+  targetBeneficiaries Int?       // Number of people/students to benefit
+  
+  // Progress tracking
+  progressPercentage Float @default(0) // Overall progress 0-100
+  
+  // Location/Venue
+  location        String?
+  venue           String?
+  
+  // Documentation
+  attachments     String?     @db.Text  // JSON array of file URLs
+  notes           String?     @db.Text  // Additional notes
+  
+  // Relations
   createdBy   User   @relation(fields: [createdById], references: [id])
   createdById Int
 
   contributions Contribution[]
+  expenses      ProjectExpense[]
+  updates       ProjectUpdate[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  @@index([status])
+  @@index([priority])
+  @@index([createdById])
+}
+
+// Project expenses/spending
+model ProjectExpense {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  
+  title       String
+  description String?  @db.Text
+  amount      Float
+  category    String?  // e.g., "Materials", "Labor", "Transportation"
+  
+  expenseDate DateTime @default(now())
+  
+  receipt     String?  // Receipt file URL
+  notes       String?  @db.Text
+  
+  recordedBy  Int      // User who recorded the expense
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([projectId])
+  @@index([expenseDate])
+}
+
+// Project updates/milestones
+model ProjectUpdate {
+  id          Int      @id @default(autoincrement())
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   Int
+  
+  title       String
+  content     String   @db.Text
+  
+  isPublic    Boolean  @default(true)  // Visible to parents
+  isMilestone Boolean  @default(false) // Mark as important milestone
+  
+  attachments String?  @db.Text  // JSON array of file URLs
+  
+  postedBy    Int      // User who posted the update
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([projectId])
+  @@index([isMilestone])
+}
+
+
+// CONTRIBUTIONS
+enum ContributionType {
+  MONTHLY        // Regular monthly contribution
+  PROJECT        // Project-specific contribution
+  SPECIAL        // Special fundraising
+  DONATION       // Voluntary donation
+  MEMBERSHIP     // Membership fee
+  EVENT          // Event-specific contribution
+}
+
+enum ContributionStatus {
+  PENDING        // Awaiting payment
+  PARTIAL        // Partially paid
+  PAID           // Fully paid
+  OVERDUE        // Past due date
+  WAIVED         // Contribution waived
 }
 
 model Contribution {
-  id        Int      @id @default(autoincrement())
-  amount    Float
-  date      DateTime
-
+  id        Int                 @id @default(autoincrement())
+  
+  // Basic information
+  type            ContributionType
+  title           String            // e.g., "Monthly Contribution - October 2024"
+  description     String?           @db.Text
+  amount          Float             // Total expected amount
+  amountPaid      Float             @default(0)
+  balance         Float             // Remaining balance
+  
+  // Payment status
+  status          ContributionStatus @default(PENDING)
+  isPaid          Boolean           @default(false)
+  paidAt          DateTime?
+  
+  // Payment details
+  paymentMethod   PaymentMethod?
+  paymentReference String?          // Reference number, transaction ID
+  paymentNotes     String?          @db.Text
+  
+  // Due date and reminders
+  dueDate          DateTime?
+  isOverdue        Boolean          @default(false)
+  daysOverdue      Int              @default(0)
+  reminderSent     Boolean          @default(false)
+  reminderSentAt   DateTime?
+  lastReminderDate DateTime?
+  reminderCount    Int              @default(0)
+  
+  // Waiver/Adjustment
+  isWaived        Boolean   @default(false)
+  waivedAt        DateTime?
+  waivedBy        Int?
+  waiverReason    String?   @db.Text
+  adjustmentAmount Float?   @default(0)
+  adjustmentReason String?  @db.Text
+  
+  // Academic year and period
+  academicYear String?              // e.g., "2024-2025"
+  period       String?              // e.g., "October", "1st Semester"
+  
+  // Relations
   parent   User @relation(fields: [parentId], references: [id], onDelete: Cascade)
   parentId Int
 
   project   Project? @relation(fields: [projectId], references: [id])
   projectId Int?
-
+  
+  payments ContributionPayment[]
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  @@index([parentId])
+  @@index([projectId])
+  @@index([type])
+  @@index([status])
+  @@index([isPaid])
+  @@index([isOverdue])
+  @@index([dueDate])
+  @@index([academicYear])
+}
+
+model ContributionPayment {
+  id             Int           @id @default(autoincrement())
+  amount         Float
+  method         PaymentMethod
+  reference      String?       // Transaction reference
+  notes          String?       @db.Text
+  
+  contribution   Contribution  @relation(fields: [contributionId], references: [id], onDelete: Cascade)
+  contributionId Int
+  
+  recordedBy Int              // User who recorded the payment
+  
+  createdAt DateTime @default(now())
+  
+  @@index([contributionId])
 }
 
 // ANNOUNCEMENTS
