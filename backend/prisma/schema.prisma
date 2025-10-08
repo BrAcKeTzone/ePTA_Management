@@ -45,12 +45,14 @@ model User {
   name      String
   phone     String?
   role      UserRole @default(PARENT)
+  isActive  Boolean  @default(true)
 
   // Admin-specific relations
   createdAnnouncements Announcement[]
   createdMeetings      Meeting[]
   createdProjects      Project[]
   recordedAttendance   Attendance[] @relation("RecordedBy")
+  updatedSettings      Settings[]
 
   // Parent-specific relations
   students      Student[]
@@ -60,6 +62,10 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
 }
 
 model Student {
@@ -179,16 +185,50 @@ model Contribution {
 }
 
 // ANNOUNCEMENTS
+enum AnnouncementPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TargetAudience {
+  ALL
+  PARENTS
+  ADMINS
+  SPECIFIC_PROGRAM
+  SPECIFIC_YEAR_LEVEL
+}
+
 model Announcement {
-  id      Int    @id @default(autoincrement())
-  title   String
-  content String @db.Text
+  id             Int                   @id @default(autoincrement())
+  title          String
+  content        String                @db.Text
+  priority       AnnouncementPriority  @default(MEDIUM)
+  targetAudience TargetAudience        @default(ALL)
+  
+  // Optional filters for targeted announcements
+  targetProgram   String?    // e.g., "BSIT", "BSCS" - used when targetAudience is SPECIFIC_PROGRAM
+  targetYearLevel String?    // e.g., "1st Year", "2nd Year" - used when targetAudience is SPECIFIC_YEAR_LEVEL
+  
+  // Publishing controls
+  isPublished Boolean  @default(false)
+  publishDate DateTime?
+  expiryDate  DateTime?
+  
+  // Optional attachment
+  attachmentUrl  String?
+  attachmentName String?
 
   createdBy   User @relation(fields: [createdById], references: [id])
   createdById Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  @@index([isPublished])
+  @@index([publishDate])
+  @@index([targetAudience])
 }
 
 // OTP
@@ -200,4 +240,54 @@ model Otp {
   createdAt DateTime @default(now())
 
   @@index([email])
+}
+
+// SYSTEM SETTINGS
+model Settings {
+  id  Int    @id @default(autoincrement())
+  key String @unique // e.g., "system_config"
+
+  // Penalty Settings
+  penaltyRatePerAbsence    Float   @default(50.00) // Amount per absence
+  penaltyRateLate          Float   @default(25.00) // Amount for late attendance
+  penaltyGracePeriodDays   Int     @default(7)     // Days before penalty applies
+  enableAutoPenalty        Boolean @default(true)  // Auto-calculate penalties
+
+  // Contribution Settings
+  monthlyContributionAmount  Float   @default(100.00) // Monthly dues
+  projectContributionMinimum Float   @default(50.00)  // Minimum per project
+  enableMandatoryContribution Boolean @default(true) // Require contributions
+
+  // Payment Settings
+  paymentBasis        String  @default("PER_STUDENT") // PER_STUDENT, PER_FAMILY, PER_MEETING
+  allowPartialPayment Boolean @default(true)          // Allow partial payments
+  paymentDueDays      Int     @default(30)            // Days to pay after due date
+
+  // Meeting Settings
+  minimumMeetingsPerYear     Int     @default(4)    // Required annual meetings
+  quorumPercentage           Float   @default(50.0) // % needed for quorum
+  notificationDaysBeforeMeet Int     @default(7)    // Days before meeting notification
+
+  // Document Categories (stored as JSON)
+  documentCategories String @db.Text
+
+  // Academic Year Settings
+  currentAcademicYear String @default("2024-2025")
+  academicYearStart   String @default("08-01") // MM-DD format
+  academicYearEnd     String @default("07-31") // MM-DD format
+
+  // System Settings
+  systemName          String  @default("JHCSC Dumingag Campus PTA")
+  systemEmail         String  @default("pta@jhcsc.edu.ph")
+  systemPhone         String? @default("+639123456789")
+  enableEmailNotifications Boolean @default(true)
+  enableSMSNotifications   Boolean @default(false)
+
+  // Metadata
+  updatedBy   User     @relation(fields: [updatedById], references: [id])
+  updatedById Int
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@index([key])
 }

@@ -23,9 +23,11 @@ backend/
 ├── src/
 │   ├── api/                # Feature-based modules (routes, controllers, services)
 │   │   ├── announcements/
+│   │   │   ├── ANNOUNCEMENTS_API_DOCS.md
 │   │   │   ├── announcements.controller.ts
 │   │   │   ├── announcements.route.ts
-│   │   │   └── announcements.service.ts
+│   │   │   ├── announcements.service.ts
+│   │   │   └── announcements.validation.ts
 │   │   ├── attendance/
 │   │   ├── auth/
 │   │   │   ├── auth.controller.ts
@@ -38,9 +40,20 @@ backend/
 │   │   ├── penalties/
 │   │   ├── projects/
 │   │   ├── students/
+│   │   │   ├── STUDENT_API_DOCS.md
+│   │   │   ├── students.controller.ts
+│   │   │   ├── students.route.ts
+│   │   │   ├── students.service.ts
+│   │   │   └── students.validation.ts
 │   │   └── users/
+│   │   │   ├── USERS_API_DOCS.md
+│   │   │   ├── users.controller.ts
+│   │   │   ├── users.route.ts
+│   │   │   ├── users.service.ts
+│   │   │   └── users.validation.ts
 │   ├── configs/
-│   │   └── prisma.ts         # Prisma client instance
+│   │   ├── cloudinary.ts       # Cloudinary configuration
+│   │   └── prisma.ts           # Prisma client instance
 │   ├── middlewares/
 │   │   ├── auth.middleware.ts
 │   │   ├── error.middleware.ts
@@ -50,43 +63,90 @@ backend/
 │   ├── types/
 │   │   └── environment.d.ts  # TypeScript environment declarations
 │   ├── utils/                # Utility functions and classes
+│   │   ├── announcementNotification.ts
 │   │   ├── ApiError.ts
 │   │   ├── ApiResponse.ts
 │   │   ├── asyncHandler.ts
-│   │   └── email.ts
+│   │   ├── email.ts
+│   │   └── errors.ts
 │   ├── app.ts              # Express application setup and middleware
 │   └── server.ts           # Server initialization
 ├── .env                    # Environment variables (DB connection, JWT secret, etc.)
+├── FIRST_USER_ADMIN.md     # Documentation for first user auto-admin feature
 ├── package.json            # Project dependencies and scripts
 └── README.md               # This file
 ```
 
 ## Features
 
-- **User Management**: Secure registration and login for parents and admins.
-  - **First User Auto-Admin**: The first user to register automatically becomes an admin.
-  - **OTP Verification**: All registrations require email verification via OTP.
+- **User Management**: ✨ **Complete and Functional**
+  - Secure registration and login for parents and admins
+  - **First User Auto-Admin**: The first user to register automatically becomes an admin
+  - **OTP Verification**: All registrations require email verification via OTP
+  - User profile management (view, update)
+  - Password change functionality
+  - Admin user management (list, update, deactivate/activate)
+  - Role management (ADMIN/PARENT)
+  - Account activation/deactivation
+  - User statistics and analytics
 - **Role-Based Access Control (RBAC)**: Differentiated permissions for admins and parents.
-- **Student Management**: Comprehensive student record management with search, filtering, and status tracking.
+- **Student Management**: ✨ **Complete and Functional**
+  - Comprehensive student record management with search, filtering, and status tracking
+  - Student-parent linking with approval workflow
+  - One parent per student, multiple students per parent
+  - College-specific fields (programs, year levels, academic years)
+- **Announcements System**: ✨ **Complete and Functional**
+  - Create, manage, and distribute announcements
+  - Targeted announcements (ALL, PARENTS, ADMINS, SPECIFIC_PROGRAM, SPECIFIC_YEAR_LEVEL)
+  - Priority levels (LOW, MEDIUM, HIGH, URGENT)
+  - Scheduled publishing with expiry dates
+  - Automatic email notifications to targeted recipients
+  - Draft mode for preparing announcements
+  - Batch email sending to prevent server overload
+  - Full statistics and reporting
+- **Settings Management**: ✨ **Complete and Functional**
+  - System-wide configuration management
+  - Penalty rates configuration (absence and late penalties)
+  - Contribution amounts management (monthly and project contributions)
+  - Payment basis settings (PER_STUDENT, PER_FAMILY, PER_MEETING)
+  - Meeting requirements configuration
+  - Document category management
+  - Academic year settings
+  - System information and notification preferences
 - **Attendance Tracking**: Record and view attendance for PTA meetings and events.
 - **Penalty System**: Automatically calculate and manage penalties for absences.
 - **Contribution Management**: Track financial contributions and payments.
 - **Project Management**: Monitor the status and progress of PTA projects.
-- **Announcements**: Admins can post announcements for all members.
 
 ## API Endpoints
 
-The API is structured by features. Each feature module in `src/api/` contains its own routes, controllers, and business logic. The main router is located at `src/routes/index.js`.
+The API is structured by features. Each feature module in `src/api/` contains its own routes, controllers, and business logic. The main router is located at `src/routes/index.ts`.
 
-- `/api/v1/auth`: Authentication routes (login, register)
-- `/api/v1/users`: User management
-- `/api/v1/students`: Student record management
-- `/api/v1/attendance`: Attendance tracking
-- `/api/v1/penalties`: Penalty management
-- `/api/v1/contributions`: Contribution and financial tracking
-- `/api/v1/projects`: PTA project management
-- `/api/v1/announcements`: System announcements
-- `/api/v1/meetings`: Meeting schedules and records
+### Completed & Functional APIs:
+
+- **`/api/auth`**: Authentication routes (login, register, OTP verification, password reset/change)
+- **`/api/users`**: User management system (see [USERS_API_DOCS.md](src/api/users/USERS_API_DOCS.md))
+- **`/api/students`**: Student record management with parent linking (see [STUDENT_API_DOCS.md](src/api/students/STUDENT_API_DOCS.md))
+- **`/api/announcements`**: Comprehensive announcements system (see [ANNOUNCEMENTS_API_DOCS.md](src/api/announcements/ANNOUNCEMENTS_API_DOCS.md))
+- **`/api/settings`**: System configuration management (see [SETTINGS_API_DOCS.md](src/api/settings/SETTINGS_API_DOCS.md))
+
+### In Development:
+
+- `/api/attendance`: Attendance tracking
+- `/api/penalties`: Penalty management
+- `/api/contributions`: Contribution and financial tracking
+- `/api/projects`: PTA project management
+- `/api/meetings`: Meeting schedules and records
+
+### API Documentation
+
+For detailed API documentation, refer to:
+
+- **Users API**: [src/api/users/USERS_API_DOCS.md](src/api/users/USERS_API_DOCS.md)
+- **Announcements API**: [src/api/announcements/ANNOUNCEMENTS_API_DOCS.md](src/api/announcements/ANNOUNCEMENTS_API_DOCS.md)
+- **Students API**: [src/api/students/STUDENT_API_DOCS.md](src/api/students/STUDENT_API_DOCS.md)
+- **Settings API**: [src/api/settings/SETTINGS_API_DOCS.md](src/api/settings/SETTINGS_API_DOCS.md)
+- **First User Admin**: [FIRST_USER_ADMIN.md](FIRST_USER_ADMIN.md)
 
 ## Setup and Installation
 
@@ -109,20 +169,38 @@ The API is structured by features. Each feature module in `src/api/` contains it
    - Add the following variables, replacing the placeholder values:
 
      ```env
+     # Database Configuration
      DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE"
-     PORT=8000
+
+     # Server Configuration
+     PORT=3000
      CORS_ORIGIN=*
 
+     # JWT Configuration
      ACCESS_TOKEN_SECRET="your_access_token_secret"
      ACCESS_TOKEN_EXPIRY="1d"
      REFRESH_TOKEN_SECRET="your_refresh_token_secret"
      REFRESH_TOKEN_EXPIRY="10d"
+
+     # Email Configuration (for OTP and Announcements)
+     EMAIL_HOST="smtp.gmail.com"
+     EMAIL_PORT=587
+     EMAIL_USERNAME="your_email@gmail.com"
+     EMAIL_PASSWORD="your_app_password"
      ```
+
+   - **Email Setup Note**: For Gmail, use an [App Password](https://support.google.com/accounts/answer/185833) instead of your regular password.
 
 4. **Apply database migrations**:
 
    - Ensure your MySQL server is running.
-   - Run the following command to create the database tables based on your Prisma schema:
+   - Run the following command to sync the database with your Prisma schema:
+
+   ```bash
+   npx prisma db push
+   ```
+
+   - Or create a migration:
 
    ```bash
    npx prisma migrate dev --name init

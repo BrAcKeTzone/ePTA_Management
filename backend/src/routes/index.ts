@@ -10,6 +10,7 @@ import penaltyRouter from "../api/penalties/penalties.route";
 import projectRouter from "../api/projects/projects.route";
 import contributionRouter from "../api/contributions/contributions.route";
 import announcementRouter from "../api/announcements/announcements.route";
+import settingsRouter from "../api/settings/settings.route";
 
 router.use("/auth", authRouter);
 router.use("/users", userRouter);
@@ -20,5 +21,6 @@ router.use("/penalties", penaltyRouter);
 router.use("/projects", projectRouter);
 router.use("/contributions", contributionRouter);
 router.use("/announcements", announcementRouter);
+router.use("/settings", settingsRouter);
 
 export default router;
