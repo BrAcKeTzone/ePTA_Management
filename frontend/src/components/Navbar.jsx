@@ -164,11 +164,6 @@ const Navbar = ({ onMenuClick }) => {
                         >
                           {getRoleDisplayName(user?.role)}
                         </span>
-                        {user?.phone && (
-                          <span className="text-xs text-gray-400">
-                            {user.phone}
-                          </span>
-                        )}
                       </div>
                       {user?.id && (
                         <div className="text-xs text-gray-400 mt-2">

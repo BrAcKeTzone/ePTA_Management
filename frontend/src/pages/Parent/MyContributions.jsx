@@ -36,7 +36,7 @@ const MyContributions = () => {
           contributionsApi.getPaymentBasis(),
         ]);
 
-      setContributions(contributionsResponse.data || []);
+      setContributions(contributionsResponse.data?.contributions || []);
       setBalance(balanceResponse.data || {});
       setPaymentBasis(paymentBasisResponse.data || {});
     } catch (error) {

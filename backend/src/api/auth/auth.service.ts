@@ -34,10 +34,15 @@ const generateToken = (userId: number): string => {
 };
 
 export const sendOtp = async (email: string): Promise<{ message: string }> => {
+  console.log("🔐 Starting OTP process for email:", email);
+
   const user = await prisma.user.findUnique({ where: { email } });
   if (user) {
+    console.log("❌ User already exists with email:", email);
     throw new ApiError(400, "User with this email already exists");
   }
+
+  console.log("✅ Email is available, generating OTP...");
 
   const otpOptions = {
     upperCase: false,
@@ -47,6 +52,7 @@ export const sendOtp = async (email: string): Promise<{ message: string }> => {
     upperCaseAlphabets: false,
   };
   const otp = otpGenerator.generate(6, otpOptions);
+  console.log("📱 Generated OTP:", otp); // Remove this in production
   const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
   try {
@@ -57,7 +63,9 @@ export const sendOtp = async (email: string): Promise<{ message: string }> => {
         createdAt: expires,
       },
     });
+    console.log("💾 OTP saved to database");
   } catch (error) {
+    console.error("❌ Failed to save OTP to database:", error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       throw new ApiError(400, "Failed to create OTP record");
     }
@@ -65,13 +73,15 @@ export const sendOtp = async (email: string): Promise<{ message: string }> => {
   }
 
   try {
+    console.log("📧 Attempting to send email...");
     await sendEmail({
       email,
       subject: "Your OTP for ePTA Registration",
       message: `Your OTP is: ${otp}. It will expire in 10 minutes.`,
     });
+    console.log("✅ Email sent successfully");
   } catch (error) {
-    console.error(error);
+    console.error("❌ Email sending failed:", error);
     throw new ApiError(
       500,
       "There was an error sending the email. Please try again later."
@@ -218,13 +228,12 @@ interface RegisterData {
   email: string;
   password: string;
   name: string;
-  phone?: string;
 }
 
 export const register = async (
   userData: RegisterData
 ): Promise<{ user: User; token: string }> => {
-  const { email, password, name, phone } = userData;
+  const { email, password, name } = userData;
 
   // Check if OTP has been verified for this email
   const otpRecord = await prisma.otp.findFirst({
@@ -257,7 +266,6 @@ export const register = async (
         email,
         password: hashedPassword,
         name,
-        phone,
         // First user automatically becomes an admin
         role: isFirstUser ? "ADMIN" : "PARENT",
       },

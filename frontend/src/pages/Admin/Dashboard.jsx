@@ -71,7 +71,8 @@ const AdminDashboard = () => {
       }
 
       if (meetingsResponse.status === "fulfilled") {
-        const meetings = meetingsResponse.value?.data || [];
+        const meetingsData = meetingsResponse.value?.data || {};
+        const meetings = meetingsData.meetings || [];
         // Count meetings in the last 30 days
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);

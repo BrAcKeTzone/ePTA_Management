@@ -32,7 +32,8 @@ const UsersManagement = () => {
       setLoading(true);
       const params = filter !== "all" ? { role: filter } : {};
       const response = await userApi.getAllUsers(params);
-      setUsers(response.data || []);
+      const usersData = response.data || {};
+      setUsers(usersData.users || []);
     } catch (error) {
       console.error("Error fetching users:", error);
     } finally {
@@ -126,11 +127,6 @@ const UsersManagement = () => {
           {user.role}
         </span>
       ),
-    },
-    {
-      key: "phoneNumber",
-      header: "Phone",
-      render: (user) => user.phoneNumber || "Not provided",
     },
     {
       key: "isVerified",
@@ -322,14 +318,6 @@ const UsersManagement = () => {
               <option value="admin">Administrator</option>
             </select>
           </div>
-          <Input
-            label="Phone Number"
-            value={newUser.phoneNumber}
-            onChange={(e) =>
-              setNewUser({ ...newUser, phoneNumber: e.target.value })
-            }
-            placeholder="+63 912 345 6789"
-          />
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Address
@@ -398,17 +386,6 @@ const UsersManagement = () => {
                 <option value="admin">Administrator</option>
               </select>
             </div>
-            <Input
-              label="Phone Number"
-              value={selectedUser.phoneNumber || ""}
-              onChange={(e) =>
-                setSelectedUser({
-                  ...selectedUser,
-                  phoneNumber: e.target.value,
-                })
-              }
-              placeholder="+63 912 345 6789"
-            />
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Address

@@ -40,10 +40,7 @@ export const authenticate = asyncHandler(
 
     try {
       // Verify token
-      const decoded = jwt.verify(
-        token,
-        process.env.ACCESS_TOKEN_SECRET as string
-      ) as {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
         id: number;
         email: string;
       };

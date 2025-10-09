@@ -957,3 +957,146 @@ export const getAttendanceStats = async (filters?: {
     },
   };
 };
+
+/**
+ * Get current user's attendance records
+ */
+export const getMyAttendance = async (userId: number, params: any = {}) => {
+  const { page = 1, limit = 10, status, meetingId } = params;
+  const offset = (page - 1) * limit;
+
+  const where: any = {
+    parentId: userId,
+  };
+
+  if (status) {
+    where.status = status;
+  }
+
+  if (meetingId) {
+    where.meetingId = parseInt(meetingId);
+  }
+
+  const attendances = await prisma.attendance.findMany({
+    where,
+    include: {
+      meeting: {
+        select: {
+          id: true,
+          title: true,
+          date: true,
+          startTime: true,
+          venue: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    skip: offset,
+    take: parseInt(limit),
+  });
+
+  const total = await prisma.attendance.count({ where });
+
+  return {
+    attendances,
+    pagination: {
+      total,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
+/**
+ * Get current user's penalties
+ */
+export const getMyPenalties = async (userId: number) => {
+  const penalties = await prisma.attendance.findMany({
+    where: {
+      parentId: userId,
+      hasPenalty: true,
+    },
+    include: {
+      meeting: {
+        select: {
+          id: true,
+          title: true,
+          date: true,
+          startTime: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  const totalPenaltyAmount = penalties.reduce(
+    (sum, penalty) => sum + (penalty.penaltyAmount || 0),
+    0
+  );
+
+  return {
+    penalties,
+    summary: {
+      totalPenalties: penalties.length,
+      totalAmount: totalPenaltyAmount,
+    },
+  };
+};
+
+/**
+ * Get attendance records for a specific meeting
+ */
+export const getAttendanceByMeeting = async (meetingId: number) => {
+  const meeting = await prisma.meeting.findUnique({
+    where: { id: meetingId },
+  });
+
+  if (!meeting) {
+    throw new ApiError(404, "Meeting not found");
+  }
+
+  const attendances = await prisma.attendance.findMany({
+    where: {
+      meetingId,
+    },
+    include: {
+      parent: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+        },
+      },
+    },
+    orderBy: {
+      parent: { name: "asc" },
+    },
+  });
+
+  const summary = {
+    totalRecords: attendances.length,
+    present: attendances.filter((a) => a.status === "PRESENT").length,
+    absent: attendances.filter((a) => a.status === "ABSENT").length,
+    excused: attendances.filter((a) => a.status === "EXCUSED").length,
+    late: attendances.filter((a) => a.isLate).length,
+    withPenalty: attendances.filter((a) => a.hasPenalty).length,
+  };
+
+  return {
+    meeting: {
+      id: meeting.id,
+      title: meeting.title,
+      date: meeting.date,
+      startTime: meeting.startTime,
+      venue: meeting.venue,
+    },
+    attendances,
+    summary,
+  };
+};

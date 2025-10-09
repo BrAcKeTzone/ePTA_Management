@@ -864,3 +864,238 @@ export const getContributionStats = async (filters: any) => {
     },
   };
 };
+
+/**
+ * Get user balance summary
+ */
+export const getUserBalance = async (userId: number) => {
+  const [contributions, payments] = await Promise.all([
+    prisma.contribution.findMany({
+      where: { parentId: userId },
+      select: {
+        amount: true,
+        amountPaid: true,
+        balance: true,
+        status: true,
+        isOverdue: true,
+      },
+    }),
+    prisma.contributionPayment.findMany({
+      where: {
+        contribution: {
+          parentId: userId,
+        },
+      },
+      select: {
+        amount: true,
+        createdAt: true,
+      },
+    }),
+  ]);
+
+  const totalOwed = contributions.reduce((sum, c) => sum + c.amount, 0);
+  const totalPaid = contributions.reduce((sum, c) => sum + c.amountPaid, 0);
+  const totalBalance = contributions.reduce((sum, c) => sum + c.balance, 0);
+
+  const statusCounts = contributions.reduce((counts, c) => {
+    counts[c.status] = (counts[c.status] || 0) + 1;
+    if (c.isOverdue) counts.overdue++;
+    return counts;
+  }, {} as Record<string, number>);
+
+  return {
+    summary: {
+      totalOwed,
+      totalPaid,
+      totalBalance,
+      contributionCount: contributions.length,
+    },
+    status: {
+      pending: statusCounts.PENDING || 0,
+      partial: statusCounts.PARTIAL || 0,
+      paid: statusCounts.PAID || 0,
+      overdue: statusCounts.overdue || 0,
+      waived: statusCounts.WAIVED || 0,
+    },
+    recentPayments: payments
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, 5),
+  };
+};
+
+/**
+ * Get payment basis settings
+ */
+export const getPaymentBasisSettings = async () => {
+  const settings = await prisma.settings.findFirst({
+    where: { key: "system_config" },
+    select: {
+      paymentBasis: true,
+      monthlyContributionAmount: true,
+      projectContributionMinimum: true,
+      enableMandatoryContribution: true,
+      allowPartialPayment: true,
+      paymentDueDays: true,
+    },
+  });
+
+  return (
+    settings || {
+      paymentBasis: "PER_STUDENT",
+      monthlyContributionAmount: 100.0,
+      projectContributionMinimum: 50.0,
+      enableMandatoryContribution: true,
+      allowPartialPayment: true,
+      paymentDueDays: 30,
+    }
+  );
+};
+
+/**
+ * Get detailed payment basis settings
+ */
+export const getDetailedPaymentBasisSettings = async () => {
+  const settings = await prisma.settings.findFirst({
+    where: { key: "system_config" },
+  });
+
+  return settings || {};
+};
+
+/**
+ * Update payment basis settings
+ */
+export const updatePaymentBasisSettings = async (updateData: any) => {
+  const settings = await prisma.settings.upsert({
+    where: { key: "system_config" },
+    update: {
+      ...updateData,
+      updatedAt: new Date(),
+    },
+    create: {
+      key: "system_config",
+      ...updateData,
+      updatedById: 1, // Default admin user
+    },
+  });
+
+  return settings;
+};
+
+/**
+ * Verify contribution payment
+ */
+export const verifyContributionPayment = async (
+  contributionId: number,
+  verified: boolean,
+  notes?: string
+) => {
+  const contribution = await prisma.contribution.findUnique({
+    where: { id: contributionId },
+  });
+
+  if (!contribution) {
+    throw new ApiError(404, "Contribution not found");
+  }
+
+  // Update verification status (this would be a custom field if needed)
+  const updatedContribution = await prisma.contribution.update({
+    where: { id: contributionId },
+    data: {
+      // For now, we'll use the existing fields
+      paymentNotes: notes,
+      updatedAt: new Date(),
+    },
+    include: {
+      parent: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+      project: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      payments: true,
+    },
+  });
+
+  return updatedContribution;
+};
+
+/**
+ * Generate financial report
+ */
+export const generateFinancialReport = async (filters: any) => {
+  const contributions = await getContributions(filters);
+  const stats = await getContributionStats(filters);
+
+  return {
+    contributions,
+    statistics: stats,
+    generatedAt: new Date(),
+    filters,
+  };
+};
+
+/**
+ * Generate financial report PDF (placeholder)
+ */
+export const generateFinancialReportPDF = async (filters: any) => {
+  // This is a placeholder implementation
+  // In a real application, you would use a PDF generation library like puppeteer or jsPDF
+  const report = await generateFinancialReport(filters);
+
+  // Return a simple text representation for now
+  const reportText = `Financial Report\nGenerated: ${new Date()}\nTotal Contributions: ${
+    report.contributions.contributions.length
+  }`;
+
+  return Buffer.from(reportText, "utf-8");
+};
+
+/**
+ * Generate financial report CSV
+ */
+export const generateFinancialReportCSV = async (filters: any) => {
+  const { contributions } = await getContributions(filters);
+
+  const headers = [
+    "ID",
+    "Parent",
+    "Project",
+    "Type",
+    "Title",
+    "Amount",
+    "Amount Paid",
+    "Balance",
+    "Status",
+    "Due Date",
+    "Created At",
+  ];
+
+  const rows = contributions.map((c: any) => [
+    c.id,
+    c.parent?.name || "",
+    c.project?.name || "",
+    c.type,
+    c.title,
+    c.amount,
+    c.amountPaid,
+    c.balance,
+    c.status,
+    c.dueDate || "",
+    c.createdAt,
+  ]);
+
+  const csvContent = [
+    headers.join(","),
+    ...rows.map((row) => row.map((field) => `"${field}"`).join(",")),
+  ].join("\n");
+
+  return csvContent;
+};

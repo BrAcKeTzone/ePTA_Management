@@ -262,3 +262,85 @@ export const getAttendanceStats = asyncHandler(
       );
   }
 );
+
+/**
+ * @desc    Get current user's attendance records
+ * @route   GET /api/attendance/my-attendance
+ * @access  Private/Parent
+ */
+export const getMyAttendance = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json(new ApiResponse(401, null, "User not authenticated"));
+    }
+
+    const attendance = await attendanceService.getMyAttendance(
+      userId,
+      req.query
+    );
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          attendance,
+          "User attendance retrieved successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Get current user's penalties
+ * @route   GET /api/attendance/my-penalties
+ * @access  Private/Parent
+ */
+export const getMyPenalties = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json(new ApiResponse(401, null, "User not authenticated"));
+    }
+
+    const penalties = await attendanceService.getMyPenalties(userId);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, penalties, "User penalties retrieved successfully")
+      );
+  }
+);
+
+/**
+ * @desc    Get attendance records for a specific meeting
+ * @route   GET /api/attendance/meeting/:meetingId
+ * @access  Private
+ */
+export const getAttendanceByMeeting = asyncHandler(
+  async (req: Request, res: Response) => {
+    const meetingId = Number(req.params.meetingId);
+
+    const attendance = await attendanceService.getAttendanceByMeeting(
+      meetingId
+    );
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          attendance,
+          "Meeting attendance retrieved successfully"
+        )
+      );
+  }
+);

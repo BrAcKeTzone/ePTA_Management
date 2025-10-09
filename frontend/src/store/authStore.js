@@ -176,7 +176,6 @@ export const useAuthStore = create(
             email: signupData.email,
             password: personalData.password,
             name: personalData.name,
-            phone: personalData.phone,
           };
 
           // Call backend API
@@ -399,7 +398,6 @@ export const useAuthStore = create(
           const response = await userApi.updateCurrentUser({
             name: profileData.name,
             email: profileData.email,
-            phone: profileData.phone,
           });
 
           // Update the local user state with the response from backend

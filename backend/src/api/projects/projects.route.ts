@@ -9,6 +9,39 @@ const router = express.Router();
 // All routes require authentication
 router.use(authenticate);
 
+// Special routes (before parameterized routes)
+router.get(
+  "/active",
+  validate(projectValidation.getProjectsSchema, "query"),
+  projectController.getActiveProjects
+);
+
+router.get(
+  "/documents/public",
+  validate(projectValidation.getProjectsSchema, "query"),
+  projectController.getPublicDocuments
+);
+
+// Document management routes
+router.get("/documents", projectController.getAllDocuments);
+
+router.get(
+  "/documents/:documentId/download",
+  projectController.downloadDocument
+);
+
+router.put(
+  "/documents/:documentId",
+  authorize("ADMIN"),
+  projectController.updateDocument
+);
+
+router.delete(
+  "/documents/:documentId",
+  authorize("ADMIN"),
+  projectController.deleteDocument
+);
+
 // Get statistics (all users can view)
 router.get(
   "/stats",
@@ -50,8 +83,66 @@ router.put(
   projectController.updateProject
 );
 
+// Update project status (admin only)
+router.patch(
+  "/:id/status",
+  authorize("ADMIN"),
+  projectController.updateProjectStatus
+);
+
 // Delete project (admin only)
 router.delete("/:id", authorize("ADMIN"), projectController.deleteProject);
+
+// Project accomplishments routes
+router.get("/:id/accomplishments", projectController.getProjectAccomplishments);
+
+router.post(
+  "/:id/accomplishments",
+  authorize("ADMIN"),
+  projectController.createAccomplishment
+);
+
+router.put(
+  "/:id/accomplishments/:accomplishmentId",
+  authorize("ADMIN"),
+  projectController.updateAccomplishment
+);
+
+router.delete(
+  "/:id/accomplishments/:accomplishmentId",
+  authorize("ADMIN"),
+  projectController.deleteAccomplishment
+);
+
+// Project documents routes (project-specific)
+router.get("/:id/documents", projectController.getProjectDocuments);
+
+router.post(
+  "/:id/documents",
+  authorize("ADMIN"),
+  projectController.uploadProjectDocument
+);
+
+// Project timeline routes
+router.get("/:id/timeline", projectController.getProjectTimeline);
+
+router.post(
+  "/:id/timeline",
+  authorize("ADMIN"),
+  projectController.createTimelineEvent
+);
+
+router.put(
+  "/:id/timeline/:timelineId",
+  authorize("ADMIN"),
+  projectController.updateTimelineEvent
+);
+
+router.delete(
+  "/:id/timeline/:timelineId",
+  authorize("ADMIN"),
+  projectController.deleteTimelineEvent
+);
 
 // Update raised funds from contributions (admin only)
 router.post(

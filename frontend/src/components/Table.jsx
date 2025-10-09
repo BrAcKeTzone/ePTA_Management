@@ -8,6 +8,9 @@ const Table = ({
   loading = false,
   emptyMessage = "No data available",
 }) => {
+  // Ensure data is always an array
+  const safeData = Array.isArray(data) ? data : [];
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
@@ -16,7 +19,7 @@ const Table = ({
     );
   }
 
-  if (!data || data.length === 0) {
+  if (safeData.length === 0) {
     return <div className="text-center py-8 text-gray-500">{emptyMessage}</div>;
   }
 
@@ -39,7 +42,7 @@ const Table = ({
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {data.map((row, rowIndex) => (
+          {safeData.map((row, rowIndex) => (
             <tr
               key={rowIndex}
               className={`${

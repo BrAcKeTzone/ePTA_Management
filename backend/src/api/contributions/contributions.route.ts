@@ -9,6 +9,65 @@ const router = express.Router();
 // All routes require authentication
 router.use(authenticate);
 
+// Parent-specific routes (for logged-in parents)
+router.get(
+  "/my-contributions",
+  validate(contributionValidation.getContributionsSchema, "query"),
+  contributionController.getMyContributions
+);
+
+router.get("/my-balance", contributionController.getMyBalance);
+
+// Payment basis and settings routes
+router.get("/payment-basis", contributionController.getPaymentBasis);
+
+router.get(
+  "/payment-basis-settings",
+  contributionController.getPaymentBasisSettings
+);
+
+router.put(
+  "/payment-basis",
+  authorize("ADMIN"),
+  validate(contributionValidation.updatePaymentBasisSchema, "body"),
+  contributionController.updatePaymentBasis
+);
+
+// Reports routes (enhanced)
+router.get(
+  "/reports/financial",
+  authorize("ADMIN"),
+  validate(contributionValidation.contributionReportSchema, "query"),
+  contributionController.generateFinancialReport
+);
+
+router.get(
+  "/reports/financial/pdf",
+  authorize("ADMIN"),
+  validate(contributionValidation.contributionReportSchema, "query"),
+  contributionController.generateFinancialReportPDF
+);
+
+router.get(
+  "/reports/financial/csv",
+  authorize("ADMIN"),
+  validate(contributionValidation.contributionReportSchema, "query"),
+  contributionController.generateFinancialReportCSV
+);
+
+// Parent and project specific routes
+router.get(
+  "/parent/:parentId",
+  validate(contributionValidation.getContributionsSchema, "query"),
+  contributionController.getContributionsByParent
+);
+
+router.get(
+  "/project/:projectId",
+  validate(contributionValidation.getContributionsSchema, "query"),
+  contributionController.getContributionsByProject
+);
+
 // Get statistics (all users can view)
 router.get(
   "/stats",
@@ -16,7 +75,7 @@ router.get(
   contributionController.getContributionStats
 );
 
-// Generate report (admin only)
+// Generate report (admin only) - keeping for backward compatibility
 router.get(
   "/report",
   authorize("ADMIN"),
@@ -78,6 +137,14 @@ router.post(
   authorize("ADMIN"),
   validate(contributionValidation.waiveContributionSchema, "body"),
   contributionController.waiveContribution
+);
+
+// Verify contribution payment (admin only)
+router.post(
+  "/:id/verify",
+  authorize("ADMIN"),
+  validate(contributionValidation.verifyPaymentSchema, "body"),
+  contributionController.verifyPayment
 );
 
 export default router;

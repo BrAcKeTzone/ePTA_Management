@@ -110,7 +110,8 @@ const ParentDashboard = () => {
       }
 
       if (upcomingMeetingsResponse.status === "fulfilled") {
-        setUpcomingMeetings(upcomingMeetingsResponse.value.data || []);
+        const meetingsData = upcomingMeetingsResponse.value?.data || {};
+        setUpcomingMeetings(meetingsData.meetings || []);
       }
 
       setStats(newStats);

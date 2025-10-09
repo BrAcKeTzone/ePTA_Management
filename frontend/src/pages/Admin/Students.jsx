@@ -37,7 +37,7 @@ const StudentsManagement = () => {
       setLoading(true);
       const params = filter !== "all" ? { gradeLevel: filter } : {};
       const response = await studentsApi.getAllStudents(params);
-      setStudents(response.data || []);
+      setStudents(response.data?.students || []);
     } catch (error) {
       console.error("Error fetching students:", error);
     } finally {
@@ -48,7 +48,7 @@ const StudentsManagement = () => {
   const fetchParents = async () => {
     try {
       const response = await userApi.getAllUsers({ role: "parent" });
-      setParents(response.data || []);
+      setParents(response.data?.users || []);
     } catch (error) {
       console.error("Error fetching parents:", error);
     }

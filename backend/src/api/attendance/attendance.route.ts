@@ -24,12 +24,28 @@ router.get(
   attendanceController.getAttendanceStats
 );
 
+// Parent-specific routes
+router.get("/my-attendance", attendanceController.getMyAttendance);
+
+router.get("/my-penalties", attendanceController.getMyPenalties);
+
 // Report route (must be before /:id route)
 router.get(
   "/report",
   authorize("ADMIN"),
   validate(attendanceReportSchema, "query"),
   attendanceController.generateAttendanceReport
+);
+
+// Meeting-specific attendance
+router.get("/meeting/:meetingId", attendanceController.getAttendanceByMeeting);
+
+// Record attendance for meeting
+router.post(
+  "/record",
+  authorize("ADMIN"),
+  validate(recordAttendanceSchema, "body"),
+  attendanceController.recordAttendance
 );
 
 // Calculate penalties route (admin only)

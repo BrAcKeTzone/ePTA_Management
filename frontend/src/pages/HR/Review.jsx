@@ -394,17 +394,11 @@ const ApplicationReview = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div>
                 <p className="text-sm font-medium text-gray-500">Email</p>
                 <p className="mt-1 break-all">
                   {selectedApplication.applicant_email}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Phone</p>
-                <p className="mt-1">
-                  {selectedApplication.phone || "Not provided"}
                 </p>
               </div>
             </div>

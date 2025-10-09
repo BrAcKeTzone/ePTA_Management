@@ -25,7 +25,6 @@ const SignupForm = () => {
     email: "",
     otp: "",
     name: "",
-    phone: "",
     password: "",
     confirmPassword: "",
   });
@@ -130,7 +129,6 @@ const SignupForm = () => {
     try {
       await completeRegistration({
         name: formData.name,
-        phone: formData.phone,
         password: formData.password,
       });
     } catch (err) {
@@ -144,7 +142,6 @@ const SignupForm = () => {
       email: "",
       otp: "",
       name: "",
-      phone: "",
       password: "",
       confirmPassword: "",
     });
@@ -236,39 +233,21 @@ const SignupForm = () => {
         </h3>
 
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Input
-                label="Full Name"
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                placeholder="John Doe"
-              />
-              {validationErrors.name && (
-                <p className="mt-1 text-sm text-red-600">
-                  {validationErrors.name}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <Input
-                label="Phone Number"
-                name="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+63-9123456789 (optional)"
-              />
-              {validationErrors.phone && (
-                <p className="mt-1 text-sm text-red-600">
-                  {validationErrors.phone}
-                </p>
-              )}
-            </div>
+          <div>
+            <Input
+              label="Full Name"
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              placeholder="John Doe"
+            />
+            {validationErrors.name && (
+              <p className="mt-1 text-sm text-red-600">
+                {validationErrors.name}
+              </p>
+            )}
           </div>
 
           <div>

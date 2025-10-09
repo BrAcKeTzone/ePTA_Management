@@ -107,3 +107,21 @@ export const sendRemindersSchema = Joi.object({
     .items(Joi.number().integer().positive())
     .optional(),
 });
+
+// Verify payment validation schema
+export const verifyPaymentSchema = Joi.object({
+  verified: Joi.boolean().required(),
+  notes: Joi.string().max(1000).optional().allow(null, ""),
+});
+
+// Update payment basis validation schema
+export const updatePaymentBasisSchema = Joi.object({
+  paymentBasis: Joi.string()
+    .valid("PER_STUDENT", "PER_FAMILY", "PER_MEETING")
+    .required(),
+  monthlyContributionAmount: Joi.number().positive().optional(),
+  projectContributionMinimum: Joi.number().positive().optional(),
+  enableMandatoryContribution: Joi.boolean().optional(),
+  allowPartialPayment: Joi.boolean().optional(),
+  paymentDueDays: Joi.number().integer().min(1).max(365).optional(),
+});

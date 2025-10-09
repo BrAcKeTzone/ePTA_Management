@@ -3,7 +3,6 @@ import { UserRole } from "@prisma/client";
 
 export const updateUserProfile = Joi.object().keys({
   name: Joi.string().min(2).max(100).optional(),
-  phone: Joi.string().min(10).max(15).optional().allow("", null),
   email: Joi.string().email().optional(),
 });
 
@@ -40,7 +39,6 @@ export const changePassword = Joi.object().keys({
 
 export const updateUserByAdmin = Joi.object().keys({
   name: Joi.string().min(2).max(100).optional(),
-  phone: Joi.string().min(10).max(15).optional().allow("", null),
   email: Joi.string().email().optional(),
   role: Joi.string()
     .valid(...Object.values(UserRole))

@@ -379,3 +379,339 @@ export const getProjectStats = asyncHandler(
       );
   }
 );
+
+/**
+ * @desc    Get active projects
+ * @route   GET /api/projects/active
+ * @access  Private
+ */
+export const getActiveProjects = asyncHandler(
+  async (req: Request, res: Response) => {
+    const filters = {
+      ...req.query,
+      status: "ACTIVE",
+    };
+
+    const result = await projectService.getProjects(filters);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, result, "Active projects retrieved successfully")
+      );
+  }
+);
+
+/**
+ * @desc    Get public documents from all projects
+ * @route   GET /api/projects/documents/public
+ * @access  Private
+ */
+export const getPublicDocuments = asyncHandler(
+  async (req: Request, res: Response) => {
+    const documents = await projectService.getPublicDocuments(req.query);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          documents,
+          "Public documents retrieved successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Get all documents from all projects
+ * @route   GET /api/projects/documents
+ * @access  Private
+ */
+export const getAllDocuments = asyncHandler(
+  async (req: Request, res: Response) => {
+    const documents = await projectService.getAllDocuments(req.query);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, documents, "All documents retrieved successfully")
+      );
+  }
+);
+
+/**
+ * @desc    Download a document
+ * @route   GET /api/projects/documents/:documentId/download
+ * @access  Private
+ */
+export const downloadDocument = asyncHandler(
+  async (req: Request, res: Response) => {
+    const documentId = parseInt(req.params.documentId);
+    const document = await projectService.getDocumentForDownload(documentId);
+
+    // In a real app, you would stream the file from storage
+    res
+      .status(200)
+      .json(new ApiResponse(200, document, "Document download info retrieved"));
+  }
+);
+
+/**
+ * @desc    Update a document
+ * @route   PUT /api/projects/documents/:documentId
+ * @access  Private (Admin only)
+ */
+export const updateDocument = asyncHandler(
+  async (req: Request, res: Response) => {
+    const documentId = parseInt(req.params.documentId);
+    const document = await projectService.updateDocument(documentId, req.body);
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, document, "Document updated successfully"));
+  }
+);
+
+/**
+ * @desc    Delete a document
+ * @route   DELETE /api/projects/documents/:documentId
+ * @access  Private (Admin only)
+ */
+export const deleteDocument = asyncHandler(
+  async (req: Request, res: Response) => {
+    const documentId = parseInt(req.params.documentId);
+    await projectService.deleteDocument(documentId);
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, null, "Document deleted successfully"));
+  }
+);
+
+/**
+ * @desc    Update project status
+ * @route   PATCH /api/projects/:id/status
+ * @access  Private (Admin only)
+ */
+export const updateProjectStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const projectId = parseInt(req.params.id);
+    const { status } = req.body;
+
+    const project = await projectService.updateProjectStatus(projectId, status);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, project, "Project status updated successfully")
+      );
+  }
+);
+
+/**
+ * @desc    Get project accomplishments
+ * @route   GET /api/projects/:id/accomplishments
+ * @access  Private
+ */
+export const getProjectAccomplishments = asyncHandler(
+  async (req: Request, res: Response) => {
+    const projectId = parseInt(req.params.id);
+    const accomplishments = await projectService.getProjectAccomplishments(
+      projectId
+    );
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          accomplishments,
+          "Project accomplishments retrieved successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Create accomplishment
+ * @route   POST /api/projects/:id/accomplishments
+ * @access  Private (Admin only)
+ */
+export const createAccomplishment = asyncHandler(
+  async (req: Request, res: Response) => {
+    const projectId = parseInt(req.params.id);
+    const accomplishment = await projectService.createAccomplishment(
+      projectId,
+      req.body
+    );
+
+    res
+      .status(201)
+      .json(
+        new ApiResponse(
+          201,
+          accomplishment,
+          "Accomplishment created successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Update accomplishment
+ * @route   PUT /api/projects/:id/accomplishments/:accomplishmentId
+ * @access  Private (Admin only)
+ */
+export const updateAccomplishment = asyncHandler(
+  async (req: Request, res: Response) => {
+    const accomplishmentId = parseInt(req.params.accomplishmentId);
+    const accomplishment = await projectService.updateAccomplishment(
+      accomplishmentId,
+      req.body
+    );
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          accomplishment,
+          "Accomplishment updated successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Delete accomplishment
+ * @route   DELETE /api/projects/:id/accomplishments/:accomplishmentId
+ * @access  Private (Admin only)
+ */
+export const deleteAccomplishment = asyncHandler(
+  async (req: Request, res: Response) => {
+    const accomplishmentId = parseInt(req.params.accomplishmentId);
+    await projectService.deleteAccomplishment(accomplishmentId);
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, null, "Accomplishment deleted successfully"));
+  }
+);
+
+/**
+ * @desc    Get project documents
+ * @route   GET /api/projects/:id/documents
+ * @access  Private
+ */
+export const getProjectDocuments = asyncHandler(
+  async (req: Request, res: Response) => {
+    const projectId = parseInt(req.params.id);
+    const documents = await projectService.getProjectDocuments(
+      projectId,
+      req.query
+    );
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          documents,
+          "Project documents retrieved successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Upload project document
+ * @route   POST /api/projects/:id/documents
+ * @access  Private (Admin only)
+ */
+export const uploadProjectDocument = asyncHandler(
+  async (req: Request, res: Response) => {
+    const projectId = parseInt(req.params.id);
+    const document = await projectService.uploadProjectDocument(
+      projectId,
+      req.body
+    );
+
+    res
+      .status(201)
+      .json(new ApiResponse(201, document, "Document uploaded successfully"));
+  }
+);
+
+/**
+ * @desc    Get project timeline
+ * @route   GET /api/projects/:id/timeline
+ * @access  Private
+ */
+export const getProjectTimeline = asyncHandler(
+  async (req: Request, res: Response) => {
+    const projectId = parseInt(req.params.id);
+    const timeline = await projectService.getProjectTimeline(projectId);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          timeline,
+          "Project timeline retrieved successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Create timeline event
+ * @route   POST /api/projects/:id/timeline
+ * @access  Private (Admin only)
+ */
+export const createTimelineEvent = asyncHandler(
+  async (req: Request, res: Response) => {
+    const projectId = parseInt(req.params.id);
+    const event = await projectService.createTimelineEvent(projectId, req.body);
+
+    res
+      .status(201)
+      .json(new ApiResponse(201, event, "Timeline event created successfully"));
+  }
+);
+
+/**
+ * @desc    Update timeline event
+ * @route   PUT /api/projects/:id/timeline/:timelineId
+ * @access  Private (Admin only)
+ */
+export const updateTimelineEvent = asyncHandler(
+  async (req: Request, res: Response) => {
+    const timelineId = parseInt(req.params.timelineId);
+    const event = await projectService.updateTimelineEvent(
+      timelineId,
+      req.body
+    );
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, event, "Timeline event updated successfully"));
+  }
+);
+
+/**
+ * @desc    Delete timeline event
+ * @route   DELETE /api/projects/:id/timeline/:timelineId
+ * @access  Private (Admin only)
+ */
+export const deleteTimelineEvent = asyncHandler(
+  async (req: Request, res: Response) => {
+    const timelineId = parseInt(req.params.timelineId);
+    await projectService.deleteTimelineEvent(timelineId);
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, null, "Timeline event deleted successfully"));
+  }
+);

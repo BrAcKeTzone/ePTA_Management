@@ -29,6 +29,14 @@ const createTransporter = (): Transporter => {
 };
 
 const sendEmail = async (options: EmailOptions): Promise<void> => {
+  // Log email configuration (without password)
+  console.log("Email Configuration:", {
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
+    user: process.env.EMAIL_USERNAME,
+    hasPassword: !!process.env.EMAIL_PASSWORD,
+  });
+
   const transporter = createTransporter();
 
   const mailOptions = {
@@ -38,7 +46,15 @@ const sendEmail = async (options: EmailOptions): Promise<void> => {
     text: options.message,
   };
 
-  await transporter.sendMail(mailOptions);
+  console.log("Attempting to send email to:", options.email);
+
+  try {
+    const result = await transporter.sendMail(mailOptions);
+    console.log("✅ Email sent successfully:", result.messageId);
+  } catch (error) {
+    console.error("❌ Email sending failed:", error);
+    throw error;
+  }
 };
 
 export default sendEmail;

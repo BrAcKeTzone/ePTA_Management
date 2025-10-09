@@ -26,7 +26,7 @@ const Announcements = () => {
     try {
       setLoading(true);
       const response = await announcementsApi.getActiveAnnouncements();
-      setAnnouncements(response.data || []);
+      setAnnouncements(response.data?.announcements || []);
     } catch (error) {
       console.error("Error fetching announcements:", error);
     } finally {

@@ -25,7 +25,19 @@ export const updateProjectSchema = Joi.object({
   fundingGoal: Joi.number().positive().optional().allow(null),
   targetBeneficiaries: Joi.number().integer().positive().optional().allow(null),
   status: Joi.string()
-    .valid("PLANNING", "ACTIVE", "ON_HOLD", "COMPLETED", "CANCELLED")
+    .valid(
+      "PLANNING",
+      "ACTIVE",
+      "ON_HOLD",
+      "COMPLETED",
+      "CANCELLED",
+      "planning",
+      "active",
+      "on_hold",
+      "completed",
+      "cancelled"
+    )
+    .uppercase()
     .optional(),
   priority: Joi.string().valid("LOW", "MEDIUM", "HIGH", "URGENT").optional(),
   startDate: Joi.date().iso().optional(),
@@ -40,7 +52,19 @@ export const updateProjectSchema = Joi.object({
 // Get projects with filters
 export const getProjectsSchema = Joi.object({
   status: Joi.string()
-    .valid("PLANNING", "ACTIVE", "ON_HOLD", "COMPLETED", "CANCELLED")
+    .valid(
+      "PLANNING",
+      "ACTIVE",
+      "ON_HOLD",
+      "COMPLETED",
+      "CANCELLED",
+      "planning",
+      "active",
+      "on_hold",
+      "completed",
+      "cancelled"
+    )
+    .uppercase()
     .optional(),
   priority: Joi.string().valid("LOW", "MEDIUM", "HIGH", "URGENT").optional(),
   createdById: Joi.number().integer().positive().optional(),
@@ -99,7 +123,19 @@ export const updateProjectUpdateSchema = Joi.object({
 export const projectReportSchema = Joi.object({
   projectId: Joi.number().integer().positive().optional(),
   status: Joi.string()
-    .valid("PLANNING", "ACTIVE", "ON_HOLD", "COMPLETED", "CANCELLED")
+    .valid(
+      "PLANNING",
+      "ACTIVE",
+      "ON_HOLD",
+      "COMPLETED",
+      "CANCELLED",
+      "planning",
+      "active",
+      "on_hold",
+      "completed",
+      "cancelled"
+    )
+    .uppercase()
     .optional(),
   priority: Joi.string().valid("LOW", "MEDIUM", "HIGH", "URGENT").optional(),
   dateFrom: Joi.date().iso().required(),
@@ -113,7 +149,19 @@ export const projectReportSchema = Joi.object({
 export const projectStatsSchema = Joi.object({
   projectId: Joi.number().integer().positive().optional(),
   status: Joi.string()
-    .valid("PLANNING", "ACTIVE", "ON_HOLD", "COMPLETED", "CANCELLED")
+    .valid(
+      "PLANNING",
+      "ACTIVE",
+      "ON_HOLD",
+      "COMPLETED",
+      "CANCELLED",
+      "planning",
+      "active",
+      "on_hold",
+      "completed",
+      "cancelled"
+    )
+    .uppercase()
     .optional(),
   dateFrom: Joi.date().iso().optional(),
   dateTo: Joi.date().iso().min(Joi.ref("dateFrom")).optional(),

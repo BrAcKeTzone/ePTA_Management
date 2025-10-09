@@ -19,7 +19,7 @@ const Projects = () => {
     try {
       setLoading(true);
       const response = await projectsApi.getActiveProjects();
-      setProjects(response.data || []);
+      setProjects(response.data?.projects || []);
     } catch (error) {
       console.error("Error fetching projects:", error);
     } finally {

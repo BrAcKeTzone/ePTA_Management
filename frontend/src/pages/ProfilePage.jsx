@@ -24,7 +24,6 @@ const ProfilePage = () => {
   const [profileData, setProfileData] = useState({
     name: "",
     email: "",
-    phone: "",
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -82,7 +81,6 @@ const ProfilePage = () => {
       setProfileData({
         name: user.name || "",
         email: user.email || "",
-        phone: user.phone || "",
       });
       // Clear any validation errors when user data changes
       setValidationErrors({});
@@ -117,25 +115,6 @@ const ProfilePage = () => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(profileData.email)) {
         errors.email = "Please enter a valid email address";
-      }
-    }
-
-    // Phone validation (optional but if provided, should be valid)
-    if (profileData.phone && profileData.phone.trim()) {
-      // Remove all non-digit characters except + for counting digits
-      const cleanPhone = profileData.phone.replace(/[^\d]/g, "");
-
-      // Flexible phone validation that accepts various formats:
-      // - International: +1234567890, +1 234 567 8900
-      // - Domestic: 1234567890, 123-456-7890, (123) 456-7890
-      // - Various separators: spaces, dashes, dots, parentheses
-      const phoneRegex = /^[\+]?[\s]?[\(]?[\d\s\-\.\(\)]{7,}$/;
-
-      // Check if it has reasonable number of digits (7-15 is international standard)
-      if (cleanPhone.length < 7 || cleanPhone.length > 15) {
-        errors.phone = "Phone number must contain 7-15 digits";
-      } else if (!phoneRegex.test(profileData.phone.trim())) {
-        errors.phone = "Please enter a valid phone number format";
       }
     }
 
@@ -271,7 +250,6 @@ const ProfilePage = () => {
       setProfileData({
         name: user.name || "",
         email: user.email || "",
-        phone: user.phone || "",
       });
     }
   };
@@ -385,31 +363,6 @@ const ProfilePage = () => {
                   </p>
                 )}
               </div>
-
-              <div>
-                <Input
-                  label="Phone Number"
-                  value={profileData.phone}
-                  onChange={(e) => {
-                    setProfileData({
-                      ...profileData,
-                      phone: e.target.value,
-                    });
-                    // Clear validation error when user starts typing
-                    if (validationErrors.phone) {
-                      const { phone, ...rest } = validationErrors;
-                      setValidationErrors(rest);
-                    }
-                  }}
-                  disabled={!isEditing}
-                  placeholder="Enter your phone number"
-                />
-                {validationErrors.phone && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {validationErrors.phone}
-                  </p>
-                )}
-              </div>
             </div>
 
             <div className="mt-6 flex flex-col sm:flex-row gap-3">
@@ -500,12 +453,6 @@ const ProfilePage = () => {
                     <span>User ID:</span>
                     <span className="font-medium">#{user?.id}</span>
                   </div>
-                  {user?.phone && (
-                    <div className="flex justify-between">
-                      <span>Phone:</span>
-                      <span className="font-medium">{user.phone}</span>
-                    </div>
-                  )}
                   <div className="flex justify-between">
                     <span>Member since:</span>
                     <span className="font-medium">

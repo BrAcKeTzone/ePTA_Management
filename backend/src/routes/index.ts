@@ -11,6 +11,7 @@ import projectRouter from "../api/projects/projects.route";
 import contributionRouter from "../api/contributions/contributions.route";
 import announcementRouter from "../api/announcements/announcements.route";
 import settingsRouter from "../api/settings/settings.route";
+import clearanceRouter from "../api/clearance/clearance.route";
 
 router.use("/auth", authRouter);
 router.use("/users", userRouter);
@@ -22,5 +23,6 @@ router.use("/projects", projectRouter);
 router.use("/contributions", contributionRouter);
 router.use("/announcements", announcementRouter);
 router.use("/settings", settingsRouter);
+router.use("/clearance", clearanceRouter);
 
 export default router;

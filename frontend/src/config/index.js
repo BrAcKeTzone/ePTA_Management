@@ -3,10 +3,10 @@
 
 export const config = {
   // Set to true for demo/prototype mode, false for production
-  USE_DUMMY_DATA: true,
+  USE_DUMMY_DATA: false, // Changed to false to use real backend
 
   // API Configuration
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3001",
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000", // Fixed port to 3000
 
   // Demo/Prototype Settings
   DEMO_MODE: {

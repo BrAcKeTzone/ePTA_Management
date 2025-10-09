@@ -884,3 +884,95 @@ export const getProjectStats = async (filters: any) => {
     },
   };
 };
+
+/**
+ * Get all documents from all projects
+ */
+export const getAllDocuments = async (filters: any = {}) => {
+  const { page = 1, limit = 10, projectId, search } = filters;
+  const skip = (page - 1) * limit;
+
+  const whereClause: any = {
+    attachments: {
+      not: null,
+    },
+  };
+
+  if (projectId) {
+    whereClause.id = parseInt(projectId);
+  }
+
+  if (search) {
+    whereClause.OR = [
+      { name: { contains: search } },
+      { description: { contains: search } },
+    ];
+  }
+
+  const [projects, totalCount] = await Promise.all([
+    prisma.project.findMany({
+      where: whereClause,
+      skip,
+      take: limit,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        attachments: true,
+        createdAt: true,
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.project.count({ where: whereClause }),
+  ]);
+
+  // Parse attachments and flatten documents
+  const documents: any[] = [];
+  projects.forEach((project) => {
+    if (project.attachments) {
+      try {
+        const attachments = JSON.parse(project.attachments);
+        if (Array.isArray(attachments)) {
+          attachments.forEach((attachment, index) => {
+            documents.push({
+              id: `${project.id}-${index}`,
+              projectId: project.id,
+              projectName: project.name,
+              fileName:
+                attachment.name ||
+                attachment.fileName ||
+                `Document ${index + 1}`,
+              fileUrl: attachment.url || attachment.fileUrl || attachment,
+              fileSize: attachment.size || null,
+              mimeType: attachment.type || attachment.mimeType || null,
+              uploadedAt: project.createdAt,
+              uploadedBy: project.createdBy,
+            });
+          });
+        }
+      } catch (error) {
+        console.error(
+          `Error parsing attachments for project ${project.id}:`,
+          error
+        );
+      }
+    }
+  });
+
+  return {
+    documents,
+    pagination: {
+      total: documents.length,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(documents.length / limit),
+    },
+  };
+};

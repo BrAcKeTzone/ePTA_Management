@@ -284,3 +284,305 @@ export const getContributionStats = asyncHandler(
       );
   }
 );
+
+/**
+ * @desc    Get current user's contributions
+ * @route   GET /api/contributions/my-contributions
+ * @access  Private
+ */
+export const getMyContributions = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user.id;
+    const filters = {
+      parentId: userId,
+      ...req.query,
+    };
+
+    const result = await contributionService.getContributions(filters);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          result,
+          "Your contributions retrieved successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Get current user's balance summary
+ * @route   GET /api/contributions/my-balance
+ * @access  Private
+ */
+export const getMyBalance = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user.id;
+
+    const balance = await contributionService.getUserBalance(userId);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          balance,
+          "Balance information retrieved successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Get payment basis settings
+ * @route   GET /api/contributions/payment-basis
+ * @access  Private
+ */
+export const getPaymentBasis = asyncHandler(
+  async (req: Request, res: Response) => {
+    const settings = await contributionService.getPaymentBasisSettings();
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          settings,
+          "Payment basis settings retrieved successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Get detailed payment basis settings
+ * @route   GET /api/contributions/payment-basis-settings
+ * @access  Private
+ */
+export const getPaymentBasisSettings = asyncHandler(
+  async (req: Request, res: Response) => {
+    const settings =
+      await contributionService.getDetailedPaymentBasisSettings();
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          settings,
+          "Detailed payment basis settings retrieved successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Update payment basis settings
+ * @route   PUT /api/contributions/payment-basis
+ * @access  Private (Admin only)
+ */
+export const updatePaymentBasis = asyncHandler(
+  async (req: Request, res: Response) => {
+    const settings = await contributionService.updatePaymentBasisSettings(
+      req.body
+    );
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          settings,
+          "Payment basis settings updated successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Get contributions by parent
+ * @route   GET /api/contributions/parent/:parentId
+ * @access  Private
+ */
+export const getContributionsByParent = asyncHandler(
+  async (req: Request, res: Response) => {
+    const parentId = parseInt(req.params.parentId);
+    const filters = {
+      parentId,
+      ...req.query,
+    };
+
+    const result = await contributionService.getContributions(filters);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          result,
+          "Parent contributions retrieved successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Get contributions by project
+ * @route   GET /api/contributions/project/:projectId
+ * @access  Private
+ */
+export const getContributionsByProject = asyncHandler(
+  async (req: Request, res: Response) => {
+    const projectId = parseInt(req.params.projectId);
+    const filters = {
+      projectId,
+      ...req.query,
+    };
+
+    const result = await contributionService.getContributions(filters);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          result,
+          "Project contributions retrieved successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Verify contribution payment
+ * @route   POST /api/contributions/:id/verify
+ * @access  Private (Admin only)
+ */
+export const verifyPayment = asyncHandler(
+  async (req: Request, res: Response) => {
+    const contributionId = parseInt(req.params.id);
+    const { verified, notes } = req.body;
+
+    const contribution = await contributionService.verifyContributionPayment(
+      contributionId,
+      verified,
+      notes
+    );
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          contribution,
+          "Payment verification updated successfully"
+        )
+      );
+  }
+);
+
+/**
+ * @desc    Generate financial report
+ * @route   GET /api/contributions/reports/financial
+ * @access  Private (Admin only)
+ */
+export const generateFinancialReport = asyncHandler(
+  async (req: Request, res: Response) => {
+    const filters = {
+      parentId: req.query.parentId
+        ? parseInt(req.query.parentId as string)
+        : undefined,
+      projectId: req.query.projectId
+        ? parseInt(req.query.projectId as string)
+        : undefined,
+      type: req.query.type as string,
+      status: req.query.status as string,
+      academicYear: req.query.academicYear as string,
+      period: req.query.period as string,
+      dateFrom: new Date(req.query.dateFrom as string),
+      dateTo: new Date(req.query.dateTo as string),
+      includeStats: req.query.includeStats === "true",
+      groupBy: req.query.groupBy as string,
+    };
+
+    const report = await contributionService.generateFinancialReport(filters);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, report, "Financial report generated successfully")
+      );
+  }
+);
+
+/**
+ * @desc    Generate financial report PDF
+ * @route   GET /api/contributions/reports/financial/pdf
+ * @access  Private (Admin only)
+ */
+export const generateFinancialReportPDF = asyncHandler(
+  async (req: Request, res: Response) => {
+    const filters = {
+      parentId: req.query.parentId
+        ? parseInt(req.query.parentId as string)
+        : undefined,
+      projectId: req.query.projectId
+        ? parseInt(req.query.projectId as string)
+        : undefined,
+      type: req.query.type as string,
+      status: req.query.status as string,
+      academicYear: req.query.academicYear as string,
+      period: req.query.period as string,
+      dateFrom: new Date(req.query.dateFrom as string),
+      dateTo: new Date(req.query.dateTo as string),
+    };
+
+    const pdfBuffer = await contributionService.generateFinancialReportPDF(
+      filters
+    );
+
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="financial-report.pdf"'
+    );
+    res.send(pdfBuffer);
+  }
+);
+
+/**
+ * @desc    Generate financial report CSV
+ * @route   GET /api/contributions/reports/financial/csv
+ * @access  Private (Admin only)
+ */
+export const generateFinancialReportCSV = asyncHandler(
+  async (req: Request, res: Response) => {
+    const filters = {
+      parentId: req.query.parentId
+        ? parseInt(req.query.parentId as string)
+        : undefined,
+      projectId: req.query.projectId
+        ? parseInt(req.query.projectId as string)
+        : undefined,
+      type: req.query.type as string,
+      status: req.query.status as string,
+      academicYear: req.query.academicYear as string,
+      period: req.query.period as string,
+      dateFrom: new Date(req.query.dateFrom as string),
+      dateTo: new Date(req.query.dateTo as string),
+    };
+
+    const csvData = await contributionService.generateFinancialReportCSV(
+      filters
+    );
+
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="financial-report.csv"'
+    );
+    res.send(csvData);
+  }
+);

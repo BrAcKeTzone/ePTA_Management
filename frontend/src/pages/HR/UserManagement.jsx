@@ -465,9 +465,6 @@ const UserManagement = () => {
                       <p className="text-sm text-gray-500 break-all">
                         {user.email}
                       </p>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {user.phone || "No phone provided"}
-                      </p>
                     </div>
                     <div className="flex flex-col items-end space-y-1">
                       <span
@@ -608,15 +605,6 @@ const UserManagement = () => {
                 required
               />
             </div>
-
-            <Input
-              label="Phone Number"
-              value={newUserData.phoneNumber}
-              onChange={(e) =>
-                setNewUserData({ ...newUserData, phoneNumber: e.target.value })
-              }
-              placeholder="Enter phone number"
-            />
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
