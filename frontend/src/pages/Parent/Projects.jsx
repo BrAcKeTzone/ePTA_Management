@@ -19,7 +19,8 @@ const Projects = () => {
     try {
       setLoading(true);
       const response = await projectsApi.getActiveProjects();
-      setProjects(response.data?.projects || []);
+      // Response structure: response.data.data.projects
+      setProjects(response.data?.data?.projects || []);
     } catch (error) {
       console.error("Error fetching projects:", error);
     } finally {
@@ -30,7 +31,8 @@ const Projects = () => {
   const fetchDocuments = async () => {
     try {
       const response = await projectsApi.getPublicDocuments();
-      setDocuments(response.data || []);
+      // Response structure: response.data.data.documents
+      setDocuments(response.data?.data?.documents || []);
     } catch (error) {
       console.error("Error fetching documents:", error);
     }

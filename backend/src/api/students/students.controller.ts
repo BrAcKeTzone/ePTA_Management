@@ -341,3 +341,17 @@ export const getApprovedStudentsByParentId = asyncHandler(
       );
   }
 );
+
+// Get authenticated user's children
+export const getMyChildren = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = (req as any).user.id; // From auth middleware
+
+    const students = await studentService.getApprovedStudentsByParentId(userId);
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, students, "My children retrieved successfully")
+      );
+  }
+);

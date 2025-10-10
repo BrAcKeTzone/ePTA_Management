@@ -35,7 +35,8 @@ const ContributionsManagement = () => {
     try {
       setLoading(true);
       const response = await contributionsApi.getAllContributions();
-      setContributions(response.data?.contributions || []);
+      // Response structure: response.data.data.contributions
+      setContributions(response.data?.data?.contributions || []);
     } catch (error) {
       console.error("Error fetching contributions:", error);
       setContributions([]); // Set empty array as fallback

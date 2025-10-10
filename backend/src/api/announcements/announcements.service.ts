@@ -573,3 +573,137 @@ export const getAnnouncementStats = async () => {
     })),
   };
 };
+
+// Mark announcement as read by a user
+export const markAnnouncementAsRead = async (
+  announcementId: number,
+  userId: number
+): Promise<void> => {
+  // Check if announcement exists
+  const announcement = await prisma.announcement.findUnique({
+    where: { id: announcementId },
+  });
+
+  if (!announcement) {
+    throw new ApiError(404, "Announcement not found");
+  }
+
+  // Create or update read status
+  await prisma.announcementRead.upsert({
+    where: {
+      announcementId_userId: {
+        announcementId,
+        userId,
+      },
+    },
+    update: {
+      readAt: new Date(),
+    },
+    create: {
+      announcementId,
+      userId,
+    },
+  });
+};
+
+// Get unread announcement count for a user
+export const getUnreadCount = async (userId: number): Promise<number> => {
+  const now = new Date();
+
+  // Get all published and active announcements
+  const activeAnnouncements = await prisma.announcement.findMany({
+    where: {
+      isPublished: true,
+      OR: [{ expiryDate: null }, { expiryDate: { gte: now } }],
+    },
+    select: { id: true },
+  });
+
+  const activeAnnouncementIds = activeAnnouncements.map((a) => a.id);
+
+  // Get read announcement IDs
+  const readAnnouncements = await prisma.announcementRead.findMany({
+    where: {
+      userId,
+      announcementId: { in: activeAnnouncementIds },
+    },
+    select: { announcementId: true },
+  });
+
+  const readAnnouncementIds = new Set(
+    readAnnouncements.map((r) => r.announcementId)
+  );
+
+  // Count unread announcements
+  const unreadCount = activeAnnouncementIds.filter(
+    (id) => !readAnnouncementIds.has(id)
+  ).length;
+
+  return unreadCount;
+};
+
+// Get read status of announcements for a user
+export const getMyReadStatus = async (
+  userId: number,
+  page: number = 1,
+  limit: number = 10
+): Promise<{
+  announcements: any[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}> => {
+  const now = new Date();
+  const skip = (page - 1) * limit;
+
+  // Get active announcements with read status
+  const announcements = await prisma.announcement.findMany({
+    where: {
+      isPublished: true,
+      OR: [{ expiryDate: null }, { expiryDate: { gte: now } }],
+    },
+    include: {
+      readBy: {
+        where: { userId },
+        select: { readAt: true },
+      },
+      createdBy: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+    skip,
+    take: limit,
+  });
+
+  const total = await prisma.announcement.count({
+    where: {
+      isPublished: true,
+      OR: [{ expiryDate: null }, { expiryDate: { gte: now } }],
+    },
+  });
+
+  const announcementsWithStatus = announcements.map((announcement) => ({
+    ...announcement,
+    isRead: announcement.readBy.length > 0,
+    readAt: announcement.readBy[0]?.readAt || null,
+    readBy: undefined, // Remove the readBy array from response
+  }));
+
+  return {
+    announcements: announcementsWithStatus,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};

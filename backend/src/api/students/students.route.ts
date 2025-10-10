@@ -1,9 +1,16 @@
 import express from "express";
 import * as studentController from "./students.controller";
+import { authenticate } from "../../middlewares/auth.middleware";
 import validate from "../../middlewares/validate.middleware";
 import * as studentValidation from "./students.validation";
 
 const router = express.Router();
+
+// All routes require authentication
+router.use(authenticate);
+
+// Get authenticated user's children (must be before /:id routes)
+router.get("/my-children", studentController.getMyChildren);
 
 // Create a new student
 router.post(

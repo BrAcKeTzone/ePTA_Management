@@ -26,7 +26,8 @@ const Announcements = () => {
     try {
       setLoading(true);
       const response = await announcementsApi.getActiveAnnouncements();
-      setAnnouncements(response.data?.announcements || []);
+      // Response structure: response.data.data.announcements
+      setAnnouncements(response.data?.data?.announcements || []);
     } catch (error) {
       console.error("Error fetching announcements:", error);
     } finally {
@@ -38,8 +39,10 @@ const Announcements = () => {
     try {
       const response = await announcementsApi.getMyReadStatus();
       const statusMap = {};
-      response.data?.forEach((item) => {
-        statusMap[item.announcementId] = item.isRead;
+      // Response structure: response.data.data.announcements
+      const announcements = response.data?.data?.announcements || [];
+      announcements.forEach((item) => {
+        statusMap[item.id] = item.isRead;
       });
       setReadStatus(statusMap);
     } catch (error) {

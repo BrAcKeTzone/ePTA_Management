@@ -29,7 +29,8 @@ const AnnouncementsManagement = () => {
     try {
       setLoading(true);
       const response = await announcementsApi.getAllAnnouncements();
-      setAnnouncements(response.data?.announcements || []);
+      // Response structure: response.data.data.announcements
+      setAnnouncements(response.data?.data?.announcements || []);
     } catch (error) {
       console.error("Error fetching announcements:", error);
       setAnnouncements([]); // Set empty array as fallback

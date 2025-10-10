@@ -25,7 +25,8 @@ const ClearanceManagement = () => {
     try {
       setLoading(true);
       const response = await clearanceApi.getAllClearanceRequests();
-      setClearanceRequests(response.data?.requests || []);
+      // Response structure: response.data.data.requests
+      setClearanceRequests(response.data?.data?.requests || []);
     } catch (error) {
       console.error("Error fetching clearance requests:", error);
       setClearanceRequests([]); // Set empty array as fallback
@@ -39,7 +40,8 @@ const ClearanceManagement = () => {
 
     try {
       const response = await clearanceApi.searchParentStudent(searchTerm);
-      setSearchResults(response.data || []);
+      // Response structure: response.data.data
+      setSearchResults(response.data?.data || []);
       setShowSearchModal(true);
     } catch (error) {
       console.error("Error searching parent/student:", error);

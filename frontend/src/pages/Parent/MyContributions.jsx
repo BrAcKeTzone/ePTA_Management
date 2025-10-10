@@ -9,8 +9,18 @@ import { formatDate } from "../../utils/formatDate";
 
 const MyContributions = () => {
   const [contributions, setContributions] = useState([]);
-  const [balance, setBalance] = useState({});
-  const [paymentBasis, setPaymentBasis] = useState({});
+  const [balance, setBalance] = useState({
+    totalRequired: 0,
+    totalPaid: 0,
+    outstanding: 0,
+    pendingVerification: 0,
+    children: [],
+  });
+  const [paymentBasis, setPaymentBasis] = useState({
+    isPerStudent: false,
+    baseAmount: 0,
+    multipleChildrenDiscount: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [newPayment, setNewPayment] = useState({
@@ -36,9 +46,22 @@ const MyContributions = () => {
           contributionsApi.getPaymentBasis(),
         ]);
 
-      setContributions(contributionsResponse.data?.contributions || []);
-      setBalance(balanceResponse.data || {});
-      setPaymentBasis(paymentBasisResponse.data || {});
+      // Response structure: response.data.data
+      setContributions(contributionsResponse.data?.data?.contributions || []);
+      setBalance({
+        totalRequired: balanceResponse.data?.data?.totalRequired || 0,
+        totalPaid: balanceResponse.data?.data?.totalPaid || 0,
+        outstanding: balanceResponse.data?.data?.outstanding || 0,
+        pendingVerification:
+          balanceResponse.data?.data?.pendingVerification || 0,
+        children: balanceResponse.data?.data?.children || [],
+      });
+      setPaymentBasis({
+        isPerStudent: paymentBasisResponse.data?.data?.isPerStudent || false,
+        baseAmount: paymentBasisResponse.data?.data?.baseAmount || 0,
+        multipleChildrenDiscount:
+          paymentBasisResponse.data?.data?.multipleChildrenDiscount || 0,
+      });
     } catch (error) {
       console.error("Error fetching contribution data:", error);
     } finally {
@@ -90,7 +113,7 @@ const MyContributions = () => {
       header: "Amount",
       render: (contribution) => (
         <span className="font-medium text-green-600">
-          ₱{contribution.amount.toLocaleString()}
+          ₱{(contribution.amount || 0).toLocaleString()}
         </span>
       ),
     },
@@ -294,7 +317,9 @@ const MyContributions = () => {
           <div className="text-sm text-gray-600 dark:text-gray-300">
             {balance.outstanding === 0
               ? "All contributions are up to date!"
-              : `You have ₱${balance.outstanding.toLocaleString()} remaining to complete your contributions.`}
+              : `You have ₱${(
+                  balance.outstanding || 0
+                ).toLocaleString()} remaining to complete your contributions.`}
           </div>
         </div>
       </div>

@@ -1,9 +1,25 @@
 import express from "express";
 import * as announcementController from "./announcements.controller";
+import { authenticate } from "../../middlewares/auth.middleware";
 import validate from "../../middlewares/validate.middleware";
 import * as announcementValidation from "./announcements.validation";
 
 const router = express.Router();
+
+// Public routes (no auth required)
+router.get("/active", announcementController.getActiveAnnouncements);
+
+// Protected routes (auth required)
+router.use(authenticate);
+
+// Get unread count (must be before /:id route)
+router.get("/unread-count", announcementController.getUnreadCount);
+
+// Get my read status (must be before /:id route)
+router.get("/my-read-status", announcementController.getMyReadStatus);
+
+// Mark announcement as read
+router.post("/:id/read", announcementController.markAnnouncementAsRead);
 
 // Announcement CRUD operations
 router.post(
@@ -14,9 +30,6 @@ router.post(
 
 // Get all announcements (query params validated in controller)
 router.get("/", announcementController.getAnnouncements);
-
-// Get active announcements (published and not expired)
-router.get("/active", announcementController.getActiveAnnouncements);
 
 // Get announcement statistics
 router.get("/stats", announcementController.getAnnouncementStats);

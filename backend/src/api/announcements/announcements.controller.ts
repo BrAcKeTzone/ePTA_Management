@@ -159,3 +159,57 @@ export const getAnnouncementStats = asyncHandler(
       );
   }
 );
+
+// Mark announcement as read
+export const markAnnouncementAsRead = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+    const userId = (req as any).user.id; // From auth middleware
+
+    await announcementService.markAnnouncementAsRead(id, userId);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { message: "Announcement marked as read" },
+          "Announcement marked as read successfully"
+        )
+      );
+  }
+);
+
+// Get unread announcement count
+export const getUnreadCount = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = (req as any).user.id; // From auth middleware
+
+    const count = await announcementService.getUnreadCount(userId);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, { count }, "Unread count retrieved successfully")
+      );
+  }
+);
+
+// Get read status of announcements
+export const getMyReadStatus = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = (req as any).user.id; // From auth middleware
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const result = await announcementService.getMyReadStatus(
+      userId,
+      page,
+      limit
+    );
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, result, "Read status retrieved successfully"));
+  }
+);

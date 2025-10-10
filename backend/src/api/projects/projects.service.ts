@@ -976,3 +976,91 @@ export const getAllDocuments = async (filters: any = {}) => {
     },
   };
 };
+
+// Get public documents from project updates
+export const getPublicDocuments = async (filters: any = {}) => {
+  const { page = 1, limit = 10, projectId, search } = filters;
+  const skip = (page - 1) * limit;
+
+  const whereClause: any = {
+    isPublic: true,
+    attachments: {
+      not: null,
+    },
+  };
+
+  if (projectId) {
+    whereClause.projectId = parseInt(projectId);
+  }
+
+  if (search) {
+    whereClause.OR = [
+      { title: { contains: search } },
+      { content: { contains: search } },
+    ];
+  }
+
+  const [updates, totalCount] = await Promise.all([
+    prisma.projectUpdate.findMany({
+      where: whereClause,
+      skip,
+      take: limit,
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.projectUpdate.count({ where: whereClause }),
+  ]);
+
+  // Parse attachments and flatten documents
+  const documents: any[] = [];
+  updates.forEach((update) => {
+    if (update.attachments) {
+      try {
+        const attachments = JSON.parse(update.attachments);
+        if (Array.isArray(attachments)) {
+          attachments.forEach((attachment, index) => {
+            documents.push({
+              id: `update-${update.id}-${index}`,
+              projectId: update.projectId,
+              projectName: update.project.name,
+              updateId: update.id,
+              updateTitle: update.title,
+              fileName:
+                attachment.name ||
+                attachment.fileName ||
+                `Document ${index + 1}`,
+              fileUrl: attachment.url || attachment.fileUrl || attachment,
+              fileSize: attachment.size || null,
+              mimeType: attachment.type || attachment.mimeType || null,
+              uploadedAt: update.createdAt,
+              isPublic: update.isPublic,
+              isMilestone: update.isMilestone,
+            });
+          });
+        }
+      } catch (error) {
+        console.error(
+          `Error parsing attachments for update ${update.id}:`,
+          error
+        );
+      }
+    }
+  });
+
+  return {
+    documents,
+    pagination: {
+      total: documents.length,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      totalPages: Math.ceil(documents.length / limit),
+    },
+  };
+};
