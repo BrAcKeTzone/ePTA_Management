@@ -200,69 +200,69 @@ const MyAttendance = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-gray-900">
           My Attendance
         </h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-1">
+        <p className="text-gray-600 mt-1">
           View your meeting attendance record and penalties
         </p>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">
             Total Meetings
           </h3>
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+          <p className="text-2xl font-bold text-blue-600">
             {summary.totalMeetings}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">
             Attended
           </h3>
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <p className="text-2xl font-bold text-green-600">
             {summary.attendedMeetings}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">
             Absent
           </h3>
-          <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+          <p className="text-2xl font-bold text-red-600">
             {summary.absentMeetings}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">
             Attendance Rate
           </h3>
           <p
             className={`text-2xl font-bold ${
               summary.attendanceRate >= 80
-                ? "text-green-600 dark:text-green-400"
+                ? "text-green-600"
                 : summary.attendanceRate >= 60
-                ? "text-yellow-600 dark:text-yellow-400"
-                : "text-red-600 dark:text-red-400"
+                ? "text-yellow-600"
+                : "text-red-600"
             }`}
           >
             {summary.attendanceRate}%
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">
             Total Penalties
           </h3>
-          <p className="text-2xl font-bold text-red-600 dark:text-red-400">
+          <p className="text-2xl font-bold text-red-600">
             ₱{summary.totalPenalties.toLocaleString()}
           </p>
         </div>
       </div>
 
       {/* Attendance Performance */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-        <h2 className="text-lg font-semibold mb-4 dark:text-white">
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <h2 className="text-lg font-semibold mb-4">
           Attendance Performance
         </h2>
         <div className="space-y-4">
@@ -273,7 +273,7 @@ const MyAttendance = () => {
                 {summary.attendanceRate}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-1">
+            <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
               <div
                 className={`h-2 rounded-full ${
                   summary.attendanceRate >= 80
@@ -286,7 +286,7 @@ const MyAttendance = () => {
               ></div>
             </div>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-300">
+          <div className="text-sm text-gray-600">
             {summary.attendanceRate >= 80
               ? "Excellent attendance! Keep up the good work."
               : summary.attendanceRate >= 60
@@ -297,9 +297,9 @@ const MyAttendance = () => {
       </div>
 
       {/* Attendance History */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-        <div className="p-6 border-b dark:border-gray-700">
-          <h2 className="text-lg font-semibold dark:text-white">
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="p-6 border-b">
+          <h2 className="text-lg font-semibold">
             Attendance History
           </h2>
         </div>
@@ -312,9 +312,9 @@ const MyAttendance = () => {
 
       {/* Penalties */}
       {penalties.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-          <div className="p-6 border-b dark:border-gray-700">
-            <h2 className="text-lg font-semibold dark:text-white">Penalties</h2>
+        <div className="bg-white rounded-lg shadow-sm border">
+          <div className="p-6 border-b">
+            <h2 className="text-lg font-semibold">Penalties</h2>
           </div>
           <Table
             data={penalties}
@@ -325,11 +325,11 @@ const MyAttendance = () => {
       )}
 
       {/* Attendance Requirements Info */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-blue-900 mb-2">
           Attendance Requirements
         </h3>
-        <div className="text-blue-800 dark:text-blue-200 space-y-2">
+        <div className="text-blue-800 space-y-2">
           <p>• Minimum 80% attendance rate is required for clearance</p>
           <p>• Emergency meetings have higher penalty rates for absences</p>
           <p>• Penalties must be paid before clearance can be issued</p>

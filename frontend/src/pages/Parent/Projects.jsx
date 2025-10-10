@@ -96,23 +96,23 @@ const Projects = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-gray-900">
           PTA Projects & Documents
         </h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-1">
+        <p className="text-gray-600 mt-1">
           View active PTA projects and access meeting documents
         </p>
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 dark:border-gray-700">
+      <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab("projects")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "projects"
-                ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
             Active Projects ({projects.length})
@@ -121,8 +121,8 @@ const Projects = () => {
             onClick={() => setActiveTab("documents")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "documents"
-                ? "border-blue-500 text-blue-600 dark:text-blue-400"
-                : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
             }`}
           >
             Documents ({documents.length})
@@ -138,15 +138,15 @@ const Projects = () => {
               {projects.map((project) => (
                 <div
                   key={project.id}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700"
+                  className="bg-white rounded-lg shadow-sm border"
                 >
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
                           {project.title}
                         </h3>
-                        <p className="text-gray-600 dark:text-gray-300">
+                        <p className="text-gray-600">
                           {project.description}
                         </p>
                       </div>
@@ -161,26 +161,26 @@ const Projects = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                       <div>
-                        <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        <label className="text-sm font-medium text-gray-500">
                           Start Date
                         </label>
-                        <p className="text-sm text-gray-900 dark:text-white">
+                        <p className="text-sm text-gray-900">
                           {formatDate(project.startDate)}
                         </p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        <label className="text-sm font-medium text-gray-500">
                           End Date
                         </label>
-                        <p className="text-sm text-gray-900 dark:text-white">
+                        <p className="text-sm text-gray-900">
                           {formatDate(project.endDate)}
                         </p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                        <label className="text-sm font-medium text-gray-500">
                           Budget
                         </label>
-                        <p className="text-sm text-gray-900 dark:text-white">
+                        <p className="text-sm text-gray-900">
                           {project.budget
                             ? `₱${project.budget.toLocaleString()}`
                             : "Not specified"}
@@ -191,14 +191,14 @@ const Projects = () => {
                     {/* Progress Bar */}
                     <div className="mb-4">
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                        <span className="font-medium text-gray-700">
                           Progress
                         </span>
-                        <span className="text-gray-500 dark:text-gray-400">
+                        <span className="text-gray-500">
                           {project.progress || 0}%
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
                           className={`h-2 rounded-full ${
                             project.status === "completed"
@@ -216,7 +216,7 @@ const Projects = () => {
                     {project.accomplishments &&
                       project.accomplishments.length > 0 && (
                         <div>
-                          <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                          <h4 className="font-medium text-gray-900 mb-2">
                             Recent Accomplishments
                           </h4>
                           <ul className="space-y-1">
@@ -225,7 +225,7 @@ const Projects = () => {
                               .map((accomplishment, index) => (
                                 <li
                                   key={index}
-                                  className="text-sm text-gray-600 dark:text-gray-300 flex items-start"
+                                  className="text-sm text-gray-600 flex items-start"
                                 >
                                   <span className="text-green-500 mr-2">•</span>
                                   <span>{accomplishment.description}</span>
@@ -235,7 +235,7 @@ const Projects = () => {
                           {project.accomplishments.length > 3 && (
                             <button
                               onClick={() => setSelectedProject(project)}
-                              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium mt-2"
+                              className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2"
                             >
                               View all accomplishments
                             </button>
@@ -249,10 +249,10 @@ const Projects = () => {
           ) : (
             <div className="text-center py-12">
               <div className="text-gray-400 text-6xl mb-4">📋</div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
                 No active projects
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-600">
                 There are no active PTA projects at the moment.
               </p>
             </div>
@@ -268,12 +268,12 @@ const Projects = () => {
               {documents.map((document) => (
                 <div
                   key={document.id}
-                  className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 p-6"
+                  className="bg-white rounded-lg shadow-sm border p-6"
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        <h3 className="text-lg font-semibold text-gray-900">
                           {document.title}
                         </h3>
                         <span
@@ -286,12 +286,12 @@ const Projects = () => {
                       </div>
 
                       {document.description && (
-                        <p className="text-gray-600 dark:text-gray-300 mb-2">
+                        <p className="text-gray-600 mb-2">
                           {document.description}
                         </p>
                       )}
 
-                      <div className="flex items-center space-x-4 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center space-x-4 text-sm text-gray-500">
                         <span>Uploaded: {formatDate(document.createdAt)}</span>
                         {document.projectTitle && (
                           <span>Project: {document.projectTitle}</span>
@@ -322,10 +322,10 @@ const Projects = () => {
           ) : (
             <div className="text-center py-12">
               <div className="text-gray-400 text-6xl mb-4">📄</div>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
                 No documents available
               </h3>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-600">
                 No meeting documents or resolutions have been published yet.
               </p>
             </div>
@@ -336,15 +336,15 @@ const Projects = () => {
       {/* Project Details Modal */}
       {selectedProject && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                <h2 className="text-xl font-semibold text-gray-900">
                   {selectedProject.title}
                 </h2>
                 <button
                   onClick={() => setSelectedProject(null)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  className="text-gray-400 hover:text-gray-600"
                 >
                   ✕
                 </button>
@@ -352,10 +352,10 @@ const Projects = () => {
 
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white mb-2">
+                  <h3 className="font-medium text-gray-900 mb-2">
                     Description
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300">
+                  <p className="text-gray-600">
                     {selectedProject.description}
                   </p>
                 </div>
@@ -363,7 +363,7 @@ const Projects = () => {
                 {selectedProject.accomplishments &&
                   selectedProject.accomplishments.length > 0 && (
                     <div>
-                      <h3 className="font-medium text-gray-900 dark:text-white mb-2">
+                      <h3 className="font-medium text-gray-900 mb-2">
                         All Accomplishments
                       </h3>
                       <ul className="space-y-2">
@@ -371,7 +371,7 @@ const Projects = () => {
                           (accomplishment, index) => (
                             <li
                               key={index}
-                              className="text-sm text-gray-600 dark:text-gray-300 flex items-start"
+                              className="text-sm text-gray-600 flex items-start"
                             >
                               <span className="text-green-500 mr-2">•</span>
                               <div>
@@ -395,11 +395,11 @@ const Projects = () => {
       )}
 
       {/* Information */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-blue-900 mb-2">
           About PTA Projects & Documents
         </h3>
-        <div className="text-blue-800 dark:text-blue-200 space-y-2">
+        <div className="text-blue-800 space-y-2">
           <p>
             • Projects show the current initiatives and activities of the PTA
           </p>

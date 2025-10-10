@@ -166,10 +166,10 @@ const MyContributions = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-gray-900">
             My Contributions
           </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">
+          <p className="text-gray-600 mt-1">
             View your payment history and outstanding balance
           </p>
         </div>
@@ -180,74 +180,74 @@ const MyContributions = () => {
 
       {/* Balance Summary */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">
             Total Paid
           </h3>
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <p className="text-2xl font-bold text-green-600">
             ₱{balance.totalPaid?.toLocaleString() || "0"}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">
             Outstanding Balance
           </h3>
-          <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+          <p className="text-2xl font-bold text-orange-600">
             ₱{balance.outstanding?.toLocaleString() || "0"}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">
             Pending Verification
           </h3>
-          <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+          <p className="text-2xl font-bold text-yellow-600">
             ₱{balance.pendingVerification?.toLocaleString() || "0"}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border">
+          <h3 className="text-sm font-medium text-gray-500">
             Total Required
           </h3>
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+          <p className="text-2xl font-bold text-blue-600">
             ₱{balance.totalRequired?.toLocaleString() || "0"}
           </p>
         </div>
       </div>
 
       {/* Payment Basis Information */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-        <h2 className="text-lg font-semibold mb-4 dark:text-white">
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <h2 className="text-lg font-semibold mb-4">
           Payment Basis Information
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h3 className="font-medium text-gray-900 dark:text-white mb-2">
+            <h3 className="font-medium text-gray-900 mb-2">
               Current Settings
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">
+                <span className="text-gray-600">
                   Payment Basis:
                 </span>
-                <span className="font-medium dark:text-white">
+                <span className="font-medium">
                   {paymentBasis.isPerStudent ? "Per Student" : "Per Parent"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600 dark:text-gray-300">
+                <span className="text-gray-600">
                   Base Amount:
                 </span>
-                <span className="font-medium dark:text-white">
+                <span className="font-medium">
                   ₱{paymentBasis.baseAmount?.toLocaleString() || "0"}
                 </span>
               </div>
               {paymentBasis.isPerStudent &&
                 paymentBasis.multipleChildrenDiscount > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600 dark:text-gray-300">
+                    <span className="text-gray-600">
                       Multiple Children Discount:
                     </span>
-                    <span className="font-medium dark:text-white">
+                    <span className="font-medium">
                       {paymentBasis.multipleChildrenDiscount}%
                     </span>
                   </div>
@@ -255,21 +255,21 @@ const MyContributions = () => {
             </div>
           </div>
           <div>
-            <h3 className="font-medium text-gray-900 dark:text-white mb-2">
+            <h3 className="font-medium text-gray-900 mb-2">
               Your Children
             </h3>
             <div className="space-y-2 text-sm">
               {balance.children?.map((child, index) => (
                 <div key={index} className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-300">
+                  <span className="text-gray-600">
                     {child.name}:
                   </span>
-                  <span className="font-medium dark:text-white">
+                  <span className="font-medium">
                     ₱{child.requiredAmount?.toLocaleString() || "0"}
                   </span>
                 </div>
               )) || (
-                <span className="text-gray-500 dark:text-gray-400">
+                <span className="text-gray-500">
                   No children linked
                 </span>
               )}
@@ -279,8 +279,8 @@ const MyContributions = () => {
       </div>
 
       {/* Payment Progress */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-        <h2 className="text-lg font-semibold mb-4 dark:text-white">
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <h2 className="text-lg font-semibold mb-4">
           Payment Progress
         </h2>
         <div className="space-y-4">
@@ -296,7 +296,7 @@ const MyContributions = () => {
                 %
               </span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className={`h-2 rounded-full ${
                   balance.outstanding === 0 ? "bg-green-500" : "bg-blue-500"
@@ -314,7 +314,7 @@ const MyContributions = () => {
               ></div>
             </div>
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-300">
+          <div className="text-sm text-gray-600">
             {balance.outstanding === 0
               ? "All contributions are up to date!"
               : `You have ₱${(
@@ -325,9 +325,9 @@ const MyContributions = () => {
       </div>
 
       {/* Payment History */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-        <div className="p-6 border-b dark:border-gray-700">
-          <h2 className="text-lg font-semibold dark:text-white">
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="p-6 border-b">
+          <h2 className="text-lg font-semibold">
             Payment History
           </h2>
         </div>
@@ -359,11 +359,11 @@ const MyContributions = () => {
           />
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Payment Method
             </label>
             <select
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+              className="w-full p-2 border border-gray-300 rounded-md"
               value={newPayment.paymentMethod}
               onChange={(e) =>
                 setNewPayment({ ...newPayment, paymentMethod: e.target.value })
@@ -406,8 +406,8 @@ const MyContributions = () => {
             placeholder="Receipt or reference number"
           />
 
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-            <p className="text-yellow-800 dark:text-yellow-200 text-sm">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p className="text-yellow-800 text-sm">
               <strong>Note:</strong> This payment will be marked as "Pending
               Verification" until confirmed by the PTA treasurer. Please bring
               your receipt to the PTA office for verification.
@@ -428,11 +428,11 @@ const MyContributions = () => {
       </Modal>
 
       {/* Payment Instructions */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-blue-900 mb-2">
           Payment Instructions
         </h3>
-        <div className="text-blue-800 dark:text-blue-200 space-y-2">
+        <div className="text-blue-800 space-y-2">
           <p>
             • Payments can be made through cash, check, bank transfer, or GCash
           </p>

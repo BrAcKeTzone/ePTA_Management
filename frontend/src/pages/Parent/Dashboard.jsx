@@ -160,13 +160,13 @@ const ParentDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header with Refresh */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-gray-900">
               Welcome back, {user?.name}!
             </h1>
-            <p className="text-gray-600 dark:text-gray-300 mt-1">
+            <p className="text-gray-600 mt-1">
               PTA Management System - Parent Dashboard
             </p>
           </div>
@@ -251,15 +251,15 @@ const ParentDashboard = () => {
       </div>
 
       {/* Recent Announcements */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-        <div className="p-6 border-b dark:border-gray-700">
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="p-6 border-b">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold dark:text-white">
+            <h2 className="text-lg font-semibold">
               Recent Announcements
             </h2>
             <button
               onClick={() => handleQuickAction("announcements")}
-              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
             >
               View All
             </button>
@@ -271,20 +271,20 @@ const ParentDashboard = () => {
               {recentAnnouncements.map((announcement) => (
                 <div
                   key={announcement.id}
-                  className="border-l-4 border-blue-400 bg-blue-50 dark:bg-blue-900/20 p-4 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                  className="border-l-4 border-blue-400 bg-blue-50 p-4 cursor-pointer hover:bg-blue-100 transition-colors"
                   onClick={() => handleQuickAction("announcements")}
                 >
                   <div className="flex">
                     <div className="ml-3">
-                      <h3 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                      <h3 className="text-sm font-medium text-blue-800">
                         {announcement.title}
                       </h3>
-                      <div className="mt-1 text-sm text-blue-700 dark:text-blue-300">
+                      <div className="mt-1 text-sm text-blue-700">
                         {announcement.content.length > 150
                           ? `${announcement.content.substring(0, 150)}...`
                           : announcement.content}
                       </div>
-                      <div className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+                      <div className="mt-2 text-xs text-blue-600">
                         {new Date(announcement.createdAt).toLocaleDateString()}
                       </div>
                     </div>
@@ -293,7 +293,7 @@ const ParentDashboard = () => {
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+            <p className="text-gray-500 text-center py-8">
               No recent announcements
             </p>
           )}
@@ -302,15 +302,15 @@ const ParentDashboard = () => {
 
       {/* Upcoming Meetings */}
       {upcomingMeetings.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-          <div className="p-6 border-b dark:border-gray-700">
+        <div className="bg-white rounded-lg shadow-sm border">
+          <div className="p-6 border-b">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold dark:text-white">
+              <h2 className="text-lg font-semibold">
                 Upcoming Meetings
               </h2>
               <button
                 onClick={() => handleQuickAction("attendance")}
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
               >
                 View All
               </button>
@@ -321,17 +321,17 @@ const ParentDashboard = () => {
               {upcomingMeetings.map((meeting) => (
                 <div
                   key={meeting.id}
-                  className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-medium text-gray-900 dark:text-white">
+                      <h3 className="font-medium text-gray-900">
                         {meeting.title}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                      <p className="text-sm text-gray-600 mt-1">
                         {meeting.description}
                       </p>
-                      <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
                         <span>
                           📅 {new Date(meeting.date).toLocaleDateString()}
                         </span>
@@ -342,10 +342,10 @@ const ParentDashboard = () => {
                     <span
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
                         meeting.type === "emergency"
-                          ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                          ? "bg-red-100 text-red-800"
                           : meeting.type === "special"
-                          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-                          : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-blue-100 text-blue-800"
                       }`}
                     >
                       {meeting.type}
@@ -359,52 +359,52 @@ const ParentDashboard = () => {
       )}
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border dark:border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Quick Actions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <button
             onClick={() => handleQuickAction("attendance")}
-            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left block transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left block transition-colors"
           >
             <div className="text-2xl mb-2">📊</div>
-            <div className="font-medium dark:text-white">View Attendance</div>
-            <div className="text-sm text-gray-600 dark:text-gray-300">
+            <div className="font-medium">View Attendance</div>
+            <div className="text-sm text-gray-600">
               Check meeting attendance and penalties
             </div>
           </button>
           <button
             onClick={() => handleQuickAction("contributions")}
-            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left block transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left block transition-colors"
           >
             <div className="text-2xl mb-2">💰</div>
-            <div className="font-medium dark:text-white">
+            <div className="font-medium">
               View Contributions
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-300">
+            <div className="text-sm text-gray-600">
               Check payment history and balance
             </div>
           </button>
           <button
             onClick={() => handleQuickAction("announcements")}
-            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left block transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left block transition-colors"
           >
             <div className="text-2xl mb-2">📢</div>
-            <div className="font-medium dark:text-white">
+            <div className="font-medium">
               Read Announcements
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-300">
+            <div className="text-sm text-gray-600">
               View latest PTA announcements
             </div>
           </button>
           <button
             onClick={() => handleQuickAction("clearance")}
-            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left block transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left block transition-colors"
           >
             <div className="text-2xl mb-2">✅</div>
-            <div className="font-medium dark:text-white">Check Clearance</div>
-            <div className="text-sm text-gray-600 dark:text-gray-300">
+            <div className="font-medium">Check Clearance</div>
+            <div className="text-sm text-gray-600">
               Verify clearance status
             </div>
           </button>

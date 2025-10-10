@@ -139,10 +139,10 @@ const Announcements = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-bold text-gray-900">
           Announcements
         </h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-1">
+        <p className="text-gray-600 mt-1">
           Stay updated with the latest PTA announcements
         </p>
       </div>
@@ -155,7 +155,7 @@ const Announcements = () => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               filter === "all"
                 ? "bg-blue-600 text-white"
-                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             All Announcements
@@ -165,7 +165,7 @@ const Announcements = () => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               filter === "unread"
                 ? "bg-blue-600 text-white"
-                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             Unread ({announcements.filter((a) => !readStatus[a.id]).length})
@@ -175,13 +175,13 @@ const Announcements = () => {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               filter === "featured"
                 ? "bg-blue-600 text-white"
-                : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
             }`}
           >
             Featured
           </button>
         </div>
-        <div className="text-sm text-gray-600 dark:text-gray-400">
+        <div className="text-sm text-gray-600">
           Showing {currentAnnouncements.length} of{" "}
           {filteredAnnouncements.length} announcements
         </div>
@@ -192,7 +192,7 @@ const Announcements = () => {
         {currentAnnouncements.map((announcement) => (
           <div
             key={announcement.id}
-            className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 transition-all cursor-pointer ${
+            className={`bg-white rounded-lg shadow-sm border transition-all cursor-pointer ${
               !readStatus[announcement.id] ? "border-l-4 border-l-blue-500" : ""
             } ${isExpired(announcement.expiryDate) ? "opacity-75" : ""}`}
             onClick={() => handleMarkAsRead(announcement.id)}
@@ -204,21 +204,21 @@ const Announcements = () => {
                   <h3
                     className={`text-lg font-semibold ${
                       !readStatus[announcement.id]
-                        ? "text-gray-900 dark:text-white"
-                        : "text-gray-700 dark:text-gray-300"
+                        ? "text-gray-900"
+                        : "text-gray-700"
                     }`}
                   >
                     {announcement.title}
                   </h3>
                   {!readStatus[announcement.id] && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                       New
                     </span>
                   )}
                 </div>
                 <div className="flex items-center space-x-2">
                   {announcement.isFeatured && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                       ⭐ Featured
                     </span>
                   )}
@@ -230,7 +230,7 @@ const Announcements = () => {
                     {announcement.priority}
                   </span>
                   {isExpired(announcement.expiryDate) && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
                       Expired
                     </span>
                   )}
@@ -239,20 +239,20 @@ const Announcements = () => {
 
               {/* Content */}
               <div className="prose max-w-none">
-                <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">
+                <p className="text-gray-700 whitespace-pre-line">
                   {announcement.content}
                 </p>
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
-                <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                <div className="text-sm text-gray-500">
                   Posted on {formatDate(announcement.createdAt)}
                   {announcement.expiryDate && (
                     <span
                       className={
                         isExpired(announcement.expiryDate)
-                          ? "text-red-600 dark:text-red-400"
+                          ? "text-red-600"
                           : ""
                       }
                     >
@@ -266,7 +266,7 @@ const Announcements = () => {
                       e.stopPropagation();
                       handleMarkAsRead(announcement.id);
                     }}
-                    className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium"
+                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                   >
                     Mark as read
                   </button>
@@ -281,10 +281,10 @@ const Announcements = () => {
       {filteredAnnouncements.length === 0 && (
         <div className="text-center py-12">
           <div className="text-gray-400 text-6xl mb-4">📢</div>
-          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
             No announcements found
           </h3>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600">
             {filter === "unread"
               ? "You're all caught up! No unread announcements."
               : filter === "featured"
@@ -304,11 +304,11 @@ const Announcements = () => {
       )}
 
       {/* Help Information */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-blue-900 mb-2">
           About Announcements
         </h3>
-        <div className="text-blue-800 dark:text-blue-200 space-y-2">
+        <div className="text-blue-800 space-y-2">
           <p>• Click on any announcement to mark it as read</p>
           <p>
             • Featured announcements appear at the top and are marked with a

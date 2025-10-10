@@ -92,10 +92,10 @@ const Clearance = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-gray-900">
             My Clearance
           </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">
+          <p className="text-gray-600 mt-1">
             Check your clearance status and request clearance certificates
           </p>
         </div>
@@ -111,8 +111,8 @@ const Clearance = () => {
       <div
         className={`border-l-4 p-6 rounded-lg ${
           clearanceStatus?.isCleared
-            ? "border-green-400 bg-green-50 dark:bg-green-900/20"
-            : "border-yellow-400 bg-yellow-50 dark:bg-yellow-900/20"
+            ? "border-green-400 bg-green-50"
+            : "border-yellow-400 bg-yellow-50"
         }`}
       >
         <div className="flex">
@@ -120,8 +120,8 @@ const Clearance = () => {
             <h3
               className={`text-sm font-medium ${
                 clearanceStatus?.isCleared
-                  ? "text-green-800 dark:text-green-200"
-                  : "text-yellow-800 dark:text-yellow-200"
+                  ? "text-green-800"
+                  : "text-yellow-800"
               }`}
             >
               Clearance Status:{" "}
@@ -130,8 +130,8 @@ const Clearance = () => {
             <div
               className={`mt-2 text-sm ${
                 clearanceStatus?.isCleared
-                  ? "text-green-700 dark:text-green-300"
-                  : "text-yellow-700 dark:text-yellow-300"
+                  ? "text-green-700"
+                  : "text-yellow-700"
               }`}
             >
               {clearanceStatus?.message || "Loading clearance status..."}
@@ -141,24 +141,24 @@ const Clearance = () => {
       </div>
 
       {/* Requirements Check */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-        <div className="p-6 border-b dark:border-gray-700">
-          <h2 className="text-lg font-semibold dark:text-white">
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="p-6 border-b">
+          <h2 className="text-lg font-semibold">
             Requirements Check
           </h2>
         </div>
         <div className="p-6 space-y-4">
           {/* Attendance Requirements */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div>
-              <div className="font-medium dark:text-white">
+              <div className="font-medium">
                 Attendance Requirements
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">
+              <div className="text-sm text-gray-600">
                 Minimum {requirements.minimumAttendanceRate || 80}% attendance
                 rate required
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-sm text-gray-500">
                 Current: {clearanceStatus?.attendance?.rate || 0}% (
                 {clearanceStatus?.attendance?.attended || 0} of{" "}
                 {clearanceStatus?.attendance?.total || 0} meetings)
@@ -167,8 +167,8 @@ const Clearance = () => {
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
                 clearanceStatus?.attendance?.met
-                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
               }`}
             >
               {clearanceStatus?.attendance?.met ? "Met" : "Not Met"}
@@ -176,23 +176,23 @@ const Clearance = () => {
           </div>
 
           {/* Financial Obligations */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div>
-              <div className="font-medium dark:text-white">
+              <div className="font-medium">
                 Financial Obligations
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">
+              <div className="text-sm text-gray-600">
                 All contributions and penalties must be paid
               </div>
-              <div className="text-sm text-gray-500 dark:text-gray-400">
+              <div className="text-sm text-gray-500">
                 Outstanding: ₱{clearanceStatus?.financial?.outstanding || 0}
               </div>
             </div>
             <span
               className={`px-3 py-1 rounded-full text-sm font-medium ${
                 clearanceStatus?.financial?.met
-                  ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                  : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
               }`}
             >
               {clearanceStatus?.financial?.met ? "Met" : "Not Met"}
@@ -203,21 +203,21 @@ const Clearance = () => {
           {requirements.additionalRequirements?.map((requirement, index) => (
             <div
               key={index}
-              className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
             >
               <div>
-                <div className="font-medium dark:text-white">
+                <div className="font-medium">
                   {requirement.title}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">
+                <div className="text-sm text-gray-600">
                   {requirement.description}
                 </div>
               </div>
               <span
                 className={`px-3 py-1 rounded-full text-sm font-medium ${
                   clearanceStatus?.additionalRequirements?.[index]?.met
-                    ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                    : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
                 }`}
               >
                 {clearanceStatus?.additionalRequirements?.[index]?.met
@@ -231,9 +231,9 @@ const Clearance = () => {
 
       {/* My Children (if any) */}
       {children.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-          <div className="p-6 border-b dark:border-gray-700">
-            <h2 className="text-lg font-semibold dark:text-white">
+        <div className="bg-white rounded-lg shadow-sm border">
+          <div className="p-6 border-b">
+            <h2 className="text-lg font-semibold">
               My Children
             </h2>
           </div>
@@ -242,16 +242,16 @@ const Clearance = () => {
               {children.map((child) => (
                 <div
                   key={child.id}
-                  className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-600 rounded-lg"
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
                 >
                   <div>
-                    <div className="font-medium dark:text-white">
+                    <div className="font-medium">
                       {child.name}
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-300">
+                    <div className="text-sm text-gray-600">
                       Grade {child.gradeLevel} - {child.section}
                     </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                    <div className="text-sm text-gray-500">
                       Student ID: {child.studentId}
                     </div>
                   </div>
@@ -259,8 +259,8 @@ const Clearance = () => {
                     <div
                       className={`px-2 py-1 rounded-full text-xs font-medium ${
                         child.clearanceStatus === "cleared"
-                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                          : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
                       }`}
                     >
                       {child.clearanceStatus === "cleared"
@@ -276,9 +276,9 @@ const Clearance = () => {
       )}
 
       {/* Clearance Requests History */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
-        <div className="p-6 border-b dark:border-gray-700">
-          <h2 className="text-lg font-semibold dark:text-white">
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="p-6 border-b">
+          <h2 className="text-lg font-semibold">
             Clearance Requests
           </h2>
         </div>
@@ -288,23 +288,23 @@ const Clearance = () => {
               {clearanceRequests.map((request) => (
                 <div
                   key={request.id}
-                  className="border border-gray-200 dark:border-gray-600 rounded-lg p-4"
+                  className="border border-gray-200 rounded-lg p-4"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="font-medium dark:text-white">
+                      <div className="font-medium">
                         {request.purpose}
                       </div>
                       {request.studentName && (
-                        <div className="text-sm text-gray-600 dark:text-gray-300">
+                        <div className="text-sm text-gray-600">
                           For: {request.studentName}
                         </div>
                       )}
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                      <div className="text-sm text-gray-500">
                         Requested: {formatDate(request.createdAt)}
                       </div>
                       {request.processedAt && (
-                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                        <div className="text-sm text-gray-500">
                           Processed: {formatDate(request.processedAt)}
                         </div>
                       )}
@@ -313,10 +313,10 @@ const Clearance = () => {
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
                           request.status === "approved"
-                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                            ? "bg-green-100 text-green-800"
                             : request.status === "rejected"
-                            ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-                            : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-yellow-100 text-yellow-800"
                         }`}
                       >
                         {request.status}
@@ -332,7 +332,7 @@ const Clearance = () => {
                     </div>
                   </div>
                   {request.rejectionReason && (
-                    <div className="mt-2 p-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-sm text-red-700 dark:text-red-300">
+                    <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
                       Reason: {request.rejectionReason}
                     </div>
                   )}
@@ -340,7 +340,7 @@ const Clearance = () => {
               ))}
             </div>
           ) : (
-            <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+            <p className="text-center text-gray-500 py-8">
               No clearance requests found
             </p>
           )}
@@ -366,11 +366,11 @@ const Clearance = () => {
 
           {children.length > 0 && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 For which child? (Optional - leave empty for general clearance)
               </label>
               <select
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                className="w-full p-2 border border-gray-300 rounded-md"
                 value={newRequest.studentId}
                 onChange={(e) =>
                   setNewRequest({ ...newRequest, studentId: e.target.value })
@@ -386,8 +386,8 @@ const Clearance = () => {
             </div>
           )}
 
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-            <p className="text-yellow-800 dark:text-yellow-200 text-sm">
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <p className="text-yellow-800 text-sm">
               <strong>Note:</strong> Clearance requests will only be approved if
               all requirements are met. Please ensure your attendance and
               financial obligations are up to date.
@@ -410,11 +410,11 @@ const Clearance = () => {
       </Modal>
 
       {/* Information */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-blue-900 mb-2">
           About Clearance Requirements
         </h3>
-        <div className="text-blue-800 dark:text-blue-200 space-y-2">
+        <div className="text-blue-800 space-y-2">
           <p>
             • Clearance certificates are issued when all PTA obligations are met
           </p>

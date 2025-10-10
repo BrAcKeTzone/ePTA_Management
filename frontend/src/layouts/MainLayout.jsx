@@ -7,11 +7,11 @@ const MainLayout = () => {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       <Navbar onMenuClick={() => setSidebarOpen(!isSidebarOpen)} />
       <div className="flex flex-1">
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setSidebarOpen} />
-        <main className="flex-1 p-4 lg:p-6">
+        <main className="flex-1 p-4 lg:p-6 text-gray-900">
           <Outlet />
         </main>
       </div>
