@@ -104,10 +104,10 @@ const UsersManagement = () => {
       header: "Name",
       render: (user) => (
         <div>
-          <div className="font-medium text-gray-900 dark:text-white">
+          <div className="font-medium text-gray-900">
             {user.name}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-300">
+          <div className="text-sm text-gray-600">
             {user.email}
           </div>
         </div>
@@ -120,8 +120,8 @@ const UsersManagement = () => {
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${
             user.role === "admin"
-              ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-              : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+              ? "bg-red-100 text-red-800"
+              : "bg-blue-100 text-blue-800"
           }`}
         >
           {user.role}
@@ -135,8 +135,8 @@ const UsersManagement = () => {
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${
             user.isVerified
-              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-              : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+              ? "bg-green-100 text-green-800"
+              : "bg-yellow-100 text-yellow-800"
           }`}
         >
           {user.isVerified ? "Verified" : "Pending"}
@@ -196,10 +196,10 @@ const UsersManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-gray-900">
             Users Management
           </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">
+          <p className="text-gray-600 mt-1">
             Manage parent and admin accounts
           </p>
         </div>
@@ -207,7 +207,7 @@ const UsersManagement = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
         <div className="flex space-x-4">
           {["all", "parent", "admin"].map((filterOption) => (
             <button
@@ -215,8 +215,8 @@ const UsersManagement = () => {
               onClick={() => setFilter(filterOption)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 filter === filterOption
-                  ? "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-200"
-                  : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                  ? "bg-blue-100 text-blue-600"
+                  : "text-gray-600 hover:text-gray-900"
               }`}
             >
               {filterOption === "all" ? "All Users" : `${filterOption}s`}
@@ -227,44 +227,44 @@ const UsersManagement = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-sm font-medium text-gray-500">
             Total Users
           </h3>
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+          <p className="text-2xl font-bold text-blue-600">
             {users.length}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-sm font-medium text-gray-500">
             Parents
           </h3>
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <p className="text-2xl font-bold text-green-600">
             {users.filter((u) => u.role === "parent").length}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-sm font-medium text-gray-500">
             Admins
           </h3>
-          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+          <p className="text-2xl font-bold text-purple-600">
             {users.filter((u) => u.role === "admin").length}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-sm font-medium text-gray-500">
             Verified
           </h3>
-          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+          <p className="text-2xl font-bold text-emerald-600">
             {users.filter((u) => u.isVerified).length}
           </p>
         </div>
       </div>
 
       {/* Users Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">
             {filter === "all" ? "All Users" : `${filter}s`}
           </h2>
         </div>
@@ -306,11 +306,11 @@ const UsersManagement = () => {
             required
           />
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Role
             </label>
             <select
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
               value={newUser.role}
               onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
             >
@@ -319,11 +319,11 @@ const UsersManagement = () => {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Address
             </label>
             <textarea
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
               rows={3}
               value={newUser.address}
               onChange={(e) =>
@@ -372,11 +372,11 @@ const UsersManagement = () => {
               required
             />
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Role
               </label>
               <select
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
                 value={selectedUser.role}
                 onChange={(e) =>
                   setSelectedUser({ ...selectedUser, role: e.target.value })
@@ -387,11 +387,11 @@ const UsersManagement = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Address
               </label>
               <textarea
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
                 rows={3}
                 value={selectedUser.address || ""}
                 onChange={(e) =>
@@ -415,7 +415,7 @@ const UsersManagement = () => {
               />
               <label
                 htmlFor="isVerified"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                className="text-sm font-medium text-gray-700"
               >
                 User is verified
               </label>

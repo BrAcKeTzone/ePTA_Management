@@ -150,11 +150,11 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <h1 className="text-2xl font-bold text-gray-900">
           Welcome back, {user?.name}!
         </h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-1">
+        <p className="text-gray-600 mt-1">
           PTA Management System - Administrator Dashboard
         </p>
       </div>
@@ -223,137 +223,109 @@ const AdminDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Quick Actions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <button
             onClick={() => handleQuickAction("addParent")}
-            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors"
           >
             <div className="text-2xl mb-2">👥</div>
-            <div className="font-medium text-gray-900 dark:text-white">
-              Add New Parent
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-300">
+            <div className="font-medium text-gray-900">Add New Parent</div>
+            <div className="text-sm text-gray-600">
               Register a new parent account
             </div>
           </button>
           <button
             onClick={() => handleQuickAction("recordAttendance")}
-            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors"
           >
             <div className="text-2xl mb-2">📅</div>
-            <div className="font-medium text-gray-900 dark:text-white">
-              Record Attendance
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              Mark meeting attendance
-            </div>
+            <div className="font-medium text-gray-900">Record Attendance</div>
+            <div className="text-sm text-gray-600">Mark meeting attendance</div>
           </button>
           <button
             onClick={() => handleQuickAction("recordPayment")}
-            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors"
           >
             <div className="text-2xl mb-2">💰</div>
-            <div className="font-medium text-gray-900 dark:text-white">
-              Record Payment
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-300">
+            <div className="font-medium text-gray-900">Record Payment</div>
+            <div className="text-sm text-gray-600">
               Log contribution payment
             </div>
           </button>
           <button
             onClick={() => handleQuickAction("postAnnouncement")}
-            className="p-4 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-left transition-colors"
+            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors"
           >
             <div className="text-2xl mb-2">📢</div>
-            <div className="font-medium text-gray-900 dark:text-white">
-              Post Announcement
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              Create new announcement
-            </div>
+            <div className="font-medium text-gray-900">Post Announcement</div>
+            <div className="text-sm text-gray-600">Create new announcement</div>
           </button>
         </div>
       </div>
 
       {/* Recent Activity Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
             System Overview
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">
-                Total Members
-              </span>
-              <span className="font-medium text-gray-900 dark:text-white">
+              <span className="text-gray-600">Total Members</span>
+              <span className="font-medium text-gray-900">
                 {stats.totalParents}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">
-                Students Enrolled
-              </span>
-              <span className="font-medium text-gray-900 dark:text-white">
+              <span className="text-gray-600">Students Enrolled</span>
+              <span className="font-medium text-gray-900">
                 {stats.totalStudents}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">
-                Active Projects
-              </span>
-              <span className="font-medium text-gray-900 dark:text-white">
+              <span className="text-gray-600">Active Projects</span>
+              <span className="font-medium text-gray-900">
                 {stats.activeProjects}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">
-                Recent Meetings
-              </span>
-              <span className="font-medium text-gray-900 dark:text-white">
+              <span className="text-gray-600">Recent Meetings</span>
+              <span className="font-medium text-gray-900">
                 {stats.recentMeetings}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Financial Summary
           </h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">
-                Total Collected
-              </span>
+              <span className="text-gray-600">Total Collected</span>
               <span className="font-medium text-green-600">
                 ₱{stats.totalContributionAmount.toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">
-                Total Contributions
-              </span>
-              <span className="font-medium text-gray-900 dark:text-white">
+              <span className="text-gray-600">Total Contributions</span>
+              <span className="font-medium text-gray-900">
                 {stats.totalContributions}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">
-                Pending Payments
-              </span>
+              <span className="text-gray-600">Pending Payments</span>
               <span className="font-medium text-red-600">
                 {stats.pendingPayments}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 dark:text-gray-300">
-                Clearance Requests
-              </span>
+              <span className="text-gray-600">Clearance Requests</span>
               <span className="font-medium text-yellow-600">
                 {stats.clearanceRequests}
               </span>

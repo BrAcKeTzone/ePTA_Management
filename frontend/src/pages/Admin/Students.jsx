@@ -122,10 +122,10 @@ const StudentsManagement = () => {
       header: "Student",
       render: (student) => (
         <div>
-          <div className="font-medium text-gray-900 dark:text-white">
+          <div className="font-medium text-gray-900">
             {student.firstName} {student.lastName}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-300">
+          <div className="text-sm text-gray-600">
             ID: {student.studentId}
           </div>
         </div>
@@ -139,7 +139,7 @@ const StudentsManagement = () => {
           <div className="font-medium">
             {getGradeLevelDisplay(student.gradeLevel)}
           </div>
-          <div className="text-sm text-gray-600 dark:text-gray-300">
+          <div className="text-sm text-gray-600">
             Section: {student.section}
           </div>
         </div>
@@ -152,15 +152,15 @@ const StudentsManagement = () => {
         <div>
           {student.parentName ? (
             <>
-              <div className="font-medium text-gray-900 dark:text-white">
+              <div className="font-medium text-gray-900">
                 {student.parentName}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">
+              <div className="text-sm text-gray-600">
                 {student.parentEmail}
               </div>
             </>
           ) : (
-            <span className="text-red-600 dark:text-red-400">
+            <span className="text-red-600">
               No parent linked
             </span>
           )}
@@ -230,10 +230,10 @@ const StudentsManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-gray-900">
             Students Management
           </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-1">
+          <p className="text-gray-600 mt-1">
             Manage student records and parent links
           </p>
         </div>
@@ -243,14 +243,14 @@ const StudentsManagement = () => {
       </div>
 
       {/* Filter Tabs */}
-      <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setFilter("all")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               filter === "all"
-                ? "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-200"
-                : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                ? "bg-blue-100 text-blue-600"
+                : "text-gray-600 hover:text-gray-900"
             }`}
           >
             All Students
@@ -259,8 +259,8 @@ const StudentsManagement = () => {
             onClick={() => setFilter("elementary")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               filter === "elementary"
-                ? "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-200"
-                : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                ? "bg-blue-100 text-blue-600"
+                : "text-gray-600 hover:text-gray-900"
             }`}
           >
             Elementary (K-6)
@@ -269,8 +269,8 @@ const StudentsManagement = () => {
             onClick={() => setFilter("junior")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               filter === "junior"
-                ? "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-200"
-                : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                ? "bg-blue-100 text-blue-600"
+                : "text-gray-600 hover:text-gray-900"
             }`}
           >
             Junior High (7-10)
@@ -279,8 +279,8 @@ const StudentsManagement = () => {
             onClick={() => setFilter("senior")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               filter === "senior"
-                ? "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-200"
-                : "text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                ? "bg-blue-100 text-blue-600"
+                : "text-gray-600 hover:text-gray-900"
             }`}
           >
             Senior High (11-12)
@@ -290,44 +290,44 @@ const StudentsManagement = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-sm font-medium text-gray-500">
             Total Students
           </h3>
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+          <p className="text-2xl font-bold text-blue-600">
             {students.length}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-sm font-medium text-gray-500">
             Elementary
           </h3>
-          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
+          <p className="text-2xl font-bold text-green-600">
             {students.filter((s) => s.gradeLevel <= 6).length}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-sm font-medium text-gray-500">
             High School
           </h3>
-          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+          <p className="text-2xl font-bold text-purple-600">
             {students.filter((s) => s.gradeLevel > 6).length}
           </p>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h3 className="text-sm font-medium text-gray-500">
             With Parents
           </h3>
-          <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+          <p className="text-2xl font-bold text-emerald-600">
             {students.filter((s) => s.parentId).length}
           </p>
         </div>
       </div>
 
       {/* Students Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">
             Student Records
           </h2>
         </div>
@@ -374,11 +374,11 @@ const StudentsManagement = () => {
           />
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Grade Level
               </label>
               <select
-                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
                 value={newStudent.gradeLevel}
                 onChange={(e) =>
                   setNewStudent({ ...newStudent, gradeLevel: e.target.value })
@@ -412,11 +412,11 @@ const StudentsManagement = () => {
             required
           />
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Parent (Optional)
             </label>
             <select
-              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
               value={newStudent.parentId}
               onChange={(e) =>
                 setNewStudent({ ...newStudent, parentId: e.target.value })
@@ -489,11 +489,11 @@ const StudentsManagement = () => {
             />
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Grade Level
                 </label>
                 <select
-                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
                   value={selectedStudent.gradeLevel}
                   onChange={(e) =>
                     setSelectedStudent({
@@ -556,29 +556,29 @@ const StudentsManagement = () => {
       >
         {selectedStudent && (
           <div className="space-y-4">
-            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-900 dark:text-white">
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <h3 className="font-medium text-gray-900">
                 Student: {selectedStudent.firstName} {selectedStudent.lastName}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">
+              <p className="text-sm text-gray-600">
                 Grade {selectedStudent.gradeLevel} - {selectedStudent.section}
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Select Parent
               </label>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {parents.map((parent) => (
                   <div
                     key={parent.id}
-                    className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg"
+                    className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
                   >
                     <div>
-                      <div className="font-medium text-gray-900 dark:text-white">
+                      <div className="font-medium text-gray-900">
                         {parent.name}
                       </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-300">
+                      <div className="text-sm text-gray-600">
                         {parent.email}
                       </div>
                     </div>
