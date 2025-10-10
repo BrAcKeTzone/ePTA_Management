@@ -6,6 +6,7 @@
 ## 📋 Issue
 
 The application had dark mode styling (`dark:*` Tailwind classes) that caused:
+
 - Dark backgrounds on some pages
 - Poor contrast with black text
 - Inconsistent light/dark appearance
@@ -13,6 +14,7 @@ The application had dark mode styling (`dark:*` Tailwind classes) that caused:
 ## ✅ Solution
 
 Removed ALL dark mode variant classes from:
+
 1. **Layout files** (manual fixes)
 2. **Parent pages** (automated removal)
 3. **Components** (automated removal)
@@ -22,21 +24,25 @@ Removed ALL dark mode variant classes from:
 ### **1. Layout Files (Manual Fixes)**
 
 #### ✅ AdminLayout.jsx
+
 - Removed `dark:bg-gray-900`
 - Added `text-gray-900` for consistent black text
 - Background: `bg-gray-50` (light gray)
 
 #### ✅ ParentLayout.jsx
+
 - Removed `dark:bg-gray-900`
 - Added `text-gray-900` for consistent black text
 - Background: `bg-gray-50` (light gray)
 
 #### ✅ MainLayout.jsx
+
 - Removed `dark:bg-gray-900`
 - Added `text-gray-900` for consistent black text
 - Background: `bg-gray-50` (light gray)
 
 #### ✅ AuthLayout.jsx
+
 - Added `bg-white`
 - Added `text-gray-900` for consistent black text
 - Background: `bg-white`
@@ -46,6 +52,7 @@ Removed ALL dark mode variant classes from:
 ### **2. Parent Pages (Automated Removal)**
 
 Removed all `dark:` classes from:
+
 - ✅ `Dashboard.jsx`
 - ✅ `Announcements.jsx`
 - ✅ `MyContributions.jsx`
@@ -54,6 +61,7 @@ Removed all `dark:` classes from:
 - ✅ All other parent pages
 
 **Classes Removed**:
+
 - `dark:bg-gray-800`
 - `dark:bg-gray-900`
 - `dark:text-white`
@@ -68,6 +76,7 @@ Removed all `dark:` classes from:
 ### **3. Components (Automated Removal)**
 
 Removed all `dark:` classes from:
+
 - ✅ `Navbar.jsx`
 - ✅ `Sidebar.jsx`
 - ✅ `Breadcrumb.jsx`
@@ -82,6 +91,7 @@ Removed all `dark:` classes from:
 ## 📊 Result
 
 ### **Before:**
+
 ```jsx
 // Mixed light/dark styles
 <div className="bg-white dark:bg-gray-800">
@@ -91,6 +101,7 @@ Removed all `dark:` classes from:
 ```
 
 ### **After:**
+
 ```jsx
 // Consistent light styles only
 <div className="bg-white">
@@ -103,19 +114,20 @@ Removed all `dark:` classes from:
 
 ## 🎨 Current Color Scheme
 
-| Element | Background | Text | Status |
-|---------|-----------|------|--------|
-| Layout | `bg-gray-50` | `text-gray-900` | ✅ Light |
-| Cards/Containers | `bg-white` | `text-gray-900` | ✅ Light |
-| Headers | N/A | `text-gray-900` | ✅ Dark text |
-| Body Text | N/A | `text-gray-600` | ✅ Dark text |
-| Labels | N/A | `text-gray-500` | ✅ Dark text |
+| Element          | Background   | Text            | Status       |
+| ---------------- | ------------ | --------------- | ------------ |
+| Layout           | `bg-gray-50` | `text-gray-900` | ✅ Light     |
+| Cards/Containers | `bg-white`   | `text-gray-900` | ✅ Light     |
+| Headers          | N/A          | `text-gray-900` | ✅ Dark text |
+| Body Text        | N/A          | `text-gray-600` | ✅ Dark text |
+| Labels           | N/A          | `text-gray-500` | ✅ Dark text |
 
 ---
 
 ## 🧪 Pages Fixed
 
 ### **Parent Dashboard:**
+
 - ✅ Dashboard - Light background, black text
 - ✅ My Attendance - Light background, black text
 - ✅ My Contributions - Light background, black text
@@ -124,6 +136,7 @@ Removed all `dark:` classes from:
 - ✅ Clearance - Light background, black text
 
 ### **All Components:**
+
 - ✅ Navbar - Consistent light styling
 - ✅ Sidebar - Consistent light styling
 - ✅ Tables - Light backgrounds
@@ -137,25 +150,29 @@ Removed all `dark:` classes from:
 ## 📝 Technical Details
 
 ### **Automated Removal Command:**
+
 ```powershell
 # Parent Pages
-Get-ChildItem *.jsx | ForEach-Object { 
-  (Get-Content $_.FullName -Raw) -replace ' dark:[^\s"]+', '' | 
-  Set-Content $_.FullName -NoNewline 
+Get-ChildItem *.jsx | ForEach-Object {
+  (Get-Content $_.FullName -Raw) -replace ' dark:[^\s"]+', '' |
+  Set-Content $_.FullName -NoNewline
 }
 
 # Components
-Get-ChildItem *.jsx | ForEach-Object { 
-  (Get-Content $_.FullName -Raw) -replace ' dark:[^\s"]+', '' | 
-  Set-Content $_.FullName -NoNewline 
+Get-ChildItem *.jsx | ForEach-Object {
+  (Get-Content $_.FullName -Raw) -replace ' dark:[^\s"]+', '' |
+  Set-Content $_.FullName -NoNewline
 }
 ```
 
 ### **Regex Pattern Used:**
+
 ```regex
  dark:[^\s"]+
 ```
+
 This removes all dark mode Tailwind classes including:
+
 - Single classes: `dark:bg-gray-800`
 - Pseudo classes: `dark:hover:text-blue-300`
 - State variants: `dark:focus:ring-blue-500`
@@ -165,16 +182,19 @@ This removes all dark mode Tailwind classes including:
 ## ✅ Benefits
 
 1. **Consistent Appearance**
+
    - All pages have light backgrounds
    - Black text throughout
    - No unexpected dark sections
 
 2. **Better Readability**
+
    - High contrast (black text on light background)
    - Standard web convention
    - Easier on the eyes in most environments
 
 3. **Simpler Maintenance**
+
    - No dual styling to maintain
    - Fewer CSS classes
    - Cleaner codebase
@@ -189,15 +209,18 @@ This removes all dark mode Tailwind classes including:
 ## 🎯 Files Modified
 
 ### **Layouts (4 files):**
+
 - `src/layouts/AdminLayout.jsx`
 - `src/layouts/ParentLayout.jsx`
 - `src/layouts/MainLayout.jsx`
 - `src/layouts/AuthLayout.jsx`
 
 ### **Parent Pages (6+ files):**
+
 - All files in `src/pages/Parent/`
 
 ### **Components (17+ files):**
+
 - All files in `src/components/`
 
 **Total**: 27+ files updated
