@@ -146,9 +146,7 @@ const Projects = () => {
                         <h3 className="text-lg font-semibold text-gray-900 mb-2">
                           {project.title}
                         </h3>
-                        <p className="text-gray-600">
-                          {project.description}
-                        </p>
+                        <p className="text-gray-600">{project.description}</p>
                       </div>
                       <span
                         className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
@@ -335,7 +333,7 @@ const Projects = () => {
 
       {/* Project Details Modal */}
       {selectedProject && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
@@ -355,9 +353,7 @@ const Projects = () => {
                   <h3 className="font-medium text-gray-900 mb-2">
                     Description
                   </h3>
-                  <p className="text-gray-600">
-                    {selectedProject.description}
-                  </p>
+                  <p className="text-gray-600">{selectedProject.description}</p>
                 </div>
 
                 {selectedProject.accomplishments &&

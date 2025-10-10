@@ -258,7 +258,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     <>
       {/* Overlay for mobile */}
       <div
-        className={`fixed inset-0 z-20 bg-black bg-opacity-50 transition-opacity lg:hidden ${
+        className={`fixed inset-0 z-20 bg-black/20 backdrop-blur-sm transition-opacity lg:hidden ${
           isOpen ? "block" : "hidden"
         }`}
         onClick={() => setIsOpen(false)}
