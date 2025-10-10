@@ -16,8 +16,15 @@ export const getUserById = asyncHandler(async (req: Request, res: Response) => {
 // Get current user profile (self)
 export const getUserProfile = asyncHandler(
   async (req: Request, res: Response) => {
-    // TODO: Replace with actual userId from auth middleware
-    const userId = parseInt(req.body.userId) || 1;
+    // Get userId from auth middleware (req.user is set by authenticate middleware)
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json(new ApiResponse(401, null, "Unauthorized - User ID not found"));
+    }
+
     const user = await userService.getUserProfile(userId);
 
     res
@@ -29,8 +36,15 @@ export const getUserProfile = asyncHandler(
 // Update user profile (self)
 export const updateUserProfile = asyncHandler(
   async (req: Request, res: Response) => {
-    // TODO: Replace with actual userId from auth middleware
-    const userId = parseInt(req.body.userId) || 1;
+    // Get userId from auth middleware
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json(new ApiResponse(401, null, "Unauthorized - User ID not found"));
+    }
+
     const user = await userService.updateUserProfile(userId, req.body);
 
     res
@@ -116,8 +130,15 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
 // Change password (self)
 export const changePassword = asyncHandler(
   async (req: Request, res: Response) => {
-    // TODO: Replace with actual userId from auth middleware
-    const userId = parseInt(req.body.userId) || 1;
+    // Get userId from auth middleware
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res
+        .status(401)
+        .json(new ApiResponse(401, null, "Unauthorized - User ID not found"));
+    }
+
     const { currentPassword, newPassword } = req.body;
 
     await userService.changePassword(userId, currentPassword, newPassword);

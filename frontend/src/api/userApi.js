@@ -4,7 +4,7 @@ import { dummyDataService } from "../services/dummyDataService";
 const API_BASE = "/api/users";
 
 // Toggle between dummy data and real API
-const USE_DUMMY_DATA = true;
+const USE_DUMMY_DATA = false;
 
 export const userApi = {
   // Get current user profile

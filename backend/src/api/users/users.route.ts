@@ -2,20 +2,25 @@ import express from "express";
 import * as userController from "./users.controller";
 import validate from "../../middlewares/validate.middleware";
 import * as userValidation from "./users.validation";
+import { authenticate } from "../../middlewares/auth.middleware";
 
 const router = express.Router();
 
-// User profile routes (self-service)
-router.get("/profile", userController.getUserProfile);
+// User profile routes (self-service) - require authentication
+router.get("/me", authenticate, userController.getUserProfile);
+
+router.get("/profile", authenticate, userController.getUserProfile);
 
 router.put(
   "/profile",
+  authenticate,
   validate(userValidation.updateUserProfile),
   userController.updateUserProfile
 );
 
 router.post(
   "/change-password",
+  authenticate,
   validate(userValidation.changePassword),
   userController.changePassword
 );

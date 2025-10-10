@@ -57,21 +57,19 @@ const AdminDashboard = () => {
       const newStats = { ...stats };
 
       if (usersResponse.status === "fulfilled") {
-        const usersData = usersResponse.value?.data || {};
+        const usersData = usersResponse.value?.data?.data || {};
         const users = usersData.users || [];
-        newStats.totalParents = users.filter(
-          (user) => user.role === "PARENT"
-        ).length;
+        newStats.totalParents = users.length;
       }
 
       if (studentsResponse.status === "fulfilled") {
-        const studentsData = studentsResponse.value?.data || {};
+        const studentsData = studentsResponse.value?.data?.data || {};
         const students = studentsData.students || [];
         newStats.totalStudents = students.length;
       }
 
       if (meetingsResponse.status === "fulfilled") {
-        const meetingsData = meetingsResponse.value?.data || {};
+        const meetingsData = meetingsResponse.value?.data?.data || {};
         const meetings = meetingsData.meetings || [];
         // Count meetings in the last 30 days
         const thirtyDaysAgo = new Date();
@@ -82,7 +80,7 @@ const AdminDashboard = () => {
       }
 
       if (contributionsResponse.status === "fulfilled") {
-        const contributionsData = contributionsResponse.value?.data || {};
+        const contributionsData = contributionsResponse.value?.data?.data || {};
         const contributions = contributionsData.contributions || [];
         newStats.totalContributions = contributions.length;
         newStats.totalContributionAmount = contributions.reduce(
@@ -95,19 +93,19 @@ const AdminDashboard = () => {
       }
 
       if (projectsResponse.status === "fulfilled") {
-        const projectsData = projectsResponse.value?.data || {};
+        const projectsData = projectsResponse.value?.data?.data || {};
         const projects = projectsData.projects || [];
         newStats.activeProjects = projects.length;
       }
 
       if (announcementsResponse.status === "fulfilled") {
-        const announcementsData = announcementsResponse.value?.data || {};
+        const announcementsData = announcementsResponse.value?.data?.data || {};
         const announcements = announcementsData.announcements || [];
         newStats.activeAnnouncements = announcements.length;
       }
 
       if (clearanceResponse.status === "fulfilled") {
-        const clearanceData = clearanceResponse.value?.data || {};
+        const clearanceData = clearanceResponse.value?.data?.data || {};
         const clearanceRequests = clearanceData.requests || [];
         newStats.clearanceRequests = clearanceRequests.length;
       }
