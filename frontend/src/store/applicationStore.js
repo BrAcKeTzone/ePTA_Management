@@ -68,11 +68,6 @@ const sampleApplicationsData = [
 // Use hardcoded sample data since this is for PTA system prototype
 const applicationsData = sampleApplicationsData;
 
-console.log(
-  "applicationStore: Using sample applications data:",
-  applicationsData?.length
-);
-
 export const useApplicationStore = create((set, get) => ({
   // State
   applications: applicationsData || sampleApplicationsData, // Initialize with data
@@ -102,15 +97,10 @@ export const useApplicationStore = create((set, get) => ({
   // Fetch all applications
   fetchApplications: async () => {
     try {
-      console.log(
-        "fetchApplications: starting, applicationsData:",
-        applicationsData?.length
-      );
       set({ loading: true, error: null });
       await delay(500);
 
       const apps = applicationsData || sampleApplicationsData;
-      console.log("fetchApplications: setting applications to:", apps.length);
 
       set({
         applications: apps,
