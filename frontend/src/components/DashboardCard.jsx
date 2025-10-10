@@ -33,10 +33,10 @@ const DashboardCard = ({
 
   return (
     <div
-      className={`bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow ${className}`}
+      className={`bg-white rounded-lg shadow-sm border border-gray-900 hover:shadow-md transition-shadow ${className}`}
     >
       {title && (
-        <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-gray-900 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           {headerActions && (
             <div className="flex items-center space-x-2">{headerActions}</div>

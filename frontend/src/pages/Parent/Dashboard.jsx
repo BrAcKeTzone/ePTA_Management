@@ -160,7 +160,7 @@ const ParentDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header with Refresh */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-900">
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
@@ -251,8 +251,8 @@ const ParentDashboard = () => {
       </div>
 
       {/* Recent Announcements */}
-      <div className="bg-white rounded-lg shadow-sm border">
-        <div className="p-6 border-b">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-900">
+        <div className="p-6 border-b border-gray-900">
           <div className="flex justify-between items-center">
             <h2 className="text-lg font-semibold">
               Recent Announcements
@@ -302,8 +302,8 @@ const ParentDashboard = () => {
 
       {/* Upcoming Meetings */}
       {upcomingMeetings.length > 0 && (
-        <div className="bg-white rounded-lg shadow-sm border">
-          <div className="p-6 border-b">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-900">
+          <div className="p-6 border-b border-gray-900">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-semibold">
                 Upcoming Meetings
@@ -321,7 +321,7 @@ const ParentDashboard = () => {
               {upcomingMeetings.map((meeting) => (
                 <div
                   key={meeting.id}
-                  className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  className="border border-gray-900 rounded-lg p-4 hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex justify-between items-start">
                     <div>
@@ -359,14 +359,14 @@ const ParentDashboard = () => {
       )}
 
       {/* Quick Actions */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border">
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-900">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Quick Actions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <button
             onClick={() => handleQuickAction("attendance")}
-            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left block transition-colors"
+            className="p-4 border border-gray-900 rounded-lg hover:bg-gray-50 text-left block transition-colors"
           >
             <div className="text-2xl mb-2">📊</div>
             <div className="font-medium">View Attendance</div>
@@ -376,7 +376,7 @@ const ParentDashboard = () => {
           </button>
           <button
             onClick={() => handleQuickAction("contributions")}
-            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left block transition-colors"
+            className="p-4 border border-gray-900 rounded-lg hover:bg-gray-50 text-left block transition-colors"
           >
             <div className="text-2xl mb-2">💰</div>
             <div className="font-medium">
@@ -388,7 +388,7 @@ const ParentDashboard = () => {
           </button>
           <button
             onClick={() => handleQuickAction("announcements")}
-            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left block transition-colors"
+            className="p-4 border border-gray-900 rounded-lg hover:bg-gray-50 text-left block transition-colors"
           >
             <div className="text-2xl mb-2">📢</div>
             <div className="font-medium">
@@ -400,7 +400,7 @@ const ParentDashboard = () => {
           </button>
           <button
             onClick={() => handleQuickAction("clearance")}
-            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left block transition-colors"
+            className="p-4 border border-gray-900 rounded-lg hover:bg-gray-50 text-left block transition-colors"
           >
             <div className="text-2xl mb-2">✅</div>
             <div className="font-medium">Check Clearance</div>

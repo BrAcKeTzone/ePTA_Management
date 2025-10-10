@@ -148,7 +148,7 @@ const AdminDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-900">
         <h1 className="text-2xl font-bold text-gray-900">
           Welcome back, {user?.name}!
         </h1>
@@ -221,14 +221,14 @@ const AdminDashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-900">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Quick Actions
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <button
             onClick={() => handleQuickAction("addParent")}
-            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors"
+            className="p-4 border border-gray-900 rounded-lg hover:bg-gray-50 text-left transition-colors"
           >
             <div className="text-2xl mb-2">👥</div>
             <div className="font-medium text-gray-900">Add New Parent</div>
@@ -238,7 +238,7 @@ const AdminDashboard = () => {
           </button>
           <button
             onClick={() => handleQuickAction("recordAttendance")}
-            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors"
+            className="p-4 border border-gray-900 rounded-lg hover:bg-gray-50 text-left transition-colors"
           >
             <div className="text-2xl mb-2">📅</div>
             <div className="font-medium text-gray-900">Record Attendance</div>
@@ -246,7 +246,7 @@ const AdminDashboard = () => {
           </button>
           <button
             onClick={() => handleQuickAction("recordPayment")}
-            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors"
+            className="p-4 border border-gray-900 rounded-lg hover:bg-gray-50 text-left transition-colors"
           >
             <div className="text-2xl mb-2">💰</div>
             <div className="font-medium text-gray-900">Record Payment</div>
@@ -256,7 +256,7 @@ const AdminDashboard = () => {
           </button>
           <button
             onClick={() => handleQuickAction("postAnnouncement")}
-            className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition-colors"
+            className="p-4 border border-gray-900 rounded-lg hover:bg-gray-50 text-left transition-colors"
           >
             <div className="text-2xl mb-2">📢</div>
             <div className="font-medium text-gray-900">Post Announcement</div>
@@ -267,7 +267,7 @@ const AdminDashboard = () => {
 
       {/* Recent Activity Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-900">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             System Overview
           </h3>
@@ -299,7 +299,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-900">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Financial Summary
           </h3>
