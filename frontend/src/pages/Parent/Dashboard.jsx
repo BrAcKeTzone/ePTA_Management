@@ -254,9 +254,7 @@ const ParentDashboard = () => {
       <div className="bg-white rounded-lg shadow-sm border border-gray-900">
         <div className="p-6 border-b border-gray-900">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold">
-              Recent Announcements
-            </h2>
+            <h2 className="text-lg font-semibold">Recent Announcements</h2>
             <button
               onClick={() => handleQuickAction("announcements")}
               className="text-blue-600 hover:text-blue-700 text-sm font-medium"
@@ -305,9 +303,7 @@ const ParentDashboard = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-900">
           <div className="p-6 border-b border-gray-900">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-semibold">
-                Upcoming Meetings
-              </h2>
+              <h2 className="text-lg font-semibold">Upcoming Meetings</h2>
               <button
                 onClick={() => handleQuickAction("attendance")}
                 className="text-blue-600 hover:text-blue-700 text-sm font-medium"
@@ -379,9 +375,7 @@ const ParentDashboard = () => {
             className="p-4 border border-gray-900 rounded-lg hover:bg-gray-50 text-left block transition-colors"
           >
             <div className="text-2xl mb-2">💰</div>
-            <div className="font-medium">
-              View Contributions
-            </div>
+            <div className="font-medium">View Contributions</div>
             <div className="text-sm text-gray-600">
               Check payment history and balance
             </div>
@@ -391,9 +385,7 @@ const ParentDashboard = () => {
             className="p-4 border border-gray-900 rounded-lg hover:bg-gray-50 text-left block transition-colors"
           >
             <div className="text-2xl mb-2">📢</div>
-            <div className="font-medium">
-              Read Announcements
-            </div>
+            <div className="font-medium">Read Announcements</div>
             <div className="text-sm text-gray-600">
               View latest PTA announcements
             </div>
@@ -404,9 +396,7 @@ const ParentDashboard = () => {
           >
             <div className="text-2xl mb-2">✅</div>
             <div className="font-medium">Check Clearance</div>
-            <div className="text-sm text-gray-600">
-              Verify clearance status
-            </div>
+            <div className="text-sm text-gray-600">Verify clearance status</div>
           </button>
         </div>
       </div>

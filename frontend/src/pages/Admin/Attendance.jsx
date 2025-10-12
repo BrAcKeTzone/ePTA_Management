@@ -18,9 +18,10 @@ const AttendanceManagement = () => {
     title: "",
     description: "",
     date: "",
-    time: "",
-    location: "",
-    type: "regular",
+    startTime: "",
+    endTime: "",
+    venue: "",
+    meetingType: "GENERAL",
   });
 
   useEffect(() => {
@@ -59,9 +60,10 @@ const AttendanceManagement = () => {
         title: "",
         description: "",
         date: "",
-        time: "",
-        location: "",
-        type: "regular",
+        startTime: "",
+        endTime: "",
+        venue: "",
+        meetingType: "GENERAL",
       });
       fetchMeetings();
     } catch (error) {
@@ -86,49 +88,56 @@ const AttendanceManagement = () => {
     {
       key: "title",
       header: "Meeting Title",
-      render: (meeting) => (
+      cell: (meeting) => (
         <div>
-          <div className="font-medium">{meeting.title}</div>
-          <div className="text-sm text-gray-600">{meeting.description}</div>
+          <div className="font-medium text-gray-900">{meeting.title}</div>
+          {meeting.description && (
+            <div className="text-sm text-gray-600">{meeting.description}</div>
+          )}
         </div>
       ),
     },
     {
       key: "date",
       header: "Date & Time",
-      render: (meeting) => (
+      cell: (meeting) => (
         <div>
-          <div>{formatDate(meeting.date)}</div>
-          <div className="text-sm text-gray-600">{meeting.time}</div>
+          <div className="text-gray-900">{formatDate(meeting.date)}</div>
+          <div className="text-sm text-gray-600">
+            {meeting.startTime}
+            {meeting.endTime && ` - ${meeting.endTime}`}
+          </div>
         </div>
       ),
     },
     {
-      key: "location",
-      header: "Location",
-      render: (meeting) => meeting.location,
+      key: "venue",
+      header: "Venue",
+      cell: (meeting) => <div className="text-gray-900">{meeting.venue}</div>,
     },
     {
-      key: "type",
+      key: "meetingType",
       header: "Type",
-      render: (meeting) => (
+      cell: (meeting) => (
         <span
           className={`px-2 py-1 rounded-full text-xs font-medium ${
-            meeting.type === "emergency"
+            meeting.meetingType === "EMERGENCY"
               ? "bg-red-100 text-red-800"
-              : meeting.type === "special"
+              : meeting.meetingType === "SPECIAL"
               ? "bg-yellow-100 text-yellow-800"
+              : meeting.meetingType === "ANNUAL"
+              ? "bg-purple-100 text-purple-800"
               : "bg-blue-100 text-blue-800"
           }`}
         >
-          {meeting.type}
+          {meeting.meetingType}
         </span>
       ),
     },
     {
       key: "actions",
       header: "Actions",
-      render: (meeting) => (
+      cell: (meeting) => (
         <div className="flex space-x-2">
           <Button
             variant="outline"
@@ -218,22 +227,33 @@ const AttendanceManagement = () => {
               required
             />
             <Input
-              label="Time"
+              label="Start Time (HH:MM)"
               type="time"
-              value={newMeeting.time}
+              value={newMeeting.startTime}
               onChange={(e) =>
-                setNewMeeting({ ...newMeeting, time: e.target.value })
+                setNewMeeting({ ...newMeeting, startTime: e.target.value })
               }
               required
+              placeholder="e.g., 14:00"
             />
           </div>
           <Input
-            label="Location"
-            value={newMeeting.location}
+            label="End Time (HH:MM) - Optional"
+            type="time"
+            value={newMeeting.endTime}
             onChange={(e) =>
-              setNewMeeting({ ...newMeeting, location: e.target.value })
+              setNewMeeting({ ...newMeeting, endTime: e.target.value })
+            }
+            placeholder="e.g., 16:00"
+          />
+          <Input
+            label="Venue"
+            value={newMeeting.venue}
+            onChange={(e) =>
+              setNewMeeting({ ...newMeeting, venue: e.target.value })
             }
             required
+            placeholder="e.g., Conference Room A"
           />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -241,14 +261,17 @@ const AttendanceManagement = () => {
             </label>
             <select
               className="w-full p-2 border border-gray-300 rounded-md"
-              value={newMeeting.type}
+              value={newMeeting.meetingType}
               onChange={(e) =>
-                setNewMeeting({ ...newMeeting, type: e.target.value })
+                setNewMeeting({ ...newMeeting, meetingType: e.target.value })
               }
             >
-              <option value="regular">Regular Meeting</option>
-              <option value="special">Special Meeting</option>
-              <option value="emergency">Emergency Meeting</option>
+              <option value="GENERAL">General Meeting</option>
+              <option value="SPECIAL">Special Meeting</option>
+              <option value="EMERGENCY">Emergency Meeting</option>
+              <option value="COMMITTEE">Committee Meeting</option>
+              <option value="ANNUAL">Annual Meeting</option>
+              <option value="QUARTERLY">Quarterly Meeting</option>
             </select>
           </div>
           <div className="flex justify-end space-x-2">

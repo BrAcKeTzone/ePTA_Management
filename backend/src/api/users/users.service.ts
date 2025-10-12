@@ -19,10 +19,10 @@ interface UpdateUserByAdminData {
 
 interface GetUsersFilter {
   search?: string;
-  role?: UserRole;
-  isActive?: boolean;
-  page?: number;
-  limit?: number;
+  role?: UserRole | string;
+  isActive?: boolean | string;
+  page?: number | string;
+  limit?: number | string;
 }
 
 interface UserSafeData {
@@ -53,8 +53,10 @@ export const getUserById = async (id: number): Promise<UserSafeData> => {
           studentId: true,
           firstName: true,
           lastName: true,
-          program: true,
-          yearLevel: true,
+          middleName: true,
+          birthDate: true,
+          yearEnrolled: true,
+          status: true,
           linkStatus: true,
         },
       },
@@ -93,12 +95,10 @@ export const getUserProfile = async (userId: number): Promise<UserSafeData> => {
           firstName: true,
           lastName: true,
           middleName: true,
-          program: true,
-          yearLevel: true,
-          academicYear: true,
+          birthDate: true,
+          yearEnrolled: true,
           status: true,
-          email: true,
-          phone: true,
+          linkStatus: true,
         },
       },
     },
@@ -149,7 +149,15 @@ export const updateUserProfile = async (
 
 // Get all users with filters (admin only)
 export const getAllUsers = async (filter: GetUsersFilter) => {
-  const { search, role, isActive, page = 1, limit = 10 } = filter;
+  const { search, role, isActive } = filter;
+
+  // Parse pagination parameters
+  const page =
+    typeof filter.page === "string" ? parseInt(filter.page) : filter.page || 1;
+  const limit =
+    typeof filter.limit === "string"
+      ? parseInt(filter.limit)
+      : filter.limit || 10;
 
   const skip = (page - 1) * limit;
 
@@ -164,11 +172,18 @@ export const getAllUsers = async (filter: GetUsersFilter) => {
   }
 
   if (role) {
-    whereClause.role = role;
+    // Validate and cast role to UserRole enum
+    const roleUpper = typeof role === "string" ? role.toUpperCase() : role;
+    if (roleUpper === UserRole.ADMIN || roleUpper === UserRole.PARENT) {
+      whereClause.role = roleUpper as UserRole;
+    }
   }
 
   if (typeof isActive === "boolean") {
     whereClause.isActive = isActive;
+  } else if (typeof isActive === "string") {
+    // Convert string to boolean
+    whereClause.isActive = isActive === "true";
   }
 
   const [users, totalCount] = await Promise.all([

@@ -1,34 +1,6 @@
 import Joi from "joi";
 import { AnnouncementPriority, TargetAudience } from "@prisma/client";
 
-// Program options (matching students validation)
-const programOptions = [
-  "BSIT",
-  "BSCS",
-  "BSED",
-  "BEED",
-  "BSBA",
-  "BSN",
-  "BSME",
-  "BSCE",
-  "BSEE",
-  "BSAG",
-  "BSFOR",
-  "BSPSYCH",
-  "BSMATH",
-  "BSPHY",
-  "BSCHEM",
-  "BSBIO",
-];
-
-const yearLevelOptions = [
-  "1st Year",
-  "2nd Year",
-  "3rd Year",
-  "4th Year",
-  "5th Year",
-];
-
 export const createAnnouncement = Joi.object().keys({
   title: Joi.string().min(3).max(200).required(),
   content: Joi.string().min(10).required(),
@@ -40,14 +12,8 @@ export const createAnnouncement = Joi.object().keys({
     .valid(...Object.values(TargetAudience))
     .optional()
     .default("ALL"),
-  targetProgram: Joi.string()
-    .valid(...programOptions)
-    .optional()
-    .allow(""),
-  targetYearLevel: Joi.string()
-    .valid(...yearLevelOptions)
-    .optional()
-    .allow(""),
+  targetProgram: Joi.string().optional().allow(""),
+  targetYearLevel: Joi.string().optional().allow(""),
   isPublished: Joi.boolean().optional().default(false),
   publishDate: Joi.date().iso().optional().allow(null),
   expiryDate: Joi.date()
@@ -72,14 +38,8 @@ export const updateAnnouncement = Joi.object().keys({
   targetAudience: Joi.string()
     .valid(...Object.values(TargetAudience))
     .optional(),
-  targetProgram: Joi.string()
-    .valid(...programOptions)
-    .optional()
-    .allow(""),
-  targetYearLevel: Joi.string()
-    .valid(...yearLevelOptions)
-    .optional()
-    .allow(""),
+  targetProgram: Joi.string().optional().allow(""),
+  targetYearLevel: Joi.string().optional().allow(""),
   publishDate: Joi.date().iso().optional().allow(null),
   expiryDate: Joi.date().iso().optional().allow(null),
   attachmentUrl: Joi.string().uri().optional().allow(""),

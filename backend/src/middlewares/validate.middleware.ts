@@ -6,7 +6,11 @@ const validate =
   (schema: Joi.ObjectSchema, source: "body" | "params" | "query" = "body") =>
   (req: Request, res: Response, next: NextFunction) => {
     const dataToValidate = req[source];
-    const { value, error } = schema.validate(dataToValidate);
+
+    const { value, error } = schema.validate(dataToValidate, {
+      stripUnknown: true, // Strip unknown keys from the validated object
+    });
+
     if (error) {
       const errorMessage = error.details
         .map((details) => details.message)

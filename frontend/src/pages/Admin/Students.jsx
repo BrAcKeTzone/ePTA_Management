@@ -10,49 +10,57 @@ import { formatDate } from "../../utils/formatDate";
 
 const StudentsManagement = () => {
   const [students, setStudents] = useState([]);
-  const [parents, setParents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showLinkModal, setShowLinkModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [newStudent, setNewStudent] = useState({
     firstName: "",
     lastName: "",
+    middleName: "",
     studentId: "",
-    gradeLevel: "",
-    section: "",
+    yearEnrolled: "",
     birthDate: "",
-    parentId: "",
   });
   const [filter, setFilter] = useState("all");
 
+  // Generate year options: 3 years before to 3 years after current year
+  const generateYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let i = currentYear - 3; i <= currentYear + 3; i++) {
+      years.push(i);
+    }
+    return years;
+  };
+
+  const yearOptions = generateYearOptions();
+
   useEffect(() => {
     fetchStudents();
-    fetchParents();
   }, [filter]);
 
   const fetchStudents = async () => {
     try {
       setLoading(true);
-      const params = filter !== "all" ? { gradeLevel: filter } : {};
+      // Don't pass gradeLevel filter since it's no longer used
+      const params = {};
       const response = await studentsApi.getAllStudents(params);
+      console.log("API Response:", response);
+      console.log("Students data:", response.data);
+      console.log("response.data.data:", response.data.data);
+      console.log("response.data.data.students:", response.data.data?.students);
+
       // Response structure: response.data.data.students
-      setStudents(response.data?.data?.students || []);
+      const studentsArray = response.data?.data?.students || [];
+      console.log("Setting students array:", studentsArray);
+      console.log("Students array length:", studentsArray.length);
+      setStudents(studentsArray);
     } catch (error) {
       console.error("Error fetching students:", error);
+      console.error("Error details:", error.response?.data);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchParents = async () => {
-    try {
-      const response = await userApi.getAllUsers({ role: "parent" });
-      // Response structure: response.data.data.users
-      setParents(response.data?.data?.users || []);
-    } catch (error) {
-      console.error("Error fetching parents:", error);
     }
   };
 
@@ -64,11 +72,10 @@ const StudentsManagement = () => {
       setNewStudent({
         firstName: "",
         lastName: "",
+        middleName: "",
         studentId: "",
-        gradeLevel: "",
-        section: "",
+        yearEnrolled: "",
         birthDate: "",
-        parentId: "",
       });
       fetchStudents();
     } catch (error) {
@@ -79,12 +86,16 @@ const StudentsManagement = () => {
   const handleEditStudent = async (e) => {
     e.preventDefault();
     try {
+      console.log("Updating student:", selectedStudent);
+      console.log("Student ID:", selectedStudent.id);
+      console.log("Student ID type:", typeof selectedStudent.id);
       await studentsApi.updateStudent(selectedStudent.id, selectedStudent);
       setShowEditModal(false);
       setSelectedStudent(null);
       fetchStudents();
     } catch (error) {
       console.error("Error updating student:", error);
+      alert(`Error updating student: ${error.message || error}`);
     }
   };
 
@@ -99,17 +110,6 @@ const StudentsManagement = () => {
     }
   };
 
-  const handleLinkParent = async (parentId) => {
-    try {
-      await studentsApi.linkParentToStudent(parentId, selectedStudent.id);
-      setShowLinkModal(false);
-      setSelectedStudent(null);
-      fetchStudents();
-    } catch (error) {
-      console.error("Error linking parent:", error);
-    }
-  };
-
   const getGradeLevelDisplay = (gradeLevel) => {
     if (gradeLevel <= 6) return `Grade ${gradeLevel} (Elementary)`;
     if (gradeLevel <= 10) return `Grade ${gradeLevel} (Junior High)`;
@@ -119,68 +119,56 @@ const StudentsManagement = () => {
   const studentColumns = [
     {
       key: "name",
-      header: "Student",
-      render: (student) => (
+      header: "Student Name",
+      cell: (student) => (
         <div>
           <div className="font-medium text-gray-900">
             {student.firstName} {student.lastName}
           </div>
-          <div className="text-sm text-gray-600">
-            ID: {student.studentId}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "gradeSection",
-      header: "Grade & Section",
-      render: (student) => (
-        <div>
-          <div className="font-medium">
-            {getGradeLevelDisplay(student.gradeLevel)}
-          </div>
-          <div className="text-sm text-gray-600">
-            Section: {student.section}
-          </div>
-        </div>
-      ),
-    },
-    {
-      key: "parent",
-      header: "Parent",
-      render: (student) => (
-        <div>
-          {student.parentName ? (
-            <>
-              <div className="font-medium text-gray-900">
-                {student.parentName}
-              </div>
-              <div className="text-sm text-gray-600">
-                {student.parentEmail}
-              </div>
-            </>
-          ) : (
-            <span className="text-red-600">
-              No parent linked
-            </span>
-          )}
+          <div className="text-sm text-gray-600">ID: {student.studentId}</div>
         </div>
       ),
     },
     {
       key: "birthDate",
       header: "Birth Date",
-      render: (student) => formatDate(student.birthDate),
+      cell: (student) => (
+        <div className="text-gray-900">
+          {student.birthDate ? formatDate(student.birthDate) : "N/A"}
+        </div>
+      ),
     },
     {
-      key: "createdAt",
-      header: "Enrolled",
-      render: (student) => formatDate(student.createdAt),
+      key: "yearEnrolled",
+      header: "Year Enrolled",
+      cell: (student) => (
+        <div className="text-gray-900">{student.yearEnrolled || "N/A"}</div>
+      ),
+    },
+    {
+      key: "parent",
+      header: "Parent",
+      cell: (student) => (
+        <div>
+          {student.parent ? (
+            <>
+              <div className="font-medium text-gray-900">
+                {student.parent.name}
+              </div>
+              <div className="text-sm text-gray-600">
+                {student.parent.email}
+              </div>
+            </>
+          ) : (
+            <span className="text-gray-500">No parent linked</span>
+          )}
+        </div>
+      ),
     },
     {
       key: "actions",
       header: "Actions",
-      render: (student) => (
+      cell: (student) => (
         <div className="flex space-x-2">
           <Button
             variant="outline"
@@ -191,16 +179,6 @@ const StudentsManagement = () => {
             }}
           >
             Edit
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setSelectedStudent(student);
-              setShowLinkModal(true);
-            }}
-          >
-            Link Parent
           </Button>
           <Button
             variant="outline"
@@ -242,81 +220,15 @@ const StudentsManagement = () => {
         </Button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setFilter("all")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              filter === "all"
-                ? "bg-blue-100 text-blue-600"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            All Students
-          </button>
-          <button
-            onClick={() => setFilter("elementary")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              filter === "elementary"
-                ? "bg-blue-100 text-blue-600"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            Elementary (K-6)
-          </button>
-          <button
-            onClick={() => setFilter("junior")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              filter === "junior"
-                ? "bg-blue-100 text-blue-600"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            Junior High (7-10)
-          </button>
-          <button
-            onClick={() => setFilter("senior")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              filter === "senior"
-                ? "bg-blue-100 text-blue-600"
-                : "text-gray-600 hover:text-gray-900"
-            }`}
-          >
-            Senior High (11-12)
-          </button>
-        </div>
-      </div>
-
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500">
-            Total Students
-          </h3>
-          <p className="text-2xl font-bold text-blue-600">
-            {students.length}
-          </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-900">
+          <h3 className="text-sm font-medium text-gray-500">Total Students</h3>
+          <p className="text-2xl font-bold text-blue-600">{students.length}</p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-900">
           <h3 className="text-sm font-medium text-gray-500">
-            Elementary
-          </h3>
-          <p className="text-2xl font-bold text-green-600">
-            {students.filter((s) => s.gradeLevel <= 6).length}
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500">
-            High School
-          </h3>
-          <p className="text-2xl font-bold text-purple-600">
-            {students.filter((s) => s.gradeLevel > 6).length}
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500">
-            With Parents
+            With Parent Linked
           </h3>
           <p className="text-2xl font-bold text-emerald-600">
             {students.filter((s) => s.parentId).length}
@@ -325,8 +237,8 @@ const StudentsManagement = () => {
       </div>
 
       {/* Students Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-900">
+        <div className="p-6 border-b border-gray-900">
           <h2 className="text-lg font-semibold text-gray-900">
             Student Records
           </h2>
@@ -349,6 +261,7 @@ const StudentsManagement = () => {
           <div className="grid grid-cols-2 gap-4">
             <Input
               label="First Name"
+              placeholder="e.g., Juan"
               value={newStudent.firstName}
               onChange={(e) =>
                 setNewStudent({ ...newStudent, firstName: e.target.value })
@@ -357,6 +270,7 @@ const StudentsManagement = () => {
             />
             <Input
               label="Last Name"
+              placeholder="e.g., Dela Cruz"
               value={newStudent.lastName}
               onChange={(e) =>
                 setNewStudent({ ...newStudent, lastName: e.target.value })
@@ -365,71 +279,51 @@ const StudentsManagement = () => {
             />
           </div>
           <Input
+            label="Middle Name"
+            placeholder="e.g., Santos (Optional)"
+            value={newStudent.middleName}
+            onChange={(e) =>
+              setNewStudent({ ...newStudent, middleName: e.target.value })
+            }
+          />
+          <Input
             label="Student ID"
+            placeholder="YYYY-NNNNN (e.g., 2024-12345)"
             value={newStudent.studentId}
             onChange={(e) =>
               setNewStudent({ ...newStudent, studentId: e.target.value })
             }
             required
           />
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Grade Level
-              </label>
-              <select
-                className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
-                value={newStudent.gradeLevel}
-                onChange={(e) =>
-                  setNewStudent({ ...newStudent, gradeLevel: e.target.value })
-                }
-                required
-              >
-                <option value="">Select Grade</option>
-                {gradeLevels.map((grade) => (
-                  <option key={grade} value={grade}>
-                    {getGradeLevelDisplay(grade)}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <Input
-              label="Section"
-              value={newStudent.section}
-              onChange={(e) =>
-                setNewStudent({ ...newStudent, section: e.target.value })
-              }
-              required
-            />
-          </div>
-          <Input
-            label="Birth Date"
-            type="date"
-            value={newStudent.birthDate}
-            onChange={(e) =>
-              setNewStudent({ ...newStudent, birthDate: e.target.value })
-            }
-            required
-          />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Parent (Optional)
+              Year Enrolled <span className="text-red-500">*</span>
             </label>
             <select
-              className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
-              value={newStudent.parentId}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              value={newStudent.yearEnrolled}
               onChange={(e) =>
-                setNewStudent({ ...newStudent, parentId: e.target.value })
+                setNewStudent({ ...newStudent, yearEnrolled: e.target.value })
               }
+              required
             >
-              <option value="">Select Parent</option>
-              {parents.map((parent) => (
-                <option key={parent.id} value={parent.id}>
-                  {parent.name} - {parent.email}
+              <option value="">Select Year</option>
+              {yearOptions.map((year) => (
+                <option key={year} value={year}>
+                  {year}
                 </option>
               ))}
             </select>
           </div>
+          <Input
+            label="Birth Date"
+            type="date"
+            placeholder="YYYY-MM-DD"
+            value={newStudent.birthDate}
+            onChange={(e) =>
+              setNewStudent({ ...newStudent, birthDate: e.target.value })
+            }
+          />
           <div className="flex justify-end space-x-2">
             <Button
               type="button"
@@ -455,6 +349,7 @@ const StudentsManagement = () => {
             <div className="grid grid-cols-2 gap-4">
               <Input
                 label="First Name"
+                placeholder="e.g., Juan"
                 value={selectedStudent.firstName}
                 onChange={(e) =>
                   setSelectedStudent({
@@ -466,6 +361,7 @@ const StudentsManagement = () => {
               />
               <Input
                 label="Last Name"
+                placeholder="e.g., Dela Cruz"
                 value={selectedStudent.lastName}
                 onChange={(e) =>
                   setSelectedStudent({
@@ -477,7 +373,19 @@ const StudentsManagement = () => {
               />
             </div>
             <Input
+              label="Middle Name"
+              placeholder="e.g., Santos (Optional)"
+              value={selectedStudent.middleName || ""}
+              onChange={(e) =>
+                setSelectedStudent({
+                  ...selectedStudent,
+                  middleName: e.target.value,
+                })
+              }
+            />
+            <Input
               label="Student ID"
+              placeholder="YYYY-NNNNN (e.g., 2024-12345)"
               value={selectedStudent.studentId}
               onChange={(e) =>
                 setSelectedStudent({
@@ -486,53 +394,45 @@ const StudentsManagement = () => {
                 })
               }
               required
+              disabled
             />
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Grade Level
-                </label>
-                <select
-                  className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
-                  value={selectedStudent.gradeLevel}
-                  onChange={(e) =>
-                    setSelectedStudent({
-                      ...selectedStudent,
-                      gradeLevel: e.target.value,
-                    })
-                  }
-                  required
-                >
-                  {gradeLevels.map((grade) => (
-                    <option key={grade} value={grade}>
-                      {getGradeLevelDisplay(grade)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <Input
-                label="Section"
-                value={selectedStudent.section}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Year Enrolled <span className="text-red-500">*</span>
+              </label>
+              <select
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+                value={selectedStudent.yearEnrolled || ""}
                 onChange={(e) =>
                   setSelectedStudent({
                     ...selectedStudent,
-                    section: e.target.value,
+                    yearEnrolled: e.target.value,
                   })
                 }
                 required
-              />
+              >
+                <option value="">Select Year</option>
+                {yearOptions.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
             </div>
             <Input
               label="Birth Date"
               type="date"
-              value={selectedStudent.birthDate}
+              value={
+                selectedStudent.birthDate
+                  ? selectedStudent.birthDate.split("T")[0]
+                  : ""
+              }
               onChange={(e) =>
                 setSelectedStudent({
                   ...selectedStudent,
                   birthDate: e.target.value,
                 })
               }
-              required
             />
             <div className="flex justify-end space-x-2">
               <Button
@@ -545,54 +445,6 @@ const StudentsManagement = () => {
               <Button type="submit">Update Student</Button>
             </div>
           </form>
-        )}
-      </Modal>
-
-      {/* Link Parent Modal */}
-      <Modal
-        isOpen={showLinkModal}
-        onClose={() => setShowLinkModal(false)}
-        title="Link Parent to Student"
-      >
-        {selectedStudent && (
-          <div className="space-y-4">
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-900">
-                Student: {selectedStudent.firstName} {selectedStudent.lastName}
-              </h3>
-              <p className="text-sm text-gray-600">
-                Grade {selectedStudent.gradeLevel} - {selectedStudent.section}
-              </p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Parent
-              </label>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {parents.map((parent) => (
-                  <div
-                    key={parent.id}
-                    className="flex items-center justify-between p-3 border border-gray-200 rounded-lg"
-                  >
-                    <div>
-                      <div className="font-medium text-gray-900">
-                        {parent.name}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {parent.email}
-                      </div>
-                    </div>
-                    <Button
-                      size="sm"
-                      onClick={() => handleLinkParent(parent.id)}
-                    >
-                      Link
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
         )}
       </Modal>
     </div>

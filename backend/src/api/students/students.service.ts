@@ -7,34 +7,23 @@ export interface CreateStudentData {
   firstName: string;
   lastName: string;
   middleName?: string;
-  academicYear: string;
-  yearLevel: string;
-  program: string;
-  section?: string;
-  email?: string;
-  phone?: string;
-  parentId: number;
+  birthDate?: string | Date;
+  yearEnrolled: string;
+  parentId?: number;
 }
 
 export interface UpdateStudentData {
   firstName?: string;
   lastName?: string;
   middleName?: string;
-  academicYear?: string;
-  yearLevel?: string;
-  program?: string;
-  section?: string;
-  email?: string;
-  phone?: string;
+  yearEnrolled?: string;
   status?: StudentStatus;
   linkStatus?: LinkStatus;
 }
 
 export interface StudentSearchFilters {
   search?: string; // Search by name or student ID
-  academicYear?: string;
-  yearLevel?: string;
-  program?: string;
+  yearEnrolled?: string;
   status?: StudentStatus;
   linkStatus?: LinkStatus;
   parentId?: number;
@@ -54,28 +43,34 @@ export const createStudent = async (
       throw new ApiError(400, "Student ID already exists");
     }
 
-    // Check if email already exists (if provided)
-    if (studentData.email) {
-      const existingEmail = await prisma.student.findUnique({
-        where: { email: studentData.email },
+    // Verify parent exists (if provided)
+    if (studentData.parentId) {
+      const parent = await prisma.user.findUnique({
+        where: { id: studentData.parentId },
       });
 
-      if (existingEmail) {
-        throw new ApiError(400, "Email already exists");
+      if (!parent) {
+        throw new ApiError(404, "Parent not found");
       }
     }
 
-    // Verify parent exists
-    const parent = await prisma.user.findUnique({
-      where: { id: studentData.parentId },
-    });
+    // Prepare data with defaults for optional fields
+    const dataToCreate: any = {
+      studentId: studentData.studentId,
+      firstName: studentData.firstName,
+      lastName: studentData.lastName,
+      middleName: studentData.middleName,
+      birthDate: studentData.birthDate,
+      yearEnrolled: studentData.yearEnrolled,
+    };
 
-    if (!parent) {
-      throw new ApiError(404, "Parent not found");
+    // Only include parentId if it's provided
+    if (studentData.parentId) {
+      dataToCreate.parentId = studentData.parentId;
     }
 
     const student = await prisma.student.create({
-      data: studentData,
+      data: dataToCreate,
       include: {
         parent: {
           select: {
@@ -92,7 +87,7 @@ export const createStudent = async (
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
-        throw new ApiError(400, "Student ID or email already exists");
+        throw new ApiError(400, "Student ID already exists");
       }
     }
     throw error;
@@ -136,14 +131,8 @@ export const getStudents = async (
   }
 
   // Other filters
-  if (filters.academicYear) {
-    whereClause.academicYear = filters.academicYear;
-  }
-  if (filters.yearLevel) {
-    whereClause.yearLevel = filters.yearLevel;
-  }
-  if (filters.program) {
-    whereClause.program = filters.program;
+  if (filters.yearEnrolled) {
+    whereClause.yearEnrolled = filters.yearEnrolled;
   }
   if (filters.status) {
     whereClause.status = filters.status;
@@ -245,17 +234,6 @@ export const updateStudent = async (
     throw new ApiError(404, "Student not found");
   }
 
-  // Check email uniqueness if email is being updated
-  if (updateData.email && updateData.email !== existingStudent.email) {
-    const existingEmail = await prisma.student.findUnique({
-      where: { email: updateData.email },
-    });
-
-    if (existingEmail) {
-      throw new ApiError(400, "Email already exists");
-    }
-  }
-
   try {
     const updatedStudent = await prisma.student.update({
       where: { id },
@@ -274,11 +252,6 @@ export const updateStudent = async (
 
     return updatedStudent;
   } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2002") {
-        throw new ApiError(400, "Email already exists");
-      }
-    }
     throw error;
   }
 };
@@ -395,9 +368,7 @@ export const getEnrollmentStats = async (): Promise<{
   graduatedStudents: number;
   inactiveStudents: number;
   pendingLinks: number;
-  byProgram: { program: string; count: number }[];
-  byYearLevel: { yearLevel: string; count: number }[];
-  byAcademicYear: { academicYear: string; count: number }[];
+  byYearEnrolled: { yearEnrolled: string; count: number }[];
 }> => {
   const [
     totalStudents,
@@ -405,9 +376,7 @@ export const getEnrollmentStats = async (): Promise<{
     graduatedStudents,
     inactiveStudents,
     pendingLinks,
-    byProgram,
-    byYearLevel,
-    byAcademicYear,
+    byYearEnrolled,
   ] = await Promise.all([
     prisma.student.count(),
     prisma.student.count({ where: { status: StudentStatus.ACTIVE } }),
@@ -415,16 +384,8 @@ export const getEnrollmentStats = async (): Promise<{
     prisma.student.count({ where: { status: StudentStatus.INACTIVE } }),
     prisma.student.count({ where: { linkStatus: LinkStatus.PENDING } }),
     prisma.student.groupBy({
-      by: ["program"],
-      _count: { program: true },
-    }),
-    prisma.student.groupBy({
-      by: ["yearLevel"],
-      _count: { yearLevel: true },
-    }),
-    prisma.student.groupBy({
-      by: ["academicYear"],
-      _count: { academicYear: true },
+      by: ["yearEnrolled"],
+      _count: { yearEnrolled: true },
     }),
   ]);
 
@@ -434,17 +395,9 @@ export const getEnrollmentStats = async (): Promise<{
     graduatedStudents,
     inactiveStudents,
     pendingLinks,
-    byProgram: byProgram.map((item) => ({
-      program: item.program,
-      count: item._count.program,
-    })),
-    byYearLevel: byYearLevel.map((item) => ({
-      yearLevel: item.yearLevel,
-      count: item._count.yearLevel,
-    })),
-    byAcademicYear: byAcademicYear.map((item) => ({
-      academicYear: item.academicYear,
-      count: item._count.academicYear,
+    byYearEnrolled: byYearEnrolled.map((item) => ({
+      yearEnrolled: item.yearEnrolled,
+      count: item._count.yearEnrolled,
     })),
   };
 };

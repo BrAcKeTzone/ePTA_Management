@@ -20,9 +20,7 @@ export const createStudent = asyncHandler(
 export const getStudents = asyncHandler(async (req: Request, res: Response) => {
   const {
     search,
-    academicYear,
-    yearLevel,
-    program,
+    yearEnrolled,
     status,
     linkStatus,
     parentId,
@@ -41,9 +39,7 @@ export const getStudents = asyncHandler(async (req: Request, res: Response) => {
   const filters: studentService.StudentSearchFilters = {};
 
   if (search) filters.search = search as string;
-  if (academicYear) filters.academicYear = academicYear as string;
-  if (yearLevel) filters.yearLevel = yearLevel as string;
-  if (program) filters.program = program as string;
+  if (yearEnrolled) filters.yearEnrolled = yearEnrolled as string;
   if (status) filters.status = status as StudentStatus;
   if (linkStatus) filters.linkStatus = linkStatus as LinkStatus;
   if (parentId) filters.parentId = parseInt(parentId as string, 10);
@@ -92,7 +88,27 @@ export const updateStudent = asyncHandler(
       throw new ApiError(400, "Invalid student ID");
     }
 
-    const updateData = req.body;
+    // Extract only the allowed update fields from req.body
+    const {
+      firstName,
+      lastName,
+      middleName,
+      birthDate,
+      yearEnrolled,
+      status,
+      linkStatus,
+    } = req.body;
+
+    const updateData = {
+      firstName,
+      lastName,
+      middleName,
+      birthDate,
+      yearEnrolled,
+      status,
+      linkStatus,
+    };
+
     const student = await studentService.updateStudent(studentId, updateData);
     res
       .status(200)

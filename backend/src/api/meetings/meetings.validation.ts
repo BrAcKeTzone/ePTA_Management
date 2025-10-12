@@ -19,8 +19,21 @@ export const MEETING_STATUS = {
   POSTPONED: "POSTPONED",
 } as const;
 
-// Time format validation (HH:MM in 24-hour format)
-const timeRegex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
+// Time format validation (HH:MM in 24-hour format, 07:00 to 21:00)
+const timeRegex = /^([0-1][0-9]|2[0-1]):[0-5][0-9]$/;
+
+// Custom validation for time range (7:00 AM to 9:00 PM)
+const validateTimeRange = (value: string, helpers: any) => {
+  const [hours, minutes] = value.split(":").map(Number);
+  const totalMinutes = hours * 60 + minutes;
+  const minTime = 7 * 60; // 7:00 AM
+  const maxTime = 21 * 60; // 9:00 PM
+
+  if (totalMinutes < minTime || totalMinutes > maxTime) {
+    return helpers.error("time.range");
+  }
+  return value;
+};
 
 /**
  * Validation schema for creating a meeting
@@ -60,23 +73,36 @@ export const createMeetingSchema = Joi.object({
     "any.required": "Meeting date is required",
   }),
 
-  startTime: Joi.string().pattern(timeRegex).required().messages({
-    "string.base": "Start time must be a string",
-    "string.pattern.base": "Start time must be in HH:MM format (24-hour)",
-    "any.required": "Start time is required",
-  }),
+  startTime: Joi.string()
+    .pattern(timeRegex)
+    .custom(validateTimeRange)
+    .required()
+    .messages({
+      "string.base": "Start time must be a string",
+      "string.pattern.base": "Start time must be in HH:MM format (24-hour)",
+      "time.range":
+        "Start time must be between 07:00 and 21:00 (7:00 AM to 9:00 PM)",
+      "any.required": "Start time is required",
+    }),
 
-  endTime: Joi.string().pattern(timeRegex).optional().allow("", null).messages({
-    "string.base": "End time must be a string",
-    "string.pattern.base": "End time must be in HH:MM format (24-hour)",
-  }),
+  endTime: Joi.string()
+    .pattern(timeRegex)
+    .custom(validateTimeRange)
+    .required()
+    .messages({
+      "string.base": "End time must be a string",
+      "string.pattern.base": "End time must be in HH:MM format (24-hour)",
+      "time.range":
+        "End time must be between 07:00 and 21:00 (7:00 AM to 9:00 PM)",
+      "any.required": "End time is required",
+    }),
 
   venue: Joi.string().trim().min(3).max(200).required().messages({
-    "string.base": "Venue must be a string",
-    "string.empty": "Venue is required",
-    "string.min": "Venue must be at least 3 characters",
-    "string.max": "Venue cannot exceed 200 characters",
-    "any.required": "Venue is required",
+    "string.base": "Location must be a string",
+    "string.empty": "Location is required",
+    "string.min": "Location must be at least 3 characters",
+    "string.max": "Location cannot exceed 200 characters",
+    "any.required": "Location is required",
   }),
 
   isVirtual: Joi.boolean().default(false).messages({
@@ -151,20 +177,32 @@ export const updateMeetingSchema = Joi.object({
     "date.base": "Date must be a valid date",
   }),
 
-  startTime: Joi.string().pattern(timeRegex).optional().messages({
-    "string.base": "Start time must be a string",
-    "string.pattern.base": "Start time must be in HH:MM format (24-hour)",
-  }),
+  startTime: Joi.string()
+    .pattern(timeRegex)
+    .custom(validateTimeRange)
+    .optional()
+    .messages({
+      "string.base": "Start time must be a string",
+      "string.pattern.base": "Start time must be in HH:MM format (24-hour)",
+      "time.range":
+        "Start time must be between 07:00 and 21:00 (7:00 AM to 9:00 PM)",
+    }),
 
-  endTime: Joi.string().pattern(timeRegex).optional().allow("", null).messages({
-    "string.base": "End time must be a string",
-    "string.pattern.base": "End time must be in HH:MM format (24-hour)",
-  }),
+  endTime: Joi.string()
+    .pattern(timeRegex)
+    .custom(validateTimeRange)
+    .optional()
+    .messages({
+      "string.base": "End time must be a string",
+      "string.pattern.base": "End time must be in HH:MM format (24-hour)",
+      "time.range":
+        "End time must be between 07:00 and 21:00 (7:00 AM to 9:00 PM)",
+    }),
 
   venue: Joi.string().trim().min(3).max(200).optional().messages({
-    "string.base": "Venue must be a string",
-    "string.min": "Venue must be at least 3 characters",
-    "string.max": "Venue cannot exceed 200 characters",
+    "string.base": "Location must be a string",
+    "string.min": "Location must be at least 3 characters",
+    "string.max": "Location cannot exceed 200 characters",
   }),
 
   isVirtual: Joi.boolean().optional().messages({
@@ -194,6 +232,7 @@ export const updateMeetingSchema = Joi.object({
     "number.min": "Expected attendees cannot be negative",
   }),
 })
+  .unknown(true) // Allow unknown fields like id, createdAt, etc. - will be stripped by middleware
   .min(1)
   .messages({
     "object.min": "At least one field must be provided for update",

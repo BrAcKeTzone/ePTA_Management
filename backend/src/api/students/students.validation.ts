@@ -3,32 +3,7 @@ import { StudentStatus, LinkStatus } from "@prisma/client";
 
 // Common patterns for college
 const studentIdPattern = /^[0-9]{4}-[0-9]{5}$/; // Format: 2024-12345
-const academicYearPattern = /^[0-9]{4}-[0-9]{4}$/; // Format: 2023-2024
-const yearLevelOptions = [
-  "1st Year",
-  "2nd Year",
-  "3rd Year",
-  "4th Year",
-  "5th Year",
-];
-const programOptions = [
-  "BSIT",
-  "BSCS",
-  "BSED",
-  "BEED",
-  "BSBA",
-  "BSN",
-  "BSME",
-  "BSCE",
-  "BSEE",
-  "BSAG",
-  "BSFOR",
-  "BSPSYCH",
-  "BSMATH",
-  "BSPHY",
-  "BSCHEM",
-  "BSBIO",
-];
+const yearEnrolledPattern = /^[0-9]{4}$/; // Format: 2024 (just the year)
 
 export const createStudent = Joi.object().keys({
   studentId: Joi.string().pattern(studentIdPattern).required().messages({
@@ -38,56 +13,39 @@ export const createStudent = Joi.object().keys({
   firstName: Joi.string().min(2).max(50).required(),
   lastName: Joi.string().min(2).max(50).required(),
   middleName: Joi.string().min(2).max(50).optional().allow(""),
-  academicYear: Joi.string().pattern(academicYearPattern).required().messages({
+  birthDate: Joi.date().optional().allow(""),
+  yearEnrolled: Joi.string().pattern(yearEnrolledPattern).required().messages({
     "string.pattern.base":
-      "Academic year must follow format: YYYY-YYYY (e.g., 2023-2024)",
+      "Year enrolled must follow format: YYYY (e.g., 2024)",
   }),
-  yearLevel: Joi.string()
-    .valid(...yearLevelOptions)
-    .required(),
-  program: Joi.string()
-    .valid(...programOptions)
-    .required(),
-  section: Joi.string().max(10).optional().allow(""),
-  email: Joi.string().email().optional().allow(""),
-  phone: Joi.string().min(10).max(15).optional().allow(""),
-  parentId: Joi.number().integer().positive().required(),
+  parentId: Joi.number().integer().positive().optional(),
 });
 
-export const updateStudent = Joi.object().keys({
-  firstName: Joi.string().min(2).max(50).optional(),
-  lastName: Joi.string().min(2).max(50).optional(),
-  middleName: Joi.string().min(2).max(50).optional().allow(""),
-  academicYear: Joi.string().pattern(academicYearPattern).optional().messages({
-    "string.pattern.base":
-      "Academic year must follow format: YYYY-YYYY (e.g., 2023-2024)",
-  }),
-  yearLevel: Joi.string()
-    .valid(...yearLevelOptions)
-    .optional(),
-  program: Joi.string()
-    .valid(...programOptions)
-    .optional(),
-  section: Joi.string().max(10).optional().allow(""),
-  email: Joi.string().email().optional().allow(""),
-  phone: Joi.string().min(10).max(15).optional().allow(""),
-  status: Joi.string()
-    .valid(...Object.values(StudentStatus))
-    .optional(),
-  linkStatus: Joi.string()
-    .valid(...Object.values(LinkStatus))
-    .optional(),
-});
+export const updateStudent = Joi.object()
+  .keys({
+    firstName: Joi.string().min(2).max(50).optional(),
+    lastName: Joi.string().min(2).max(50).optional(),
+    middleName: Joi.string().min(2).max(50).optional().allow(""),
+    birthDate: Joi.date().optional().allow(""),
+    yearEnrolled: Joi.string()
+      .pattern(yearEnrolledPattern)
+      .optional()
+      .messages({
+        "string.pattern.base":
+          "Year enrolled must follow format: YYYY (e.g., 2024)",
+      }),
+    status: Joi.string()
+      .valid(...Object.values(StudentStatus))
+      .optional(),
+    linkStatus: Joi.string()
+      .valid(...Object.values(LinkStatus))
+      .optional(),
+  })
+  .unknown(true); // Allow unknown fields (like id, studentId, etc.) - they will be stripped
 
 export const getStudents = Joi.object().keys({
   search: Joi.string().max(100).optional(),
-  academicYear: Joi.string().pattern(academicYearPattern).optional(),
-  yearLevel: Joi.string()
-    .valid(...yearLevelOptions)
-    .optional(),
-  program: Joi.string()
-    .valid(...programOptions)
-    .optional(),
+  yearEnrolled: Joi.string().pattern(yearEnrolledPattern).optional(),
   status: Joi.string()
     .valid(...Object.values(StudentStatus))
     .optional(),

@@ -91,18 +91,14 @@ model Student {
   firstName      String
   lastName       String
   middleName     String?
-  academicYear   String        // e.g., "2023-2024", "2024-2025"
-  yearLevel      String        // e.g., "1st Year", "2nd Year", "3rd Year", "4th Year"
-  program        String        // e.g., "BSIT", "BSCS", "BSED", etc.
-  section        String?       // e.g., "A", "B", "C"
+  birthDate      DateTime?
+  yearEnrolled   String        // e.g., "2024", "2025"
   status         StudentStatus @default(ACTIVE)
   linkStatus     LinkStatus    @default(PENDING)
   enrollmentDate DateTime      @default(now())
-  email          String?       @unique
-  phone          String?
 
-  parentId Int
-  parent   User @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  parentId Int?
+  parent   User? @relation(fields: [parentId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -110,6 +106,7 @@ model Student {
   @@index([studentId])
   @@index([lastName, firstName])
   @@index([parentId])
+  @@index([yearEnrolled])
 }
 
 // MEETINGS, ATTENDANCE & PENALTIES
@@ -122,9 +119,9 @@ model Meeting {
   
   // Scheduling
   date        DateTime
-  startTime   String        // Format: HH:MM (24-hour)
-  endTime     String?       // Format: HH:MM (24-hour)
-  venue       String
+  startTime   String        // Format: HH:MM (24-hour), range: 07:00-21:00
+  endTime     String        // Format: HH:MM (24-hour), range: 07:00-21:00
+  venue       String        // Location of the meeting
   isVirtual   Boolean       @default(false)
   meetingLink String?       // For virtual meetings
   

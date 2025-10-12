@@ -14,6 +14,9 @@ import AdminContributions from "../pages/Admin/Contributions";
 import AdminProjects from "../pages/Admin/Projects";
 import AdminAnnouncements from "../pages/Admin/Announcements";
 import AdminClearance from "../pages/Admin/Clearance";
+import AdminStudents from "../pages/Admin/Students";
+import AdminStudentLinks from "../pages/Admin/StudentLinks";
+import AdminMeetings from "../pages/Admin/Meetings";
 
 // Parent pages (PTA System)
 import ParentDashboard from "../pages/Parent/Dashboard";
@@ -22,6 +25,7 @@ import ParentContributions from "../pages/Parent/MyContributions";
 import ParentAnnouncements from "../pages/Parent/Announcements";
 import ParentProjects from "../pages/Parent/Projects";
 import ParentClearance from "../pages/Parent/Clearance";
+import ParentMyChildren from "../pages/Parent/MyChildren";
 
 // Legacy HR/Applicant pages (keep for backward compatibility)
 import ApplicantDashboard from "../pages/Applicant/Dashboard";
@@ -167,11 +171,14 @@ const AppRoutes = () => {
         }
       >
         <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="meetings" element={<AdminMeetings />} />
         <Route path="attendance" element={<AdminAttendance />} />
         <Route path="contributions" element={<AdminContributions />} />
         <Route path="projects" element={<AdminProjects />} />
         <Route path="announcements" element={<AdminAnnouncements />} />
         <Route path="clearance" element={<AdminClearance />} />
+        <Route path="students" element={<AdminStudents />} />
+        <Route path="student-links" element={<AdminStudentLinks />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 
@@ -190,6 +197,7 @@ const AppRoutes = () => {
         <Route path="announcements" element={<ParentAnnouncements />} />
         <Route path="projects" element={<ParentProjects />} />
         <Route path="clearance" element={<ParentClearance />} />
+        <Route path="my-children" element={<ParentMyChildren />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 
