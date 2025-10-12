@@ -271,7 +271,7 @@ export const getPendingStudents = asyncHandler(
 // Request to link a student (by parent)
 export const requestLinkStudent = asyncHandler(
   async (req: Request, res: Response) => {
-    const { studentId } = req.body;
+    const { studentId, relationship } = req.body;
     const parentId = (req as any).user.id; // Get from auth middleware
 
     if (!studentId) {
@@ -280,7 +280,8 @@ export const requestLinkStudent = asyncHandler(
 
     const student = await studentService.requestLinkStudent(
       studentId,
-      parentId
+      parentId,
+      relationship
     );
     res
       .status(200)

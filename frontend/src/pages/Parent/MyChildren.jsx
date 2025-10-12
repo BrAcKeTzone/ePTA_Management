@@ -233,7 +233,8 @@ const MyChildren = () => {
                         </p>
                       )}
                       <p className="text-sm text-gray-600">
-                        <strong>Relationship:</strong> Parent
+                        <strong>Relationship:</strong>{" "}
+                        {child.relationship || "Parent"}
                       </p>
                     </div>
                   </div>
@@ -321,7 +322,8 @@ const MyChildren = () => {
                             </p>
                           )}
                           <p className="text-sm text-gray-600">
-                            <strong>Relationship:</strong> Parent
+                            <strong>Relationship:</strong>{" "}
+                            {request.relationship || "Parent"}
                           </p>
                           <p className="text-sm text-gray-500">
                             <strong>Date:</strong>{" "}

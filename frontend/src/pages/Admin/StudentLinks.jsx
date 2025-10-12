@@ -160,6 +160,13 @@ const StudentLinksManagement = () => {
       ),
     },
     {
+      header: "Relationship",
+      accessor: "relationship",
+      cell: (student) => (
+        <div>{getRelationshipBadge(student.relationship || "PARENT")}</div>
+      ),
+    },
+    {
       header: "Actions",
       accessor: "id",
       cell: (student) => (

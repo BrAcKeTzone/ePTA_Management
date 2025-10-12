@@ -94,7 +94,7 @@ export const studentsApi = {
       return await dummyDataService.rejectParentLink(linkId, reason);
     }
     return await fetchClient.patch(`/api/students/${linkId}/reject`, {
-      reason,
+      rejectionReason: reason,
     });
   },
 

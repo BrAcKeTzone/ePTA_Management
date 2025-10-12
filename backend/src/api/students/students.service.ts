@@ -425,7 +425,8 @@ export const getEnrollmentStats = async (): Promise<{
 // Request to link a student to a parent account
 export const requestLinkStudent = async (
   studentId: string,
-  parentId: number
+  parentId: number,
+  relationship?: string
 ): Promise<Student> => {
   // Verify parent exists
   const parent = await prisma.user.findUnique({
@@ -476,12 +477,13 @@ export const requestLinkStudent = async (
     throw new ApiError(400, "Link request is already pending approval");
   }
 
-  // Update student with new parent ID and set status to PENDING
+  // Update student with new parent ID, relationship, and set status to PENDING
   const updatedStudent = await prisma.student.update({
     where: { id: student.id },
     data: {
       parentId,
       linkStatus: LinkStatus.PENDING,
+      relationship: relationship || "PARENT", // Default to PARENT if not provided
     },
     include: {
       parent: {
