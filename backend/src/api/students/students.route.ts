@@ -12,6 +12,15 @@ router.use(authenticate);
 // Get authenticated user's children (must be before /:id routes)
 router.get("/my-children", studentController.getMyChildren);
 
+// Get authenticated user's pending link requests (must be before /:id routes)
+router.get("/my-link-requests", studentController.getMyLinkRequests);
+
+// Search students by query (must be before /:id routes)
+router.get("/search", studentController.searchStudents);
+
+// Get all pending parent-student link requests (Admin only, must be before /:id routes)
+router.get("/pending-parent-links", studentController.getPendingParentLinks);
+
 // Create a new student
 router.post(
   "/",

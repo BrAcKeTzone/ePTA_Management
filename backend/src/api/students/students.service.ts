@@ -27,6 +27,7 @@ export interface StudentSearchFilters {
   status?: StudentStatus;
   linkStatus?: LinkStatus;
   parentId?: number;
+  hasParent?: boolean; // Filter for students with or without parent assigned
 }
 
 // Create a new student
@@ -142,6 +143,14 @@ export const getStudents = async (
   }
   if (filters.parentId) {
     whereClause.parentId = filters.parentId;
+  }
+  // Filter for students with or without parent
+  if (filters.hasParent !== undefined) {
+    if (filters.hasParent) {
+      whereClause.parentId = { not: null };
+    } else {
+      whereClause.parentId = null;
+    }
   }
 
   const [students, totalCount] = await Promise.all([

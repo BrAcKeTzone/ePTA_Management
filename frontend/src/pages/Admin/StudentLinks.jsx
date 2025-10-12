@@ -22,11 +22,12 @@ const StudentLinksManagement = () => {
   const fetchLinkRequests = async () => {
     try {
       setLoading(true);
-      const response = await studentsApi.getPendingParentLinks({
-        status: filter,
-      });
-      const linksData =
-        response.data?.data?.links || response.data?.links || [];
+      // If filter is "all", don't send status parameter
+      const params = filter === "all" ? {} : { status: filter.toUpperCase() };
+      const response = await studentsApi.getPendingParentLinks(params);
+      // Backend returns: { students: [...], pagination: {...} }
+      const result = response.data?.data || {};
+      const linksData = result.students || [];
       setLinkRequests(linksData);
     } catch (error) {
       console.error("Error fetching link requests:", error);
@@ -106,71 +107,83 @@ const StudentLinksManagement = () => {
     {
       header: "Request Date",
       accessor: "createdAt",
-      render: (request) => (
+      cell: (student) => (
         <div>
           <div className="font-medium text-gray-900">
-            {formatDate(request.createdAt)}
+            {formatDate(student.createdAt)}
           </div>
           <div className="text-xs text-gray-500">
-            {new Date(request.createdAt).toLocaleTimeString()}
+            {new Date(student.createdAt).toLocaleTimeString()}
           </div>
         </div>
       ),
     },
     {
-      header: "Parent",
-      accessor: "parent",
-      render: (request) => (
+      header: "Student Information",
+      accessor: "studentId",
+      cell: (student) => (
         <div>
           <div className="font-medium text-gray-900">
-            {request.parent?.name || "N/A"}
+            {student.firstName} {student.lastName}
           </div>
           <div className="text-sm text-gray-600">
-            {request.parent?.email || ""}
+            Student ID: {student.studentId}
           </div>
           <div className="text-xs text-gray-500">
-            {request.parent?.contactNumber || ""}
+            {student.yearEnrolled ? `Year: ${student.yearEnrolled}` : ""}
           </div>
         </div>
       ),
     },
     {
-      header: "Student",
-      accessor: "student",
-      render: (request) => (
+      header: "Parent Information",
+      accessor: "parentId",
+      cell: (student) => (
         <div>
           <div className="font-medium text-gray-900">
-            {request.student?.firstName} {request.student?.lastName}
+            {student.parent?.name || "No parent assigned"}
           </div>
-          <div className="text-sm text-gray-600">
-            ID: {request.student?.studentId}
-          </div>
-          <div className="text-xs text-gray-500">
-            Grade {request.student?.gradeLevel} - {request.student?.section}
-          </div>
+          {student.parent && (
+            <>
+              <div className="text-sm text-gray-600">
+                {student.parent.email || "N/A"}
+              </div>
+              {student.parent.phone &&
+                typeof student.parent.phone === "string" && (
+                  <div className="text-xs text-gray-500">
+                    {student.parent.phone}
+                  </div>
+                )}
+            </>
+          )}
         </div>
       ),
     },
     {
-      header: "Relationship",
-      accessor: "relationship",
-      render: (request) => getRelationshipBadge(request.relationship),
-    },
-    {
-      header: "Status",
-      accessor: "status",
-      render: (request) => getStatusBadge(request.status),
+      header: "Link Status",
+      accessor: "linkStatus",
+      cell: (student) => (
+        <div>
+          {getStatusBadge(student.linkStatus)}
+          {student.linkStatus === "REJECTED" && student.rejectionReason && (
+            <div className="text-xs text-gray-500 mt-1">
+              Reason: {student.rejectionReason}
+            </div>
+          )}
+        </div>
+      ),
     },
     {
       header: "Actions",
-      render: (request) => (
+      accessor: "id",
+      cell: (student) => (
         <div className="flex space-x-2">
-          {request.status === "PENDING" && (
+          {student.linkStatus === "PENDING" && (
             <>
               <Button
                 variant="success"
                 size="sm"
-                onClick={() => handleApprove(request.id)}
+                onClick={() => handleApprove(student.id)}
               >
                 Approve
               </Button>
@@ -178,7 +191,7 @@ const StudentLinksManagement = () => {
                 variant="danger"
                 size="sm"
                 onClick={() => {
-                  setSelectedRequest(request);
+                  setSelectedRequest(student);
                   setShowRejectModal(true);
                 }}
               >
@@ -186,11 +199,11 @@ const StudentLinksManagement = () => {
               </Button>
             </>
           )}
-          {request.status === "APPROVED" && (
-            <span className="text-sm text-gray-500">Approved</span>
+          {student.linkStatus === "APPROVED" && (
+            <div className="text-sm text-green-600 font-medium">✓ Approved</div>
           )}
-          {request.status === "REJECTED" && (
-            <span className="text-sm text-gray-500">Rejected</span>
+          {student.linkStatus === "REJECTED" && (
+            <div className="text-sm text-red-600 font-medium">✗ Rejected</div>
           )}
         </div>
       ),
@@ -198,13 +211,13 @@ const StudentLinksManagement = () => {
   ];
 
   const pendingCount = linkRequests.filter(
-    (r) => r.status === "PENDING"
+    (r) => r.linkStatus === "PENDING"
   ).length;
   const approvedCount = linkRequests.filter(
-    (r) => r.status === "APPROVED"
+    (r) => r.linkStatus === "APPROVED"
   ).length;
   const rejectedCount = linkRequests.filter(
-    (r) => r.status === "REJECTED"
+    (r) => r.linkStatus === "REJECTED"
   ).length;
 
   if (loading) {
@@ -320,24 +333,31 @@ const StudentLinksManagement = () => {
               <h3 className="font-medium text-gray-900">Request Details:</h3>
               <div className="mt-2 space-y-1 text-sm">
                 <p>
-                  <span className="text-gray-600">Parent:</span>{" "}
-                  <span className="font-medium">
-                    {selectedRequest.parent?.name}
-                  </span>
-                </p>
-                <p>
                   <span className="text-gray-600">Student:</span>{" "}
                   <span className="font-medium">
-                    {selectedRequest.student?.firstName}{" "}
-                    {selectedRequest.student?.lastName}
+                    {selectedRequest.firstName} {selectedRequest.lastName}
                   </span>
                 </p>
                 <p>
-                  <span className="text-gray-600">Relationship:</span>{" "}
+                  <span className="text-gray-600">Student ID:</span>{" "}
                   <span className="font-medium">
-                    {selectedRequest.relationship}
+                    {selectedRequest.studentId}
                   </span>
                 </p>
+                <p>
+                  <span className="text-gray-600">Parent:</span>{" "}
+                  <span className="font-medium">
+                    {selectedRequest.parent?.name || "No parent assigned"}
+                  </span>
+                </p>
+                {selectedRequest.parent?.email && (
+                  <p>
+                    <span className="text-gray-600">Parent Email:</span>{" "}
+                    <span className="font-medium">
+                      {selectedRequest.parent.email}
+                    </span>
+                  </p>
+                )}
               </div>
             </div>
 

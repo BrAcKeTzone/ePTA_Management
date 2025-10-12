@@ -89,7 +89,7 @@ export const requestLinkStudent = Joi.object().keys({
     "string.pattern.base":
       "Student ID must follow format: YYYY-NNNNN (e.g., 2024-12345)",
   }),
-  parentId: Joi.number().integer().positive().required(),
+  // parentId comes from authenticated user, not from request body
 });
 
 export const unlinkStudent = Joi.object().keys({

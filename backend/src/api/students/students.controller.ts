@@ -267,10 +267,11 @@ export const getPendingStudents = asyncHandler(
 // Request to link a student (by parent)
 export const requestLinkStudent = asyncHandler(
   async (req: Request, res: Response) => {
-    const { studentId, parentId } = req.body;
+    const { studentId } = req.body;
+    const parentId = (req as any).user.id; // Get from auth middleware
 
-    if (!studentId || !parentId) {
-      throw new ApiError(400, "Student ID and Parent ID are required");
+    if (!studentId) {
+      throw new ApiError(400, "Student ID is required");
     }
 
     const student = await studentService.requestLinkStudent(
@@ -368,6 +369,81 @@ export const getMyChildren = asyncHandler(
       .status(200)
       .json(
         new ApiResponse(200, students, "My children retrieved successfully")
+      );
+  }
+);
+
+// Get authenticated user's pending link requests
+export const getMyLinkRequests = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = (req as any).user.id; // From auth middleware
+
+    const requests = await studentService.getPendingLinksByParentId(userId);
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, requests, "Link requests retrieved successfully")
+      );
+  }
+);
+
+// Search students by query
+export const searchStudents = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { q, page = 1, limit = 50 } = req.query;
+
+    if (!q || typeof q !== "string") {
+      throw new ApiError(400, "Search query is required");
+    }
+
+    // Parse and validate pagination parameters
+    const pageNum = parseInt(page as string, 10);
+    const limitNum = parseInt(limit as string, 10);
+
+    if (pageNum < 1 || limitNum < 1 || limitNum > 100) {
+      throw new ApiError(400, "Invalid pagination parameters");
+    }
+
+    const filters: studentService.StudentSearchFilters = {
+      search: q,
+    };
+
+    const result = await studentService.getStudents(filters, pageNum, limitNum);
+    res
+      .status(200)
+      .json(new ApiResponse(200, result, "Students found successfully"));
+  }
+);
+
+// Get all pending parent-student link requests (Admin only)
+export const getPendingParentLinks = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { page = 1, limit = 10, status } = req.query;
+
+    // Parse and validate pagination parameters
+    const pageNum = parseInt(page as string, 10);
+    const limitNum = parseInt(limit as string, 10);
+
+    if (pageNum < 1 || limitNum < 1 || limitNum > 100) {
+      throw new ApiError(400, "Invalid pagination parameters");
+    }
+
+    const filters: studentService.StudentSearchFilters = {
+      // Only show students that have a parent assigned (actual link requests)
+      hasParent: true,
+    };
+
+    // Only add linkStatus filter if status is provided
+    // If no status, return all students with any parent assignment
+    if (status) {
+      filters.linkStatus = status as any;
+    }
+
+    const result = await studentService.getStudents(filters, pageNum, limitNum);
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, result, "Link requests retrieved successfully")
       );
   }
 );

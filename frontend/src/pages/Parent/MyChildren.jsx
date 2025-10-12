@@ -27,8 +27,8 @@ const MyChildren = () => {
     try {
       setLoading(true);
       const response = await studentsApi.getMyChildren();
-      const childrenData =
-        response.data?.data?.children || response.data?.children || [];
+      // Backend returns: response.data.data (array of students directly)
+      const childrenData = response.data?.data || [];
       setMyChildren(childrenData);
     } catch (error) {
       console.error("Error fetching children:", error);
@@ -40,8 +40,8 @@ const MyChildren = () => {
   const fetchLinkRequests = async () => {
     try {
       const response = await studentsApi.getMyLinkRequests();
-      const requestsData =
-        response.data?.data?.requests || response.data?.requests || [];
+      // Backend returns: response.data.data (array of pending requests directly)
+      const requestsData = response.data?.data || [];
       setLinkRequests(requestsData);
     } catch (error) {
       console.error("Error fetching link requests:", error);
@@ -76,7 +76,7 @@ const MyChildren = () => {
 
     try {
       await studentsApi.requestStudentLink({
-        studentId: selectedStudent.id,
+        studentId: selectedStudent.studentId, // Use the string student ID, not the database ID
         relationship: relationship,
       });
 

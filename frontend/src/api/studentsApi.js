@@ -86,19 +86,16 @@ export const studentsApi = {
     if (config.USE_DUMMY_DATA) {
       return await dummyDataService.approveParentLink(linkId);
     }
-    return await fetchClient.patch(
-      `/api/students/parent-links/${linkId}/approve`
-    );
+    return await fetchClient.patch(`/api/students/${linkId}/approve`);
   },
 
   rejectParentLink: async (linkId, reason = "") => {
     if (config.USE_DUMMY_DATA) {
       return await dummyDataService.rejectParentLink(linkId, reason);
     }
-    return await fetchClient.patch(
-      `/api/students/parent-links/${linkId}/reject`,
-      { reason }
-    );
+    return await fetchClient.patch(`/api/students/${linkId}/reject`, {
+      reason,
+    });
   },
 
   // Parent functions
@@ -106,7 +103,8 @@ export const studentsApi = {
     if (config.USE_DUMMY_DATA) {
       return await dummyDataService.requestStudentLink(studentData);
     }
-    return await fetchClient.post("/api/students/request-link", studentData);
+    // studentData should contain: { studentId, parentId }
+    return await fetchClient.post("/api/students/link", studentData);
   },
 
   getMyChildren: async () => {
