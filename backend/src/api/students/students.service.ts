@@ -28,6 +28,7 @@ export interface StudentSearchFilters {
   linkStatus?: LinkStatus;
   parentId?: number;
   hasParent?: boolean; // Filter for students with or without parent assigned
+  excludeLinked?: boolean; // Exclude students with APPROVED link status
 }
 
 // Create a new student
@@ -151,6 +152,10 @@ export const getStudents = async (
     } else {
       whereClause.parentId = null;
     }
+  }
+  // Exclude students who already have an approved parent link
+  if (filters.excludeLinked) {
+    whereClause.linkStatus = { not: LinkStatus.APPROVED };
   }
 
   const [students, totalCount] = await Promise.all([
@@ -317,7 +322,10 @@ export const approveStudentLink = async (id: number): Promise<Student> => {
 };
 
 // Reject student linking
-export const rejectStudentLink = async (id: number): Promise<Student> => {
+export const rejectStudentLink = async (
+  id: number,
+  rejectionReason?: string
+): Promise<Student> => {
   const student = await prisma.student.findUnique({
     where: { id },
   });
@@ -332,7 +340,10 @@ export const rejectStudentLink = async (id: number): Promise<Student> => {
 
   const updatedStudent = await prisma.student.update({
     where: { id },
-    data: { linkStatus: LinkStatus.REJECTED },
+    data: {
+      linkStatus: LinkStatus.REJECTED,
+      rejectionReason: rejectionReason || null,
+    },
     include: {
       parent: {
         select: {
@@ -546,6 +557,33 @@ export const getPendingLinksByParentId = async (
       },
     },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+  });
+
+  return students;
+};
+
+// Get all link requests (PENDING and REJECTED) for a specific parent
+export const getAllLinkRequestsByParentId = async (
+  parentId: number
+): Promise<Student[]> => {
+  const students = await prisma.student.findMany({
+    where: {
+      parentId,
+      linkStatus: {
+        in: [LinkStatus.PENDING, LinkStatus.REJECTED],
+      },
+    },
+    include: {
+      parent: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+        },
+      },
+    },
+    orderBy: [{ createdAt: "desc" }], // Most recent first
   });
 
   return students;

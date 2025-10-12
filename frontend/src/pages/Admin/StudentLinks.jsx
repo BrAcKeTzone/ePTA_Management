@@ -160,20 +160,6 @@ const StudentLinksManagement = () => {
       ),
     },
     {
-      header: "Link Status",
-      accessor: "linkStatus",
-      cell: (student) => (
-        <div>
-          {getStatusBadge(student.linkStatus)}
-          {student.linkStatus === "REJECTED" && student.rejectionReason && (
-            <div className="text-xs text-gray-500 mt-1">
-              Reason: {student.rejectionReason}
-            </div>
-          )}
-        </div>
-      ),
-    },
-    {
       header: "Actions",
       accessor: "id",
       cell: (student) => (
@@ -241,20 +227,12 @@ const StudentLinksManagement = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-900">
           <h3 className="text-sm font-medium text-gray-500">
             Pending Requests
           </h3>
           <p className="text-2xl font-bold text-yellow-600">{pendingCount}</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-900">
-          <h3 className="text-sm font-medium text-gray-500">Approved</h3>
-          <p className="text-2xl font-bold text-green-600">{approvedCount}</p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-900">
-          <h3 className="text-sm font-medium text-gray-500">Rejected</h3>
-          <p className="text-2xl font-bold text-red-600">{rejectedCount}</p>
         </div>
       </div>
 
@@ -279,7 +257,7 @@ const StudentLinksManagement = () => {
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            Approved ({approvedCount})
+            Approved
           </button>
           <button
             onClick={() => setFilter("rejected")}
@@ -289,7 +267,7 @@ const StudentLinksManagement = () => {
                 : "text-gray-600 hover:text-gray-900"
             }`}
           >
-            Rejected ({rejectedCount})
+            Rejected
           </button>
           <button
             onClick={() => setFilter("all")}

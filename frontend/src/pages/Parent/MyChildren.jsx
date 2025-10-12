@@ -6,8 +6,10 @@ import Input from "../../components/Input";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { formatDate } from "../../utils/formatDate";
 import StatusBadge from "../../components/StatusBadge";
+import { useAuthStore } from "../../store/authStore";
 
 const MyChildren = () => {
+  const { user } = useAuthStore();
   const [myChildren, setMyChildren] = useState([]);
   const [linkRequests, setLinkRequests] = useState([]);
   const [availableStudents, setAvailableStudents] = useState([]);
@@ -17,11 +19,43 @@ const MyChildren = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [relationship, setRelationship] = useState("PARENT");
+  const [requestFilter, setRequestFilter] = useState("pending"); // pending or rejected
 
   useEffect(() => {
     fetchMyChildren();
     fetchLinkRequests();
   }, []);
+
+  // Function to get user's last name from their full name
+  const getUserLastName = () => {
+    if (!user || !user.name) return "";
+    const nameParts = user.name.trim().split(" ");
+    // Return the last part of the name as last name
+    return nameParts[nameParts.length - 1] || "";
+  };
+
+  // Function to open modal with default last name search
+  const handleOpenLinkModal = async () => {
+    const lastName = getUserLastName();
+    setSearchTerm(lastName);
+    setShowLinkModal(true);
+
+    // Automatically search if last name exists
+    if (lastName.trim()) {
+      try {
+        setSearching(true);
+        const response = await studentsApi.searchStudents(lastName);
+        const studentsData =
+          response.data?.data?.students || response.data?.students || [];
+        setAvailableStudents(studentsData);
+      } catch (error) {
+        console.error("Error searching students:", error);
+        alert("Failed to search students. Please try again.");
+      } finally {
+        setSearching(false);
+      }
+    }
+  };
 
   const fetchMyChildren = async () => {
     try {
@@ -141,7 +175,7 @@ const MyChildren = () => {
             View linked children and request new links
           </p>
         </div>
-        <Button onClick={() => setShowLinkModal(true)}>Link New Student</Button>
+        <Button onClick={handleOpenLinkModal}>Link New Student</Button>
       </div>
 
       {/* Summary Cards */}
@@ -177,33 +211,31 @@ const MyChildren = () => {
         </div>
         <div className="p-6">
           {myChildren.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {myChildren.map((child) => (
                 <div
                   key={child.id}
-                  className="border border-gray-900 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  className="border border-gray-300 rounded-lg p-4"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 text-lg">
-                        {child.firstName} {child.middleName} {child.lastName}
-                      </h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        Student ID: {child.studentId}
-                      </p>
+                  <div className="space-y-3">
+                    <h3 className="font-semibold text-gray-900 text-lg">
+                      {child.firstName}
+                      {child.middleName && ` ${child.middleName}`}{" "}
+                      {child.lastName}
+                    </h3>
+                    <div className="space-y-2">
                       <p className="text-sm text-gray-600">
-                        Grade {child.gradeLevel} - Section {child.section}
+                        <strong>Student ID:</strong> {child.studentId}
                       </p>
-                      {child.dateOfBirth && (
+                      {child.yearEnrolled && (
                         <p className="text-sm text-gray-600">
-                          Born: {formatDate(child.dateOfBirth)}
+                          <strong>Year Enrolled:</strong> {child.yearEnrolled}
                         </p>
                       )}
-                      <div className="mt-2">
-                        {getRelationshipBadge(child.relationship || "PARENT")}
-                      </div>
+                      <p className="text-sm text-gray-600">
+                        <strong>Relationship:</strong> Parent
+                      </p>
                     </div>
-                    <div className="text-4xl">🎓</div>
                   </div>
                 </div>
               ))}
@@ -212,7 +244,7 @@ const MyChildren = () => {
             <div className="text-center py-12">
               <div className="text-6xl mb-4">👨‍👩‍👧‍👦</div>
               <p className="text-gray-500 mb-4">No children linked yet</p>
-              <Button onClick={() => setShowLinkModal(true)}>
+              <Button onClick={handleOpenLinkModal}>
                 Link Your First Child
               </Button>
             </div>
@@ -227,44 +259,92 @@ const MyChildren = () => {
             Link Requests Status
           </h2>
         </div>
+
+        {/* Filter Tabs */}
+        <div className="border-b border-gray-200">
+          <div className="flex space-x-1 p-2">
+            <button
+              onClick={() => setRequestFilter("pending")}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                requestFilter === "pending"
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              }`}
+            >
+              Pending
+            </button>
+            <button
+              onClick={() => setRequestFilter("rejected")}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                requestFilter === "rejected"
+                  ? "bg-red-100 text-red-700"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              }`}
+            >
+              Rejected
+            </button>
+          </div>
+        </div>
+
         <div className="p-6">
-          {linkRequests.length > 0 ? (
-            <div className="space-y-3">
-              {linkRequests.map((request) => (
-                <div
-                  key={request.id}
-                  className="flex items-center justify-between p-4 border border-gray-300 rounded-lg"
-                >
-                  <div className="flex-1">
-                    <h4 className="font-medium text-gray-900">
-                      {request.student?.firstName} {request.student?.lastName}
-                    </h4>
-                    <p className="text-sm text-gray-600">
-                      Student ID: {request.student?.studentId} | Grade{" "}
-                      {request.student?.gradeLevel} - {request.student?.section}
-                    </p>
-                    <div className="flex items-center space-x-3 mt-2">
-                      {getRelationshipBadge(request.relationship)}
-                      {getStatusBadge(request.status)}
-                    </div>
-                    {request.status === "REJECTED" &&
-                      request.rejectionReason && (
-                        <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-                          <p className="text-sm text-red-800">
-                            <strong>Reason:</strong> {request.rejectionReason}
+          {linkRequests.filter(
+            (req) =>
+              req.linkStatus?.toUpperCase() === requestFilter.toUpperCase()
+          ).length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {linkRequests
+                .filter(
+                  (req) =>
+                    req.linkStatus?.toUpperCase() ===
+                    requestFilter.toUpperCase()
+                )
+                .map((request) => (
+                  <div
+                    key={request.id}
+                    className="p-4 border border-gray-300 rounded-lg"
+                  >
+                    <div className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-gray-900 mb-3">
+                          {request.firstName}
+                          {request.middleName && ` ${request.middleName}`}{" "}
+                          {request.lastName}
+                        </h4>
+                        <div className="space-y-2">
+                          <p className="text-sm text-gray-600">
+                            <strong>Student ID:</strong> {request.studentId}
+                          </p>
+                          {request.yearEnrolled && (
+                            <p className="text-sm text-gray-600">
+                              <strong>Year Enrolled:</strong>{" "}
+                              {request.yearEnrolled}
+                            </p>
+                          )}
+                          <p className="text-sm text-gray-600">
+                            <strong>Relationship:</strong> Parent
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            <strong>Date:</strong>{" "}
+                            {formatDate(request.createdAt)}
                           </p>
                         </div>
-                      )}
+                      </div>
+                      {/* Status badge removed as requested */}
+                      {request.linkStatus === "REJECTED" &&
+                        request.rejectionReason && (
+                          <div className="p-2 bg-red-50 border border-red-200 rounded">
+                            <p className="text-sm text-red-800">
+                              <strong>Reason:</strong> {request.rejectionReason}
+                            </p>
+                          </div>
+                        )}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-500 ml-4">
-                    {formatDate(request.createdAt)}
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           ) : (
             <p className="text-center text-gray-500 py-8">
-              No link requests submitted yet
+              No {requestFilter} link requests
             </p>
           )}
         </div>
@@ -324,14 +404,23 @@ const MyChildren = () => {
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="font-medium text-gray-900">
-                          {student.firstName} {student.lastName}
+                          {student.lastName}, {student.firstName}
+                          {student.middleName && ` ${student.middleName}`}
                         </h4>
                         <p className="text-sm text-gray-600">
-                          ID: {student.studentId}
+                          Student ID: {student.studentId}
                         </p>
-                        <p className="text-sm text-gray-600">
-                          Grade {student.gradeLevel} - Section {student.section}
-                        </p>
+                        {student.birthDate && (
+                          <p className="text-sm text-gray-600">
+                            Birthday:{" "}
+                            {new Date(student.birthDate).toLocaleDateString()}
+                          </p>
+                        )}
+                        {student.yearEnrolled && (
+                          <p className="text-sm text-gray-600">
+                            Year Enrolled: {student.yearEnrolled}
+                          </p>
+                        )}
                       </div>
                       {selectedStudent?.id === student.id && (
                         <span className="text-blue-600">✓ Selected</span>
@@ -368,16 +457,24 @@ const MyChildren = () => {
                 Selected Student:
               </h3>
               <p className="text-sm text-blue-800">
-                <strong>Name:</strong> {selectedStudent.firstName}{" "}
-                {selectedStudent.lastName}
+                <strong>Name:</strong> {selectedStudent.lastName},{" "}
+                {selectedStudent.firstName}
+                {selectedStudent.middleName && ` ${selectedStudent.middleName}`}
               </p>
               <p className="text-sm text-blue-800">
                 <strong>Student ID:</strong> {selectedStudent.studentId}
               </p>
-              <p className="text-sm text-blue-800">
-                <strong>Grade & Section:</strong> Grade{" "}
-                {selectedStudent.gradeLevel} - {selectedStudent.section}
-              </p>
+              {selectedStudent.birthDate && (
+                <p className="text-sm text-blue-800">
+                  <strong>Birthday:</strong>{" "}
+                  {new Date(selectedStudent.birthDate).toLocaleDateString()}
+                </p>
+              )}
+              {selectedStudent.yearEnrolled && (
+                <p className="text-sm text-blue-800">
+                  <strong>Year Enrolled:</strong> {selectedStudent.yearEnrolled}
+                </p>
+              )}
               <p className="text-sm text-blue-800">
                 <strong>Relationship:</strong> {relationship}
               </p>

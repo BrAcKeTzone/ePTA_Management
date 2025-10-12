@@ -156,13 +156,17 @@ export const approveStudentLink = asyncHandler(
 export const rejectStudentLink = asyncHandler(
   async (req: Request, res: Response) => {
     const { id } = req.params;
+    const { rejectionReason } = req.body;
     const studentId = parseInt(id, 10);
 
     if (isNaN(studentId)) {
       throw new ApiError(400, "Invalid student ID");
     }
 
-    const student = await studentService.rejectStudentLink(studentId);
+    const student = await studentService.rejectStudentLink(
+      studentId,
+      rejectionReason
+    );
     res
       .status(200)
       .json(
@@ -378,7 +382,7 @@ export const getMyLinkRequests = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = (req as any).user.id; // From auth middleware
 
-    const requests = await studentService.getPendingLinksByParentId(userId);
+    const requests = await studentService.getAllLinkRequestsByParentId(userId);
     res
       .status(200)
       .json(
@@ -406,6 +410,7 @@ export const searchStudents = asyncHandler(
 
     const filters: studentService.StudentSearchFilters = {
       search: q,
+      excludeLinked: true, // Exclude students who already have an approved parent link
     };
 
     const result = await studentService.getStudents(filters, pageNum, limitNum);

@@ -95,6 +95,7 @@ model Student {
   yearEnrolled   String        // e.g., "2024", "2025"
   status         StudentStatus @default(ACTIVE)
   linkStatus     LinkStatus    @default(PENDING)
+  rejectionReason String?      @db.Text // Reason for rejection if linkStatus is REJECTED
   enrollmentDate DateTime      @default(now())
 
   parentId Int?
