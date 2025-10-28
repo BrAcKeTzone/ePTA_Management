@@ -12,9 +12,88 @@ export const useUserManagementStore = create(
       totalPages: 0,
       currentPage: 1,
       totalCount: 0,
+      hasNextPage: false,
+      hasPrevPage: false,
+
+      // Filter and sort state
+      filters: {
+        search: "",
+        role: "",
+        isActive: "",
+        dateFrom: "",
+        dateTo: "",
+      },
+      sortBy: "createdAt",
+      sortOrder: "desc",
+      pageSize: 10,
+
+      // Set filters
+      setFilters: (newFilters) => {
+        set({
+          filters: { ...get().filters, ...newFilters },
+          currentPage: 1, // Reset to first page when filtering
+        });
+      },
+
+      // Set sorting
+      setSorting: (sortBy, sortOrder = "asc") => {
+        set({
+          sortBy,
+          sortOrder,
+          currentPage: 1, // Reset to first page when sorting
+        });
+      },
+
+      // Set page size
+      setPageSize: (pageSize) => {
+        set({
+          pageSize,
+          currentPage: 1, // Reset to first page when changing page size
+        });
+      },
+
+      // Set current page
+      setCurrentPage: (page) => {
+        set({ currentPage: page });
+      },
+
+      // Clear all filters
+      clearFilters: () => {
+        set({
+          filters: {
+            search: "",
+            role: "",
+            isActive: "",
+            dateFrom: "",
+            dateTo: "",
+          },
+          currentPage: 1,
+        });
+      },
 
       // Get all users with pagination and filtering
-      getAllUsers: async (options = {}) => {
+      getAllUsers: async (customOptions = {}) => {
+        const state = get();
+        const options = {
+          page: state.currentPage,
+          limit: state.pageSize,
+          sortBy: state.sortBy,
+          sortOrder: state.sortOrder,
+          ...state.filters,
+          ...customOptions, // Allow override
+        };
+
+        // Remove empty filter values
+        Object.keys(options).forEach((key) => {
+          if (
+            options[key] === "" ||
+            options[key] === null ||
+            options[key] === undefined
+          ) {
+            delete options[key];
+          }
+        });
+
         set({ loading: true, error: null });
         try {
           const response = await userApi.getAllUsers(options);
@@ -24,6 +103,8 @@ export const useUserManagementStore = create(
             totalPages: response.data.totalPages || 0,
             currentPage: response.data.currentPage || 1,
             totalCount: response.data.totalCount || 0,
+            hasNextPage: response.data.hasNextPage || false,
+            hasPrevPage: response.data.hasPrevPage || false,
             loading: false,
           });
           return response.data;
@@ -39,6 +120,8 @@ export const useUserManagementStore = create(
             totalPages: 0,
             currentPage: 1,
             totalCount: 0,
+            hasNextPage: false,
+            hasPrevPage: false,
           });
           // Don't throw error to prevent UI crashes during search
           return { users: [], totalCount: 0, totalPages: 0, currentPage: 1 };
@@ -206,6 +289,11 @@ export const useUserManagementStore = create(
         totalPages: state.totalPages,
         currentPage: state.currentPage,
         totalCount: state.totalCount,
+        hasNextPage: state.hasNextPage,
+        hasPrevPage: state.hasPrevPage,
+        pageSize: state.pageSize,
+        sortBy: state.sortBy,
+        sortOrder: state.sortOrder,
       }),
     }
   )

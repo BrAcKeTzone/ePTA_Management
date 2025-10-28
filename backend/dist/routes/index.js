@@ -1,0 +1,31 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const router = express_1.default.Router();
+const auth_route_1 = __importDefault(require("../api/auth/auth.route"));
+const users_route_1 = __importDefault(require("../api/users/users.route"));
+const students_route_1 = __importDefault(require("../api/students/students.route"));
+const meetings_route_1 = __importDefault(require("../api/meetings/meetings.route"));
+const attendance_route_1 = __importDefault(require("../api/attendance/attendance.route"));
+const penalties_route_1 = __importDefault(require("../api/penalties/penalties.route"));
+const projects_route_1 = __importDefault(require("../api/projects/projects.route"));
+const contributions_route_1 = __importDefault(require("../api/contributions/contributions.route"));
+const announcements_route_1 = __importDefault(require("../api/announcements/announcements.route"));
+const settings_route_1 = __importDefault(require("../api/settings/settings.route"));
+const clearance_route_1 = __importDefault(require("../api/clearance/clearance.route"));
+router.use("/auth", auth_route_1.default);
+router.use("/users", users_route_1.default);
+router.use("/students", students_route_1.default);
+router.use("/meetings", meetings_route_1.default);
+router.use("/attendance", attendance_route_1.default);
+router.use("/penalties", penalties_route_1.default);
+router.use("/projects", projects_route_1.default);
+router.use("/contributions", contributions_route_1.default);
+router.use("/announcements", announcements_route_1.default);
+router.use("/settings", settings_route_1.default);
+router.use("/clearance", clearance_route_1.default);
+exports.default = router;
+//# sourceMappingURL=index.js.map

@@ -26,7 +26,7 @@ router.post(
 );
 
 // Admin routes for user management
-router.get("/", userController.getAllUsers);
+router.get("/", validate(userValidation.getUsers), userController.getAllUsers);
 
 router.get("/stats", userController.getUserStats);
 

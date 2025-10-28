@@ -23,6 +23,10 @@ interface GetUsersFilter {
   isActive?: boolean | string;
   page?: number | string;
   limit?: number | string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  dateFrom?: string;
+  dateTo?: string;
 }
 
 interface UserSafeData {
@@ -149,7 +153,8 @@ export const updateUserProfile = async (
 
 // Get all users with filters (admin only)
 export const getAllUsers = async (filter: GetUsersFilter) => {
-  const { search, role, isActive } = filter;
+  const { search, role, isActive, sortBy, sortOrder, dateFrom, dateTo } =
+    filter;
 
   // Parse pagination parameters
   const page =
@@ -165,9 +170,9 @@ export const getAllUsers = async (filter: GetUsersFilter) => {
 
   if (search) {
     whereClause.OR = [
-      { name: { contains: search } },
-      { email: { contains: search } },
-      { phone: { contains: search } },
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+      { phone: { contains: search, mode: "insensitive" } },
     ];
   }
 
@@ -186,15 +191,39 @@ export const getAllUsers = async (filter: GetUsersFilter) => {
     whereClause.isActive = isActive === "true";
   }
 
+  // Date range filtering
+  if (dateFrom || dateTo) {
+    whereClause.createdAt = {};
+    if (dateFrom) {
+      whereClause.createdAt.gte = new Date(dateFrom);
+    }
+    if (dateTo) {
+      whereClause.createdAt.lte = new Date(dateTo);
+    }
+  }
+
+  // Build orderBy clause
+  const orderBy: any = [];
+
+  if (
+    sortBy &&
+    ["name", "email", "role", "createdAt", "updatedAt", "isActive"].includes(
+      sortBy
+    )
+  ) {
+    orderBy.push({ [sortBy]: sortOrder || "asc" });
+  } else {
+    // Default sorting
+    orderBy.push({ role: "asc" }); // Admins first
+    orderBy.push({ createdAt: "desc" });
+  }
+
   const [users, totalCount] = await Promise.all([
     prisma.user.findMany({
       where: whereClause,
       skip,
       take: limit,
-      orderBy: [
-        { role: "asc" }, // Admins first
-        { createdAt: "desc" },
-      ],
+      orderBy,
       select: {
         id: true,
         email: true,
@@ -222,6 +251,8 @@ export const getAllUsers = async (filter: GetUsersFilter) => {
     totalCount,
     totalPages: Math.ceil(totalCount / limit),
     currentPage: page,
+    hasNextPage: page < Math.ceil(totalCount / limit),
+    hasPrevPage: page > 1,
   };
 };
 

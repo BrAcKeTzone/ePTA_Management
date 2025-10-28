@@ -24,6 +24,12 @@ export const getUsers = Joi.object().keys({
   isActive: Joi.boolean().optional(),
   page: Joi.number().integer().min(1).optional(),
   limit: Joi.number().integer().min(1).max(100).optional(),
+  sortBy: Joi.string()
+    .valid("name", "email", "role", "createdAt", "updatedAt", "isActive")
+    .optional(),
+  sortOrder: Joi.string().valid("asc", "desc").optional(),
+  dateFrom: Joi.date().iso().optional(),
+  dateTo: Joi.date().iso().min(Joi.ref("dateFrom")).optional(),
 });
 
 export const changePassword = Joi.object().keys({

@@ -7,9 +7,64 @@ const Table = ({
   onRowClick = null,
   loading = false,
   emptyMessage = "No data available",
+  sortBy = null,
+  sortOrder = "asc",
+  onSort = null,
 }) => {
   // Ensure data is always an array
   const safeData = Array.isArray(data) ? data : [];
+
+  const getSortIcon = (column) => {
+    if (!column.sortable || !onSort) return null;
+
+    if (sortBy === column.key) {
+      return sortOrder === "asc" ? (
+        <svg
+          className="w-4 h-4 ml-1"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M5 15l7-7 7 7"
+          />
+        </svg>
+      ) : (
+        <svg
+          className="w-4 h-4 ml-1"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      );
+    }
+
+    return (
+      <svg
+        className="w-4 h-4 ml-1 opacity-50"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M8 9l4-4 4 4m0 6l-4 4-4-4"
+        />
+      </svg>
+    );
+  };
 
   if (loading) {
     return (
@@ -34,9 +89,17 @@ const Table = ({
               <th
                 key={index}
                 scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
+                  column.sortable && onSort
+                    ? "cursor-pointer hover:bg-gray-100"
+                    : ""
+                }`}
+                onClick={() => column.sortable && onSort && onSort(column.key)}
               >
-                {column.header}
+                <div className="flex items-center">
+                  {column.header}
+                  {getSortIcon(column)}
+                </div>
               </th>
             ))}
           </tr>
@@ -55,7 +118,11 @@ const Table = ({
                   key={columnIndex}
                   className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
                 >
-                  {column.cell ? column.cell(row) : row[column.accessor]}
+                  {column.render
+                    ? column.render(row)
+                    : column.cell
+                    ? column.cell(row)
+                    : row[column.accessor || column.key]}
                 </td>
               ))}
             </tr>

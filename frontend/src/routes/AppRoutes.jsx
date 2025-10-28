@@ -17,6 +17,7 @@ import AdminClearance from "../pages/Admin/Clearance";
 import AdminStudents from "../pages/Admin/Students";
 import AdminStudentLinks from "../pages/Admin/StudentLinks";
 import AdminMeetings from "../pages/Admin/Meetings";
+import AdminUsers from "../pages/Admin/Users";
 
 // Parent pages (PTA System)
 import ParentDashboard from "../pages/Parent/Dashboard";
@@ -179,6 +180,7 @@ const AppRoutes = () => {
         <Route path="clearance" element={<AdminClearance />} />
         <Route path="students" element={<AdminStudents />} />
         <Route path="student-links" element={<AdminStudentLinks />} />
+        <Route path="users" element={<AdminUsers />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 

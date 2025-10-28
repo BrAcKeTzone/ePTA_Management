@@ -62,6 +62,10 @@ export const userApi = {
     if (options.search) params.append("search", options.search);
     if (options.sortBy) params.append("sortBy", options.sortBy);
     if (options.sortOrder) params.append("sortOrder", options.sortOrder);
+    if (options.isActive !== undefined)
+      params.append("isActive", options.isActive.toString());
+    if (options.dateFrom) params.append("dateFrom", options.dateFrom);
+    if (options.dateTo) params.append("dateTo", options.dateTo);
 
     const queryString = params.toString();
     const url = queryString ? `${API_BASE}?${queryString}` : API_BASE;

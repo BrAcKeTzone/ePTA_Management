@@ -1,60 +1,115 @@
 import React, { useState, useEffect } from "react";
-import { userApi } from "../../api/userApi";
+import { useUserManagementStore } from "../../store/userManagementStore";
 import Table from "../../components/Table";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 import Input from "../../components/Input";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import Pagination from "../../components/Pagination";
+import StatusBadge from "../../components/StatusBadge";
 import { formatDate } from "../../utils/formatDate";
 
 const UsersManagement = () => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    users,
+    loading,
+    error,
+    totalCount,
+    totalPages,
+    currentPage,
+    hasNextPage,
+    hasPrevPage,
+    pageSize,
+    filters,
+    sortBy,
+    sortOrder,
+    getAllUsers,
+    setFilters,
+    setSorting,
+    setPageSize,
+    setCurrentPage,
+    clearFilters,
+    addUser,
+    updateUser,
+    deleteUser,
+    getUserStats,
+    clearError,
+  } = useUserManagementStore();
+
+  const [stats, setStats] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newUser, setNewUser] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
-    role: "parent",
+    role: "PARENT",
     phoneNumber: "",
-    address: "",
   });
-  const [filter, setFilter] = useState("all");
+
+  // Local filter state for form inputs
+  const [localFilters, setLocalFilters] = useState({
+    search: filters.search || "",
+    role: filters.role || "",
+    isActive: filters.isActive || "",
+    dateFrom: filters.dateFrom || "",
+    dateTo: filters.dateTo || "",
+  });
 
   useEffect(() => {
-    fetchUsers();
-  }, [filter]);
+    fetchData();
+  }, [currentPage, pageSize, sortBy, sortOrder, filters]);
 
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      const params = filter !== "all" ? { role: filter } : {};
-      const response = await userApi.getAllUsers(params);
-      const usersData = response.data || {};
-      setUsers(usersData.users || []);
-    } catch (error) {
-      console.error("Error fetching users:", error);
-    } finally {
-      setLoading(false);
+  const fetchData = async () => {
+    await getAllUsers();
+    const statsData = await getUserStats();
+    setStats(statsData);
+  };
+
+  const handleFilterChange = (key, value) => {
+    setLocalFilters((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const applyFilters = () => {
+    setFilters(localFilters);
+  };
+
+  const handleClearFilters = () => {
+    const emptyFilters = {
+      search: "",
+      role: "",
+      isActive: "",
+      dateFrom: "",
+      dateTo: "",
+    };
+    setLocalFilters(emptyFilters);
+    clearFilters();
+  };
+
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      setSorting(column, sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSorting(column, "asc");
     }
   };
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
     try {
-      await userApi.createUser(newUser);
+      await addUser(newUser);
       setShowCreateModal(false);
       setNewUser({
-        name: "",
+        firstName: "",
+        lastName: "",
         email: "",
         password: "",
-        role: "parent",
+        role: "PARENT",
         phoneNumber: "",
-        address: "",
       });
-      fetchUsers();
+      fetchData();
     } catch (error) {
       console.error("Error creating user:", error);
     }
@@ -63,10 +118,10 @@ const UsersManagement = () => {
   const handleEditUser = async (e) => {
     e.preventDefault();
     try {
-      await userApi.updateUser(selectedUser.id, selectedUser);
+      await updateUser(selectedUser.id, selectedUser);
       setShowEditModal(false);
       setSelectedUser(null);
-      fetchUsers();
+      fetchData();
     } catch (error) {
       console.error("Error updating user:", error);
     }
@@ -75,25 +130,10 @@ const UsersManagement = () => {
   const handleDeleteUser = async (userId) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
-        await userApi.deleteUser(userId);
-        fetchUsers();
+        await deleteUser(userId);
+        fetchData();
       } catch (error) {
         console.error("Error deleting user:", error);
-      }
-    }
-  };
-
-  const handleResetPassword = async (userId) => {
-    if (
-      window.confirm("Are you sure you want to reset this user's password?")
-    ) {
-      try {
-        await userApi.resetUserPassword(userId);
-        alert(
-          "Password reset successfully. User will receive instructions via email."
-        );
-      } catch (error) {
-        console.error("Error resetting password:", error);
       }
     }
   };
@@ -101,52 +141,65 @@ const UsersManagement = () => {
   const userColumns = [
     {
       key: "name",
-      header: "Name",
+      header: "User",
+      sortable: true,
       render: (user) => (
         <div>
-          <div className="font-medium text-gray-900">
-            {user.name}
-          </div>
-          <div className="text-sm text-gray-600">
-            {user.email}
-          </div>
+          <div className="font-medium text-gray-900">{user.name}</div>
+          <div className="text-sm text-gray-600">{user.email}</div>
+          {user.phone && (
+            <div className="text-xs text-gray-500">{user.phone}</div>
+          )}
         </div>
       ),
     },
     {
       key: "role",
       header: "Role",
+      sortable: true,
       render: (user) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            user.role === "admin"
-              ? "bg-red-100 text-red-800"
-              : "bg-blue-100 text-blue-800"
-          }`}
-        >
-          {user.role}
-        </span>
+        <StatusBadge
+          status={user.role}
+          variant={user.role === "ADMIN" ? "success" : "info"}
+        />
       ),
     },
     {
-      key: "isVerified",
+      key: "isActive",
       header: "Status",
+      sortable: true,
       render: (user) => (
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            user.isVerified
-              ? "bg-green-100 text-green-800"
-              : "bg-yellow-100 text-yellow-800"
-          }`}
-        >
-          {user.isVerified ? "Verified" : "Pending"}
-        </span>
+        <StatusBadge
+          status={user.isActive ? "Active" : "Inactive"}
+          variant={user.isActive ? "success" : "warning"}
+        />
       ),
     },
     {
       key: "createdAt",
       header: "Joined",
-      render: (user) => formatDate(user.createdAt),
+      sortable: true,
+      render: (user) => (
+        <div>
+          <div className="text-sm text-gray-900">
+            {formatDate(user.createdAt)}
+          </div>
+          <div className="text-xs text-gray-500">
+            Updated: {formatDate(user.updatedAt)}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "_count",
+      header: "Activity",
+      render: (user) => (
+        <div className="text-xs text-gray-600">
+          <div>Students: {user._count?.students || 0}</div>
+          <div>Contributions: {user._count?.contributions || 0}</div>
+          <div>Attendance: {user._count?.attendances || 0}</div>
+        </div>
+      ),
     },
     {
       key: "actions",
@@ -166,13 +219,6 @@ const UsersManagement = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleResetPassword(user.id)}
-          >
-            Reset Password
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
             onClick={() => handleDeleteUser(user.id)}
             className="text-red-600 hover:text-red-700"
           >
@@ -183,7 +229,7 @@ const UsersManagement = () => {
     },
   ];
 
-  if (loading) {
+  if (loading && !users.length) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner />
@@ -196,83 +242,196 @@ const UsersManagement = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Users Management
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">Users Management</h1>
           <p className="text-gray-600 mt-1">
-            Manage parent and admin accounts
+            Manage user accounts with advanced filtering and sorting
           </p>
         </div>
         <Button onClick={() => setShowCreateModal(true)}>Add New User</Button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div className="flex space-x-4">
-          {["all", "parent", "admin"].map((filterOption) => (
-            <button
-              key={filterOption}
-              onClick={() => setFilter(filterOption)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                filter === filterOption
-                  ? "bg-blue-100 text-blue-600"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
+      {/* Error Display */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative">
+          <span className="block sm:inline">{error}</span>
+          <button
+            className="absolute top-0 bottom-0 right-0 px-4 py-3"
+            onClick={clearError}
+          >
+            <span className="sr-only">Dismiss</span>
+            <svg
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
             >
-              {filterOption === "all" ? "All Users" : `${filterOption}s`}
-            </button>
-          ))}
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
         </div>
-      </div>
+      )}
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500">
-            Total Users
-          </h3>
-          <p className="text-2xl font-bold text-blue-600">
-            {users.length}
-          </p>
+      {/* Statistics Cards */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-sm font-medium text-gray-500">Total Users</h3>
+            <p className="text-2xl font-bold text-blue-600">
+              {stats.totalUsers}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Active: {stats.activeUsers} | Inactive: {stats.inactiveUsers}
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-sm font-medium text-gray-500">Parents</h3>
+            <p className="text-2xl font-bold text-green-600">
+              {stats.parentCount}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              With Students: {stats.usersWithStudents}
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-sm font-medium text-gray-500">Admins</h3>
+            <p className="text-2xl font-bold text-purple-600">
+              {stats.adminCount}
+            </p>
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <h3 className="text-sm font-medium text-gray-500">Recent Users</h3>
+            <p className="text-2xl font-bold text-emerald-600">
+              {stats.recentUsers}
+            </p>
+            <p className="text-xs text-gray-500 mt-1">Last 30 days</p>
+          </div>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500">
-            Parents
-          </h3>
-          <p className="text-2xl font-bold text-green-600">
-            {users.filter((u) => u.role === "parent").length}
-          </p>
+      )}
+
+      {/* Advanced Filters */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          Filters & Search
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
+          <Input
+            label="Search"
+            value={localFilters.search}
+            onChange={(e) => handleFilterChange("search", e.target.value)}
+            placeholder="Name, email, phone..."
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Role
+            </label>
+            <select
+              className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
+              value={localFilters.role}
+              onChange={(e) => handleFilterChange("role", e.target.value)}
+            >
+              <option value="">All Roles</option>
+              <option value="ADMIN">Admin</option>
+              <option value="PARENT">Parent</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Status
+            </label>
+            <select
+              className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
+              value={localFilters.isActive}
+              onChange={(e) => handleFilterChange("isActive", e.target.value)}
+            >
+              <option value="">All Status</option>
+              <option value="true">Active</option>
+              <option value="false">Inactive</option>
+            </select>
+          </div>
+
+          <Input
+            label="From Date"
+            type="date"
+            value={localFilters.dateFrom}
+            onChange={(e) => handleFilterChange("dateFrom", e.target.value)}
+          />
+
+          <Input
+            label="To Date"
+            type="date"
+            value={localFilters.dateTo}
+            onChange={(e) => handleFilterChange("dateTo", e.target.value)}
+          />
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500">
-            Admins
-          </h3>
-          <p className="text-2xl font-bold text-purple-600">
-            {users.filter((u) => u.role === "admin").length}
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500">
-            Verified
-          </h3>
-          <p className="text-2xl font-bold text-emerald-600">
-            {users.filter((u) => u.isVerified).length}
-          </p>
+
+        <div className="flex space-x-2">
+          <Button onClick={applyFilters} size="sm">
+            Apply Filters
+          </Button>
+          <Button onClick={handleClearFilters} variant="outline" size="sm">
+            Clear All
+          </Button>
         </div>
       </div>
 
       {/* Users Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
-            {filter === "all" ? "All Users" : `${filter}s`}
-          </h2>
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                Users ({totalCount})
+              </h2>
+              <p className="text-sm text-gray-600">
+                Showing {users.length} of {totalCount} users
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-sm text-gray-600">Show:</label>
+              <select
+                className="p-2 border border-gray-300 rounded-md bg-white text-gray-900"
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+              <span className="text-sm text-gray-600">per page</span>
+            </div>
+          </div>
         </div>
+
         <Table
           data={users}
           columns={userColumns}
           emptyMessage="No users found"
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+          loading={loading}
         />
+
+        {/* Pagination */}
+        <div className="p-6 border-t border-gray-200">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            hasNext={hasNextPage}
+            hasPrev={hasPrevPage}
+            totalItems={totalCount}
+            itemsPerPage={pageSize}
+          />
+        </div>
       </div>
 
       {/* Create User Modal */}
@@ -283,12 +442,25 @@ const UsersManagement = () => {
         size="lg"
       >
         <form onSubmit={handleCreateUser} className="space-y-4">
-          <Input
-            label="Full Name"
-            value={newUser.name}
-            onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-            required
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="First Name"
+              value={newUser.firstName}
+              onChange={(e) =>
+                setNewUser({ ...newUser, firstName: e.target.value })
+              }
+              required
+            />
+            <Input
+              label="Last Name"
+              value={newUser.lastName}
+              onChange={(e) =>
+                setNewUser({ ...newUser, lastName: e.target.value })
+              }
+              required
+            />
+          </div>
+
           <Input
             label="Email"
             type="email"
@@ -296,6 +468,7 @@ const UsersManagement = () => {
             onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
             required
           />
+
           <Input
             label="Password"
             type="password"
@@ -304,7 +477,18 @@ const UsersManagement = () => {
               setNewUser({ ...newUser, password: e.target.value })
             }
             required
+            minLength={6}
           />
+
+          <Input
+            label="Phone Number"
+            value={newUser.phoneNumber}
+            onChange={(e) =>
+              setNewUser({ ...newUser, phoneNumber: e.target.value })
+            }
+            placeholder="+63-XXX-XXX-XXXX"
+          />
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Role
@@ -314,24 +498,11 @@ const UsersManagement = () => {
               value={newUser.role}
               onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
             >
-              <option value="parent">Parent</option>
-              <option value="admin">Administrator</option>
+              <option value="PARENT">Parent</option>
+              <option value="ADMIN">Administrator</option>
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Address
-            </label>
-            <textarea
-              className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
-              rows={3}
-              value={newUser.address}
-              onChange={(e) =>
-                setNewUser({ ...newUser, address: e.target.value })
-              }
-              placeholder="Enter complete address"
-            />
-          </div>
+
           <div className="flex justify-end space-x-2">
             <Button
               type="button"
@@ -362,6 +533,7 @@ const UsersManagement = () => {
               }
               required
             />
+
             <Input
               label="Email"
               type="email"
@@ -371,6 +543,15 @@ const UsersManagement = () => {
               }
               required
             />
+
+            <Input
+              label="Phone"
+              value={selectedUser.phone || ""}
+              onChange={(e) =>
+                setSelectedUser({ ...selectedUser, phone: e.target.value })
+              }
+            />
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Role
@@ -382,44 +563,32 @@ const UsersManagement = () => {
                   setSelectedUser({ ...selectedUser, role: e.target.value })
                 }
               >
-                <option value="parent">Parent</option>
-                <option value="admin">Administrator</option>
+                <option value="PARENT">Parent</option>
+                <option value="ADMIN">Administrator</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Address
-              </label>
-              <textarea
-                className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-900"
-                rows={3}
-                value={selectedUser.address || ""}
-                onChange={(e) =>
-                  setSelectedUser({ ...selectedUser, address: e.target.value })
-                }
-                placeholder="Enter complete address"
-              />
-            </div>
+
             <div className="flex items-center">
               <input
                 type="checkbox"
-                id="isVerified"
-                checked={selectedUser.isVerified}
+                id="isActive"
+                checked={selectedUser.isActive}
                 onChange={(e) =>
                   setSelectedUser({
                     ...selectedUser,
-                    isVerified: e.target.checked,
+                    isActive: e.target.checked,
                   })
                 }
                 className="mr-2"
               />
               <label
-                htmlFor="isVerified"
+                htmlFor="isActive"
                 className="text-sm font-medium text-gray-700"
               >
-                User is verified
+                User is active
               </label>
             </div>
+
             <div className="flex justify-end space-x-2">
               <Button
                 type="button"

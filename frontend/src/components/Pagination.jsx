@@ -4,15 +4,21 @@ import Button from "./Button";
 const Pagination = ({
   currentPage,
   totalPages,
-  totalCount,
+  totalItems,
+  totalCount, // legacy prop for backward compatibility
   onPageChange,
   itemsPerPage = 10,
+  hasNext = false,
+  hasPrev = false,
   className = "",
 }) => {
+  // Use totalItems if provided, fallback to totalCount for backward compatibility
+  const totalRecords = totalItems || totalCount || 0;
+
   if (totalPages <= 1) return null;
 
   const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, totalCount);
+  const endItem = Math.min(currentPage * itemsPerPage, totalRecords);
 
   const getPageNumbers = () => {
     const pages = [];
@@ -56,7 +62,7 @@ const Pagination = ({
       className={`flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 ${className}`}
     >
       <div className="text-sm text-gray-700">
-        Showing {startItem} to {endItem} of {totalCount} results
+        Showing {startItem} to {endItem} of {totalRecords} results
       </div>
 
       <div className="flex items-center space-x-1">
@@ -64,7 +70,7 @@ const Pagination = ({
           variant="outline"
           size="sm"
           onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 1}
+          disabled={currentPage === 1 || !hasPrev}
           className="px-3 py-1"
         >
           Previous
@@ -92,7 +98,7 @@ const Pagination = ({
           variant="outline"
           size="sm"
           onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage === totalPages}
+          disabled={currentPage === totalPages || !hasNext}
           className="px-3 py-1"
         >
           Next
