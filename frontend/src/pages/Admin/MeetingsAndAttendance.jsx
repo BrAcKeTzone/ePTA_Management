@@ -106,7 +106,9 @@ const MeetingsAndAttendance = () => {
   const fetchAttendanceForMeeting = async (meetingId) => {
     try {
       const response = await attendanceApi.getAttendanceByMeeting(meetingId);
-      setAttendance(response.data || []);
+      // Handle nested data structure: response.data?.data or response.data directly
+      const attendanceData = response.data?.data || response.data || [];
+      setAttendance(Array.isArray(attendanceData) ? attendanceData : []);
       setSelectedMeetingForAttendance(meetingId);
       setShowAttendanceModal(true);
     } catch (error) {
