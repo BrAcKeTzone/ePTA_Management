@@ -146,7 +146,8 @@ const UsersManagement = () => {
       render: (user) => (
         <div>
           <div className="font-medium text-gray-900">
-            {user.firstName} {user.middleName ? user.middleName + " " : ""}{user.lastName}
+            {user.firstName} {user.middleName ? user.middleName + " " : ""}
+            {user.lastName}
           </div>
           <div className="text-sm text-gray-600">{user.email}</div>
           {user.phone && (
