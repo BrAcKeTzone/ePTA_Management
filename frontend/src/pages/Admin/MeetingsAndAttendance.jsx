@@ -155,9 +155,7 @@ const MeetingsAndAttendance = () => {
     }
   };
 
-  const handleEditMeeting = async (e) => {
-    e.preventDefault();
-
+  const handleEditMeeting = async () => {
     const [startHour, startMinute] = selectedMeeting.startTime
       .split(":")
       .map(Number);
@@ -171,7 +169,22 @@ const MeetingsAndAttendance = () => {
     }
 
     try {
-      await meetingsApi.updateMeeting(selectedMeeting.id, selectedMeeting);
+      // Extract only the fields that should be updated (exclude system fields)
+      const updateData = {
+        title: selectedMeeting.title,
+        description: selectedMeeting.description,
+        meetingType: selectedMeeting.meetingType,
+        status: selectedMeeting.status,
+        date: selectedMeeting.date,
+        startTime: selectedMeeting.startTime,
+        endTime: selectedMeeting.endTime,
+        venue: selectedMeeting.venue,
+        isVirtual: selectedMeeting.isVirtual,
+        meetingLink: selectedMeeting.meetingLink || null,
+        agenda: selectedMeeting.agenda || null,
+      };
+
+      await meetingsApi.updateMeeting(selectedMeeting.id, updateData);
       setShowViewModal(false);
       setIsEditMode(false);
       setSelectedMeeting(null);
@@ -612,7 +625,7 @@ const MeetingsAndAttendance = () => {
           title={isEditMode ? "Edit Meeting" : "View Meeting"}
           size="lg"
         >
-          <form onSubmit={handleEditMeeting} className="space-y-4">
+          <form noValidate className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Meeting Title
@@ -802,7 +815,9 @@ const MeetingsAndAttendance = () => {
                   >
                     Cancel
                   </Button>
-                  <Button type="submit">Update Meeting</Button>
+                  <Button type="button" onClick={handleEditMeeting}>
+                    Update Meeting
+                  </Button>
                 </>
               )}
             </div>
