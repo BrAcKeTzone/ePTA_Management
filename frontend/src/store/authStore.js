@@ -402,7 +402,9 @@ export const useAuthStore = create(
 
           // Call the backend API to update the current user
           const response = await userApi.updateCurrentUser({
-            name: profileData.name,
+            firstName: profileData.firstName,
+            middleName: profileData.middleName,
+            lastName: profileData.lastName,
             email: profileData.email,
           });
 

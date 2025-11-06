@@ -488,7 +488,6 @@ const getTargetedRecipients = async (
           role: UserRole.PARENT,
           students: {
             some: {
-              program: announcement.targetProgram!,
               linkStatus: "APPROVED",
             },
           },
@@ -509,7 +508,7 @@ const getTargetedRecipients = async (
           role: UserRole.PARENT,
           students: {
             some: {
-              yearLevel: announcement.targetYearLevel!,
+              yearEnrolled: announcement.targetYearLevel!,
               linkStatus: "APPROVED",
             },
           },
@@ -738,6 +737,3 @@ export const getMyReadStatus = async (
     },
   };
 };
-
-
-

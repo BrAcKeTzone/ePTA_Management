@@ -12,6 +12,13 @@ router.get("/me", authenticate, userController.getUserProfile);
 router.get("/profile", authenticate, userController.getUserProfile);
 
 router.put(
+  "/me",
+  authenticate,
+  validate(userValidation.updateUserProfile),
+  userController.updateUserProfile
+);
+
+router.put(
   "/profile",
   authenticate,
   validate(userValidation.updateUserProfile),

@@ -368,16 +368,18 @@ export const updateUserByAdmin = async (
   userId: number,
   data: UpdateUserByAdminData
 ): Promise<UserSafeData> => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
+  const userCheck = await prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
   });
 
-  if (!user) {
+  if (!userCheck) {
     throw new ApiError(404, "User not found");
   }
 
   // Check if email is being changed and is already taken
-  if (data.email && data.email !== user.email) {
+  if (data.email && data.email !== userCheck.email) {
     const existingUser = await prisma.user.findUnique({
       where: { email: data.email },
     });
@@ -390,7 +392,7 @@ export const updateUserByAdmin = async (
   // Check if changing role from admin
   if (
     data.role &&
-    user.role === UserRole.ADMIN &&
+    userCheck.role === UserRole.ADMIN &&
     data.role !== UserRole.ADMIN
   ) {
     const adminCount = await prisma.user.count({
@@ -405,8 +407,8 @@ export const updateUserByAdmin = async (
   // Check if deactivating admin
   if (
     data.isActive === false &&
-    user.role === UserRole.ADMIN &&
-    user.isActive
+    userCheck.role === UserRole.ADMIN &&
+    userCheck.isActive
   ) {
     const activeAdminCount = await prisma.user.count({
       where: {

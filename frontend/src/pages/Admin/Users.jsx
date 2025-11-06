@@ -140,12 +140,14 @@ const UsersManagement = () => {
 
   const userColumns = [
     {
-      key: "name",
+      key: "firstName",
       header: "User",
       sortable: true,
       render: (user) => (
         <div>
-          <div className="font-medium text-gray-900">{user.name}</div>
+          <div className="font-medium text-gray-900">
+            {user.firstName} {user.middleName ? user.middleName + " " : ""}{user.lastName}
+          </div>
           <div className="text-sm text-gray-600">{user.email}</div>
           {user.phone && (
             <div className="text-xs text-gray-500">{user.phone}</div>
@@ -525,14 +527,42 @@ const UsersManagement = () => {
       >
         {selectedUser && (
           <form onSubmit={handleEditUser} className="space-y-4">
-            <Input
-              label="Full Name"
-              value={selectedUser.name}
-              onChange={(e) =>
-                setSelectedUser({ ...selectedUser, name: e.target.value })
-              }
-              required
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="First Name"
+                value={selectedUser.firstName || ""}
+                onChange={(e) =>
+                  setSelectedUser({
+                    ...selectedUser,
+                    firstName: e.target.value,
+                  })
+                }
+                required
+              />
+
+              <Input
+                label="Last Name"
+                value={selectedUser.lastName || ""}
+                onChange={(e) =>
+                  setSelectedUser({
+                    ...selectedUser,
+                    lastName: e.target.value,
+                  })
+                }
+                required
+              />
+
+              <Input
+                label="Middle Name"
+                value={selectedUser.middleName || ""}
+                onChange={(e) =>
+                  setSelectedUser({
+                    ...selectedUser,
+                    middleName: e.target.value,
+                  })
+                }
+              />
+            </div>
 
             <Input
               label="Email"

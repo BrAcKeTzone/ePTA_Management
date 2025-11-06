@@ -26,12 +26,10 @@ const MyChildren = () => {
     fetchLinkRequests();
   }, []);
 
-  // Function to get user's last name from their full name
+  // Function to get user's last name from their profile
   const getUserLastName = () => {
-    if (!user || !user.name) return "";
-    const nameParts = user.name.trim().split(" ");
-    // Return the last part of the name as last name
-    return nameParts[nameParts.length - 1] || "";
+    if (!user || !user.lastName) return "";
+    return user.lastName.trim();
   };
 
   // Function to open modal with default last name search

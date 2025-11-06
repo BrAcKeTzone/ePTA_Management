@@ -52,13 +52,20 @@ const Navbar = ({ onMenuClick }) => {
     }
   };
 
-  const getUserInitials = (name) => {
-    if (!name) return "U";
-    return name
-      .split(" ")
-      .map((word) => word.charAt(0).toUpperCase())
-      .slice(0, 2)
-      .join("");
+  const getUserInitials = (firstName, lastName) => {
+    if (!firstName && !lastName) return "U";
+    const initials = [];
+    if (firstName) initials.push(firstName.charAt(0).toUpperCase());
+    if (lastName) initials.push(lastName.charAt(0).toUpperCase());
+    return initials.join("");
+  };
+
+  const getFullName = () => {
+    const parts = [];
+    if (user?.firstName) parts.push(user.firstName);
+    if (user?.middleName) parts.push(user.middleName);
+    if (user?.lastName) parts.push(user.lastName);
+    return parts.join(" ");
   };
 
   return (
@@ -112,7 +119,7 @@ const Navbar = ({ onMenuClick }) => {
               {/* User info */}
               <div className="hidden md:flex flex-col items-end mr-3">
                 <span className="text-sm font-medium text-gray-900">
-                  {user?.name}
+                  {getFullName()}
                 </span>
                 <div className="flex items-center space-x-2">
                   <span
@@ -139,9 +146,9 @@ const Navbar = ({ onMenuClick }) => {
                       ? "bg-indigo-600 hover:bg-indigo-700"
                       : "bg-green-600 hover:bg-green-700"
                   }`}
-                  title={`${user?.name} (${getRoleDisplayName(user?.role)})`}
+                  title={`${getFullName()} (${getRoleDisplayName(user?.role)})`}
                 >
-                  {getUserInitials(user?.name)}
+                  {getUserInitials(user?.firstName, user?.lastName)}
                 </button>
                 {/* Online status indicator */}
                 <div className="absolute -bottom-0 -right-0 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></div>
@@ -151,7 +158,7 @@ const Navbar = ({ onMenuClick }) => {
                   <div className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
                     <div className="px-4 py-3 text-sm text-gray-700 border-b border-gray-200">
                       <div className="font-medium text-gray-900 mb-1">
-                        {user?.name}
+                        {getFullName()}
                       </div>
                       <div className="text-xs text-gray-500 mb-2">
                         {user?.email}

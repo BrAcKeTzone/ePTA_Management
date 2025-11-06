@@ -159,8 +159,9 @@ const HRDashboard = () => {
           HR Dashboard
         </h1>
         <p className="text-gray-600">
-          Welcome back, {user?.name}! Here's an overview of application
-          activities.
+          Welcome back,{" "}
+          {[user?.firstName, user?.lastName].filter(Boolean).join(" ")}! Here's
+          an overview of application activities.
         </p>
       </div>
 

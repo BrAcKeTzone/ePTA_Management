@@ -2,7 +2,9 @@ import Joi from "joi";
 import { UserRole } from "@prisma/client";
 
 export const updateUserProfile = Joi.object().keys({
-  name: Joi.string().min(2).max(100).optional(),
+  firstName: Joi.string().min(2).max(100).optional(),
+  middleName: Joi.string().min(1).max(100).optional().allow(null, ""),
+  lastName: Joi.string().min(2).max(100).optional(),
   email: Joi.string().email().optional(),
 });
 
@@ -25,7 +27,15 @@ export const getUsers = Joi.object().keys({
   page: Joi.number().integer().min(1).optional(),
   limit: Joi.number().integer().min(1).max(100).optional(),
   sortBy: Joi.string()
-    .valid("name", "email", "role", "createdAt", "updatedAt", "isActive")
+    .valid(
+      "firstName",
+      "lastName",
+      "email",
+      "role",
+      "createdAt",
+      "updatedAt",
+      "isActive"
+    )
     .optional(),
   sortOrder: Joi.string().valid("asc", "desc").optional(),
   dateFrom: Joi.date().iso().optional(),
@@ -44,7 +54,9 @@ export const changePassword = Joi.object().keys({
 });
 
 export const updateUserByAdmin = Joi.object().keys({
-  name: Joi.string().min(2).max(100).optional(),
+  firstName: Joi.string().min(2).max(100).optional(),
+  middleName: Joi.string().min(1).max(100).optional().allow(null, ""),
+  lastName: Joi.string().min(2).max(100).optional(),
   email: Joi.string().email().optional(),
   role: Joi.string()
     .valid(...Object.values(UserRole))

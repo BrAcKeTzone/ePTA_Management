@@ -22,7 +22,9 @@ const ProfilePage = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   const [profileData, setProfileData] = useState({
-    name: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
     email: "",
   });
 
@@ -66,7 +68,7 @@ const ProfilePage = () => {
     };
 
     // Only call refreshProfile once on mount if user exists
-    if (user && !profileData.name && !profileData.email) {
+    if (user && !profileData.firstName && !profileData.lastName) {
       refreshProfile();
     }
 
@@ -79,7 +81,9 @@ const ProfilePage = () => {
   useEffect(() => {
     if (user) {
       setProfileData({
-        name: user.name || "",
+        firstName: user.firstName || "",
+        middleName: user.middleName || "",
+        lastName: user.lastName || "",
         email: user.email || "",
       });
       // Clear any validation errors when user data changes
@@ -101,11 +105,18 @@ const ProfilePage = () => {
   const validateProfileForm = () => {
     const errors = {};
 
-    // Name validation
-    if (!profileData.name.trim()) {
-      errors.name = "Full name is required";
-    } else if (profileData.name.trim().length < 2) {
-      errors.name = "Name must be at least 2 characters long";
+    // First name validation
+    if (!profileData.firstName.trim()) {
+      errors.firstName = "First name is required";
+    } else if (profileData.firstName.trim().length < 2) {
+      errors.firstName = "First name must be at least 2 characters long";
+    }
+
+    // Last name validation
+    if (!profileData.lastName.trim()) {
+      errors.lastName = "Last name is required";
+    } else if (profileData.lastName.trim().length < 2) {
+      errors.lastName = "Last name must be at least 2 characters long";
     }
 
     // Email validation
@@ -248,7 +259,9 @@ const ProfilePage = () => {
     // Reset profile data to original values
     if (user) {
       setProfileData({
-        name: user.name || "",
+        firstName: user.firstName || "",
+        middleName: user.middleName || "",
+        lastName: user.lastName || "",
         email: user.email || "",
       });
     }
@@ -315,30 +328,73 @@ const ProfilePage = () => {
         <div className="lg:col-span-2">
           <DashboardCard title="Personal Information" className="h-fit">
             <div className="grid grid-cols-1 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Input
+                    label="First Name"
+                    value={profileData.firstName}
+                    onChange={(e) => {
+                      setProfileData({
+                        ...profileData,
+                        firstName: e.target.value,
+                      });
+                      // Clear validation error when user starts typing
+                      if (validationErrors.firstName) {
+                        const { firstName, ...rest } = validationErrors;
+                        setValidationErrors(rest);
+                      }
+                    }}
+                    disabled={!isEditing}
+                    required
+                    placeholder="Enter your first name"
+                  />
+                  {validationErrors.firstName && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {validationErrors.firstName}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Input
+                    label="Last Name"
+                    value={profileData.lastName}
+                    onChange={(e) => {
+                      setProfileData({
+                        ...profileData,
+                        lastName: e.target.value,
+                      });
+                      // Clear validation error when user starts typing
+                      if (validationErrors.lastName) {
+                        const { lastName, ...rest } = validationErrors;
+                        setValidationErrors(rest);
+                      }
+                    }}
+                    disabled={!isEditing}
+                    required
+                    placeholder="Enter your last name"
+                  />
+                  {validationErrors.lastName && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {validationErrors.lastName}
+                    </p>
+                  )}
+                </div>
+              </div>
+
               <div>
                 <Input
-                  label="Full Name"
-                  value={profileData.name}
+                  label="Middle Name (Optional)"
+                  value={profileData.middleName}
                   onChange={(e) => {
                     setProfileData({
                       ...profileData,
-                      name: e.target.value,
+                      middleName: e.target.value,
                     });
-                    // Clear validation error when user starts typing
-                    if (validationErrors.name) {
-                      const { name, ...rest } = validationErrors;
-                      setValidationErrors(rest);
-                    }
                   }}
                   disabled={!isEditing}
-                  required
-                  placeholder="Enter your full name"
+                  placeholder="Enter your middle name"
                 />
-                {validationErrors.name && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {validationErrors.name}
-                  </p>
-                )}
               </div>
 
               <div>
@@ -423,18 +479,20 @@ const ProfilePage = () => {
                     user?.role === "HR" ? "bg-blue-600" : "bg-green-600"
                   }`}
                 >
-                  {user?.name
-                    ? user.name
-                        .split(" ")
-                        .map((word) => word.charAt(0).toUpperCase())
-                        .slice(0, 2)
-                        .join("")
+                  {user?.firstName && user?.lastName
+                    ? (
+                        user.firstName.charAt(0) + user.lastName.charAt(0)
+                      ).toUpperCase()
                     : "U"}
                 </div>
               </div>
 
               <div className="text-center">
-                <h3 className="font-medium text-gray-900">{user?.name}</h3>
+                <h3 className="font-medium text-gray-900">
+                  {[user?.firstName, user?.middleName, user?.lastName]
+                    .filter(Boolean)
+                    .join(" ")}
+                </h3>
                 <p className="text-sm text-gray-500 break-all">{user?.email}</p>
                 <span
                   className={`inline-block mt-2 px-3 py-1 text-xs font-medium rounded-full ${

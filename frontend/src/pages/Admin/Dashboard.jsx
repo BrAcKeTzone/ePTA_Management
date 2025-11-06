@@ -150,7 +150,8 @@ const AdminDashboard = () => {
       {/* Header */}
       <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-900">
         <h1 className="text-2xl font-bold text-gray-900">
-          Welcome back, {user?.name}!
+          Welcome back,{" "}
+          {[user?.firstName, user?.lastName].filter(Boolean).join(" ")}!
         </h1>
         <p className="text-gray-600 mt-1">
           PTA Management System - Administrator Dashboard

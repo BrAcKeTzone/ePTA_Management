@@ -21,7 +21,7 @@ export interface CreateMeetingInput {
   meetingType?: MeetingType;
   date: Date;
   startTime: string;
-  endTime?: string;
+  endTime: string;
   venue: string;
   isVirtual?: boolean;
   meetingLink?: string;
@@ -818,6 +818,3 @@ export const cancelMeeting = async (
 
   return updatedMeeting;
 };
-
-
-

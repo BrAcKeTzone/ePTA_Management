@@ -225,10 +225,12 @@ const UserManagement = () => {
   const usersColumns = [
     {
       header: "User",
-      accessor: "name",
+      accessor: "firstName",
       cell: (row) => (
         <div>
-          <p className="font-medium text-gray-900">{row.name}</p>
+          <p className="font-medium text-gray-900">
+            {row.firstName} {row.middleName ? row.middleName + " " : ""}{row.lastName}
+          </p>
           <p className="text-sm text-gray-500">{row.email}</p>
         </div>
       ),
@@ -394,7 +396,8 @@ const UserManagement = () => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="createdAt">Created Date</option>
-              <option value="name">Name</option>
+              <option value="firstName">First Name</option>
+              <option value="lastName">Last Name</option>
               <option value="email">Email</option>
               <option value="role">Role</option>
             </select>
@@ -460,7 +463,7 @@ const UserManagement = () => {
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1 min-w-0">
                       <h3 className="font-medium text-gray-900 break-words">
-                        {user.name}
+                        {user.firstName} {user.middleName ? user.middleName + " " : ""}{user.lastName}
                       </h3>
                       <p className="text-sm text-gray-500 break-all">
                         {user.email}
@@ -694,7 +697,7 @@ const UserManagement = () => {
         <div className="space-y-4">
           <p className="text-gray-600">
             Are you sure you want to delete the user{" "}
-            <strong>{selectedUser?.name}</strong>? This action cannot be undone.
+            <strong>{selectedUser?.firstName} {selectedUser?.middleName ? selectedUser.middleName + " " : ""}{selectedUser?.lastName}</strong>? This action cannot be undone.
           </p>
 
           <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3 pt-4 border-t border-gray-200">
