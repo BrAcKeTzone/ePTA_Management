@@ -524,9 +524,12 @@ const UserManagement = () => {
                           Current User
                         </span>
                       )}
-                      {user.role !== "APPLICANT" && user.id !== currentUser?.id && (
-                        <span className="text-xs text-gray-400">No actions</span>
-                      )}
+                      {user.role !== "APPLICANT" &&
+                        user.id !== currentUser?.id && (
+                          <span className="text-xs text-gray-400">
+                            No actions
+                          </span>
+                        )}
                     </div>
                   </div>
                 </div>
