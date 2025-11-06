@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useUserManagementStore } from "../../store/userManagementStore";
+import { useAuthStore } from "../../store/authStore";
 import Table from "../../components/Table";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
@@ -11,6 +12,7 @@ import StatusBadge from "../../components/StatusBadge";
 import { formatDate } from "../../utils/formatDate";
 
 const UsersManagement = () => {
+  const { user: currentUser } = useAuthStore();
   const {
     users,
     loading,
@@ -156,9 +158,16 @@ const UsersManagement = () => {
       sortable: true,
       render: (user) => (
         <div>
-          <div className="font-medium text-gray-900">
-            {user.firstName} {user.middleName ? user.middleName + " " : ""}
-            {user.lastName}
+          <div className="flex items-center gap-2">
+            <div className="font-medium text-gray-900">
+              {user.firstName} {user.middleName ? user.middleName + " " : ""}
+              {user.lastName}
+            </div>
+            {user.id === currentUser?.id && (
+              <span className="px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-100 rounded-full">
+                You
+              </span>
+            )}
           </div>
           <div className="text-sm text-gray-600">{user.email}</div>
           {user.phone && (
@@ -220,24 +229,31 @@ const UsersManagement = () => {
       header: "Actions",
       render: (user) => (
         <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setSelectedUser(user);
-              setShowEditModal(true);
-            }}
-          >
-            Edit
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleDeleteUser(user.id)}
-            className="text-red-600 hover:text-red-700"
-          >
-            Delete
-          </Button>
+          {user.id !== currentUser?.id && (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedUser(user);
+                  setShowEditModal(true);
+                }}
+              >
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleDeleteUser(user.id)}
+                className="text-red-600 hover:text-red-700"
+              >
+                Delete
+              </Button>
+            </>
+          )}
+          {user.id === currentUser?.id && (
+            <span className="text-xs text-gray-500">Current User</span>
+          )}
         </div>
       ),
     },

@@ -231,10 +231,17 @@ const UserManagement = () => {
       accessor: "firstName",
       cell: (row) => (
         <div>
-          <p className="font-medium text-gray-900">
-            {row.firstName} {row.middleName ? row.middleName + " " : ""}
-            {row.lastName}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-gray-900">
+              {row.firstName} {row.middleName ? row.middleName + " " : ""}
+              {row.lastName}
+            </p>
+            {row.id === currentUser?.id && (
+              <span className="px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-100 rounded-full">
+                You
+              </span>
+            )}
+          </div>
           <p className="text-sm text-gray-500">{row.email}</p>
         </div>
       ),
@@ -285,6 +292,9 @@ const UserManagement = () => {
           )}
           {row.id === currentUser?.id && (
             <span className="text-xs text-gray-500">Current User</span>
+          )}
+          {row.role !== "APPLICANT" && row.id !== currentUser?.id && (
+            <span className="text-xs text-gray-400">No actions</span>
           )}
         </div>
       ),
@@ -466,11 +476,18 @@ const UserManagement = () => {
                 >
                   <div className="flex justify-between items-start mb-3">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-gray-900 break-words">
-                        {user.firstName}{" "}
-                        {user.middleName ? user.middleName + " " : ""}
-                        {user.lastName}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-medium text-gray-900 break-words">
+                          {user.firstName}{" "}
+                          {user.middleName ? user.middleName + " " : ""}
+                          {user.lastName}
+                        </h3>
+                        {user.id === currentUser?.id && (
+                          <span className="px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-100 rounded-full whitespace-nowrap">
+                            You
+                          </span>
+                        )}
+                      </div>
                       <p className="text-sm text-gray-500 break-all">
                         {user.email}
                       </p>
@@ -506,6 +523,9 @@ const UserManagement = () => {
                         <span className="text-xs text-gray-500">
                           Current User
                         </span>
+                      )}
+                      {user.role !== "APPLICANT" && user.id !== currentUser?.id && (
+                        <span className="text-xs text-gray-400">No actions</span>
                       )}
                     </div>
                   </div>

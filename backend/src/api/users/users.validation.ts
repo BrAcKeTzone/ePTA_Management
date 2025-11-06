@@ -70,6 +70,7 @@ export const updateUserByAdmin = Joi.object().keys({
   middleName: Joi.string().min(1).max(100).optional().allow(null, ""),
   lastName: Joi.string().min(2).max(100).optional(),
   email: Joi.string().email().optional(),
+  phone: Joi.string().optional().allow(null, ""),
   role: Joi.string()
     .valid(...Object.values(UserRole))
     .optional(),

@@ -172,6 +172,8 @@ export const useUserManagementStore = create(
             lastName: userData.lastName,
             phone: userData.phone || "",
             role: userData.role,
+            isActive:
+              userData.isActive !== undefined ? userData.isActive : true,
           };
 
           const response = await userApi.updateUser(userId, mappedUserData);
