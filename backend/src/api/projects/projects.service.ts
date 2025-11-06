@@ -96,12 +96,6 @@ export const createProject = async (data: CreateProjectData) => {
           firstName: true,
           lastName: true,
           middleName: true,
-
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
           email: true,
         },
       },
@@ -162,14 +156,8 @@ export const getProjects = async (filters: GetProjectsFilters) => {
           select: {
             id: true,
             firstName: true,
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
+            lastName: true,
+            middleName: true,
             email: true,
           },
         },
@@ -226,12 +214,6 @@ export const getProjectById = async (id: number) => {
           firstName: true,
           lastName: true,
           middleName: true,
-
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
           email: true,
         },
       },
@@ -241,14 +223,8 @@ export const getProjectById = async (id: number) => {
             select: {
               id: true,
               firstName: true,
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
+              lastName: true,
+              middleName: true,
               email: true,
             },
           },
@@ -312,12 +288,6 @@ export const updateProject = async (id: number, data: UpdateProjectData) => {
         select: {
           id: true,
           firstName: true,
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
-
           lastName: true,
           middleName: true,
           email: true,
@@ -419,14 +389,8 @@ export const recordExpense = async (
           select: {
             id: true,
             firstName: true,
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
+            lastName: true,
+            middleName: true,
             email: true,
           },
         },
@@ -749,12 +713,6 @@ export const generateProjectReport = async (filters: any) => {
           firstName: true,
           lastName: true,
           middleName: true,
-
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
           email: true,
         },
       },
@@ -972,15 +930,7 @@ export const getAllDocuments = async (filters: any = {}) => {
       take: limit,
       select: {
         id: true,
-        firstName: true,
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
+        name: true,
         description: true,
         attachments: true,
         createdAt: true,
@@ -988,14 +938,8 @@ export const getAllDocuments = async (filters: any = {}) => {
           select: {
             id: true,
             firstName: true,
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
+            lastName: true,
+            middleName: true,
             email: true,
           },
         },
@@ -1081,15 +1025,7 @@ export const getPublicDocuments = async (filters: any = {}) => {
         project: {
           select: {
             id: true,
-            firstName: true,
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
-
-          lastName: true,
-          middleName: true,
+            name: true,
           },
         },
       },
@@ -1144,10 +1080,3 @@ export const getPublicDocuments = async (filters: any = {}) => {
     },
   };
 };
-
-
-
-
-
-
-
