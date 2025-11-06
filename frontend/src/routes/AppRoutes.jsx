@@ -9,14 +9,13 @@ import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 
 // Admin pages (PTA Management)
 import AdminDashboard from "../pages/Admin/Dashboard";
-import AdminAttendance from "../pages/Admin/Attendance";
 import AdminContributions from "../pages/Admin/Contributions";
 import AdminProjects from "../pages/Admin/Projects";
 import AdminAnnouncements from "../pages/Admin/Announcements";
 import AdminClearance from "../pages/Admin/Clearance";
 import AdminStudents from "../pages/Admin/Students";
 import AdminStudentLinks from "../pages/Admin/StudentLinks";
-import AdminMeetings from "../pages/Admin/Meetings";
+import MeetingsAndAttendance from "../pages/Admin/MeetingsAndAttendance";
 import AdminUsers from "../pages/Admin/Users";
 
 // Parent pages (PTA System)
@@ -172,8 +171,7 @@ const AppRoutes = () => {
         }
       >
         <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="meetings" element={<AdminMeetings />} />
-        <Route path="attendance" element={<AdminAttendance />} />
+        <Route path="meetings" element={<MeetingsAndAttendance />} />
         <Route path="contributions" element={<AdminContributions />} />
         <Route path="projects" element={<AdminProjects />} />
         <Route path="announcements" element={<AdminAnnouncements />} />

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { meetingsApi } from "../../api/meetingsApi";
+import { attendanceApi } from "../../api/attendanceApi";
 import Table from "../../components/Table";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
@@ -7,10 +8,16 @@ import Input from "../../components/Input";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { formatDate } from "../../utils/formatDate";
 
-const MeetingsManagement = () => {
+const MeetingsAndAttendance = () => {
+  // Tab state
+  const [activeTab, setActiveTab] = useState("meetings");
+
+  // Common state
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  // Meetings state
+  const [showCreateMeetingModal, setShowCreateMeetingModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
@@ -23,6 +30,12 @@ const MeetingsManagement = () => {
     endTime: "09:00",
     venue: "",
   });
+
+  // Attendance state
+  const [attendance, setAttendance] = useState([]);
+  const [selectedMeetingForAttendance, setSelectedMeetingForAttendance] =
+    useState(null);
+  const [showAttendanceModal, setShowAttendanceModal] = useState(false);
 
   // Meeting type options
   const meetingTypes = [
@@ -43,7 +56,6 @@ const MeetingsManagement = () => {
         const minuteStr = minute.toString().padStart(2, "0");
         const time24 = `${hourStr}:${minuteStr}`;
 
-        // Convert to 12-hour format for display
         const hour12 = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
         const ampm = hour >= 12 ? "PM" : "AM";
         const time12 = `${hour12}:${minuteStr} ${ampm}`;
@@ -70,10 +82,12 @@ const MeetingsManagement = () => {
     });
   };
 
+  // Load data on mount
   useEffect(() => {
     fetchMeetings();
   }, []);
 
+  // Fetch meetings
   const fetchMeetings = async () => {
     try {
       setLoading(true);
@@ -88,10 +102,23 @@ const MeetingsManagement = () => {
     }
   };
 
+  // Fetch attendance for a specific meeting
+  const fetchAttendanceForMeeting = async (meetingId) => {
+    try {
+      const response = await attendanceApi.getAttendanceByMeeting(meetingId);
+      setAttendance(response.data || []);
+      setSelectedMeetingForAttendance(meetingId);
+      setShowAttendanceModal(true);
+    } catch (error) {
+      console.error("Error fetching attendance:", error);
+      alert("Error fetching attendance records.");
+    }
+  };
+
+  // Meeting handlers
   const handleCreateMeeting = async (e) => {
     e.preventDefault();
 
-    // Validate that end time is after start time
     const [startHour, startMinute] = newMeeting.startTime
       .split(":")
       .map(Number);
@@ -106,7 +133,7 @@ const MeetingsManagement = () => {
 
     try {
       await meetingsApi.createMeeting(newMeeting);
-      setShowCreateModal(false);
+      setShowCreateMeetingModal(false);
       setNewMeeting({
         title: "",
         description: "",
@@ -131,7 +158,6 @@ const MeetingsManagement = () => {
   const handleEditMeeting = async (e) => {
     e.preventDefault();
 
-    // Validate that end time is after start time
     const [startHour, startMinute] = selectedMeeting.startTime
       .split(":")
       .map(Number);
@@ -193,6 +219,22 @@ const MeetingsManagement = () => {
     }
   };
 
+  // Attendance handlers
+  const handleRecordAttendance = async (parentId, isPresent) => {
+    try {
+      await attendanceApi.recordAttendance({
+        meetingId: selectedMeetingForAttendance,
+        parentId,
+        isPresent,
+      });
+      fetchAttendanceForMeeting(selectedMeetingForAttendance);
+    } catch (error) {
+      console.error("Error recording attendance:", error);
+      alert("Error recording attendance.");
+    }
+  };
+
+  // Utility functions
   const formatTimeDisplay = (time24) => {
     if (!time24) return "N/A";
     const [hour, minute] = time24.split(":").map(Number);
@@ -217,6 +259,7 @@ const MeetingsManagement = () => {
     return colors[status] || "bg-gray-100 text-gray-800";
   };
 
+  // Table columns
   const meetingColumns = [
     {
       key: "title",
@@ -288,6 +331,45 @@ const MeetingsManagement = () => {
     },
   ];
 
+  const attendanceColumns = [
+    {
+      key: "title",
+      header: "Meeting",
+      cell: (meeting) => (
+        <div>
+          <div className="font-medium text-gray-900">{meeting.title}</div>
+          <div className="text-sm text-gray-600">
+            {formatDate(meeting.date)}
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "attendeeCount",
+      header: "Attendees",
+      cell: (meeting) => (
+        <div className="text-gray-900">
+          {meeting.attendeeCount || 0} recorded
+        </div>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      cell: (meeting) => (
+        <div className="flex space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => fetchAttendanceForMeeting(meeting.id)}
+          >
+            Record/View Attendance
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -302,22 +384,83 @@ const MeetingsManagement = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Meetings Management
+            Meetings & Attendance Management
           </h1>
-          <p className="text-gray-600 mt-1">Schedule and manage PTA meetings</p>
+          <p className="text-gray-600 mt-1">
+            Manage meetings and record attendance
+          </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)}>
-          Create New Meeting
-        </Button>
+        {activeTab === "meetings" && (
+          <Button onClick={() => setShowCreateMeetingModal(true)}>
+            Create New Meeting
+          </Button>
+        )}
       </div>
 
-      {/* Meetings Table */}
-      <Table columns={meetingColumns} data={meetings} />
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <div className="flex space-x-8">
+          <button
+            onClick={() => setActiveTab("meetings")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "meetings"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Meetings
+          </button>
+          <button
+            onClick={() => setActiveTab("attendance")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "attendance"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Attendance
+          </button>
+        </div>
+      </div>
+
+      {/* Meetings Tab */}
+      {activeTab === "meetings" && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow-sm border">
+            <div className="p-6 border-b">
+              <h2 className="text-lg font-semibold">All Meetings</h2>
+            </div>
+            <Table
+              data={meetings}
+              columns={meetingColumns}
+              emptyMessage="No meetings found"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Attendance Tab */}
+      {activeTab === "attendance" && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow-sm border">
+            <div className="p-6 border-b">
+              <h2 className="text-lg font-semibold">
+                Record or View Attendance
+              </h2>
+            </div>
+            <Table
+              data={meetings}
+              columns={attendanceColumns}
+              emptyMessage="No meetings found"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Create Meeting Modal */}
       <Modal
-        isOpen={showCreateModal}
-        onClose={() => setShowCreateModal(false)}
+        isOpen={showCreateMeetingModal}
+        onClose={() => setShowCreateMeetingModal(false)}
         title="Create New Meeting"
         size="lg"
       >
@@ -389,7 +532,6 @@ const MeetingsManagement = () => {
                 onChange={(e) => {
                   const newStartTime = e.target.value;
                   setNewMeeting((prev) => {
-                    // If new start time is >= current end time, reset end time
                     const validEndTimes = getValidEndTimes(newStartTime);
                     const needsEndTimeUpdate = !validEndTimes.some(
                       (t) => t.value === prev.endTime
@@ -449,7 +591,7 @@ const MeetingsManagement = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setShowCreateModal(false)}
+              onClick={() => setShowCreateMeetingModal(false)}
             >
               Cancel
             </Button>
@@ -667,8 +809,57 @@ const MeetingsManagement = () => {
           </form>
         </Modal>
       )}
+
+      {/* Attendance Recording Modal */}
+      <Modal
+        isOpen={showAttendanceModal}
+        onClose={() => setShowAttendanceModal(false)}
+        title="Record Attendance"
+        size="lg"
+      >
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Mark attendance for each parent below:
+          </p>
+          <div className="max-h-96 overflow-y-auto">
+            {attendance.map((record) => (
+              <div
+                key={record.parentId}
+                className="flex items-center justify-between p-3 border border-gray-200 rounded-lg mb-2"
+              >
+                <div>
+                  <div className="font-medium">{record.parentName}</div>
+                  <div className="text-sm text-gray-600">
+                    {record.studentName}
+                  </div>
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    size="sm"
+                    variant={record.isPresent === true ? "default" : "outline"}
+                    onClick={() =>
+                      handleRecordAttendance(record.parentId, true)
+                    }
+                  >
+                    Present
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={record.isPresent === false ? "default" : "outline"}
+                    onClick={() =>
+                      handleRecordAttendance(record.parentId, false)
+                    }
+                  >
+                    Absent
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
 
-export default MeetingsManagement;
+export default MeetingsAndAttendance;
