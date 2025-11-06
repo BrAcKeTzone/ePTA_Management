@@ -136,8 +136,10 @@ export const useUserManagementStore = create(
           const mappedUserData = {
             email: userData.email,
             password: userData.password,
-            name: `${userData.firstName} ${userData.lastName}`,
-            phone: userData.phoneNumber || "",
+            firstName: userData.firstName,
+            middleName: userData.middleName || "",
+            lastName: userData.lastName,
+            phone: userData.phone || "",
             role: userData.role,
           };
 
@@ -164,18 +166,13 @@ export const useUserManagementStore = create(
         try {
           // Map frontend field names to backend field names if needed
           const mappedUserData = {
-            ...userData,
-            ...(userData.firstName &&
-              userData.lastName && {
-                name: `${userData.firstName} ${userData.lastName}`,
-              }),
-            ...(userData.phoneNumber && { phone: userData.phoneNumber }),
+            email: userData.email,
+            firstName: userData.firstName,
+            middleName: userData.middleName || "",
+            lastName: userData.lastName,
+            phone: userData.phone || "",
+            role: userData.role,
           };
-
-          // Remove frontend-specific fields
-          delete mappedUserData.firstName;
-          delete mappedUserData.lastName;
-          delete mappedUserData.phoneNumber;
 
           const response = await userApi.updateUser(userId, mappedUserData);
 

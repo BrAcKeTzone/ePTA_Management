@@ -53,6 +53,18 @@ export const changePassword = Joi.object().keys({
     }),
 });
 
+export const createUser = Joi.object().keys({
+  firstName: Joi.string().min(2).max(100).required(),
+  middleName: Joi.string().min(1).max(100).optional().allow(null, ""),
+  lastName: Joi.string().min(2).max(100).required(),
+  email: Joi.string().email().required(),
+  phone: Joi.string().optional().allow(null, ""),
+  password: Joi.string().min(6).required(),
+  role: Joi.string()
+    .valid(...Object.values(UserRole))
+    .required(),
+});
+
 export const updateUserByAdmin = Joi.object().keys({
   firstName: Joi.string().min(2).max(100).optional(),
   middleName: Joi.string().min(1).max(100).optional().allow(null, ""),

@@ -33,6 +33,12 @@ router.post(
 );
 
 // Admin routes for user management
+router.post(
+  "/",
+  validate(userValidation.createUser),
+  userController.createUser
+);
+
 router.get("/", validate(userValidation.getUsers), userController.getAllUsers);
 
 router.get("/stats", userController.getUserStats);

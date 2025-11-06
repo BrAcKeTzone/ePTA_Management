@@ -45,9 +45,11 @@ const router = express_1.default.Router();
 // User profile routes (self-service) - require authentication
 router.get("/me", auth_middleware_1.authenticate, userController.getUserProfile);
 router.get("/profile", auth_middleware_1.authenticate, userController.getUserProfile);
+router.put("/me", auth_middleware_1.authenticate, (0, validate_middleware_1.default)(userValidation.updateUserProfile), userController.updateUserProfile);
 router.put("/profile", auth_middleware_1.authenticate, (0, validate_middleware_1.default)(userValidation.updateUserProfile), userController.updateUserProfile);
 router.post("/change-password", auth_middleware_1.authenticate, (0, validate_middleware_1.default)(userValidation.changePassword), userController.changePassword);
 // Admin routes for user management
+router.post("/", (0, validate_middleware_1.default)(userValidation.createUser), userController.createUser);
 router.get("/", (0, validate_middleware_1.default)(userValidation.getUsers), userController.getAllUsers);
 router.get("/stats", userController.getUserStats);
 router.get("/:id", userController.getUserById);

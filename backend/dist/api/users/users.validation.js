@@ -3,11 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUserByAdmin = exports.changePassword = exports.getUsers = exports.userIdParam = exports.updateUserRole = exports.updateUserProfile = void 0;
+exports.updateUserByAdmin = exports.createUser = exports.changePassword = exports.getUsers = exports.userIdParam = exports.updateUserRole = exports.updateUserProfile = void 0;
 const joi_1 = __importDefault(require("joi"));
 const client_1 = require("@prisma/client");
 exports.updateUserProfile = joi_1.default.object().keys({
-    name: joi_1.default.string().min(2).max(100).optional(),
+    firstName: joi_1.default.string().min(2).max(100).optional(),
+    middleName: joi_1.default.string().min(1).max(100).optional().allow(null, ""),
+    lastName: joi_1.default.string().min(2).max(100).optional(),
     email: joi_1.default.string().email().optional(),
 });
 exports.updateUserRole = joi_1.default.object().keys({
@@ -27,7 +29,7 @@ exports.getUsers = joi_1.default.object().keys({
     page: joi_1.default.number().integer().min(1).optional(),
     limit: joi_1.default.number().integer().min(1).max(100).optional(),
     sortBy: joi_1.default.string()
-        .valid("name", "email", "role", "createdAt", "updatedAt", "isActive")
+        .valid("firstName", "lastName", "email", "role", "createdAt", "updatedAt", "isActive")
         .optional(),
     sortOrder: joi_1.default.string().valid("asc", "desc").optional(),
     dateFrom: joi_1.default.date().iso().optional(),
@@ -43,8 +45,21 @@ exports.changePassword = joi_1.default.object().keys({
         "any.only": "Passwords do not match",
     }),
 });
+exports.createUser = joi_1.default.object().keys({
+    firstName: joi_1.default.string().min(2).max(100).required(),
+    middleName: joi_1.default.string().min(1).max(100).optional().allow(null, ""),
+    lastName: joi_1.default.string().min(2).max(100).required(),
+    email: joi_1.default.string().email().required(),
+    phone: joi_1.default.string().optional().allow(null, ""),
+    password: joi_1.default.string().min(6).required(),
+    role: joi_1.default.string()
+        .valid(...Object.values(client_1.UserRole))
+        .required(),
+});
 exports.updateUserByAdmin = joi_1.default.object().keys({
-    name: joi_1.default.string().min(2).max(100).optional(),
+    firstName: joi_1.default.string().min(2).max(100).optional(),
+    middleName: joi_1.default.string().min(1).max(100).optional().allow(null, ""),
+    lastName: joi_1.default.string().min(2).max(100).optional(),
     email: joi_1.default.string().email().optional(),
     role: joi_1.default.string()
         .valid(...Object.values(client_1.UserRole))

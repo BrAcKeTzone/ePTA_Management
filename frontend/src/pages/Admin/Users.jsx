@@ -4,6 +4,7 @@ import Table from "../../components/Table";
 import Button from "../../components/Button";
 import Modal from "../../components/Modal";
 import Input from "../../components/Input";
+import PasswordInput from "../../components/PasswordInput";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import Pagination from "../../components/Pagination";
 import StatusBadge from "../../components/StatusBadge";
@@ -42,11 +43,12 @@ const UsersManagement = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [newUser, setNewUser] = useState({
     firstName: "",
+    middleName: "",
     lastName: "",
     email: "",
     password: "",
     role: "PARENT",
-    phoneNumber: "",
+    phone: "",
   });
 
   // Local filter state for form inputs
@@ -99,15 +101,24 @@ const UsersManagement = () => {
   const handleCreateUser = async (e) => {
     e.preventDefault();
     try {
-      await addUser(newUser);
+      await addUser({
+        firstName: newUser.firstName,
+        middleName: newUser.middleName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+        phone: newUser.phone,
+        role: newUser.role,
+        password: newUser.password,
+      });
       setShowCreateModal(false);
       setNewUser({
         firstName: "",
+        middleName: "",
         lastName: "",
         email: "",
         password: "",
         role: "PARENT",
-        phoneNumber: "",
+        phone: "",
       });
       fetchData();
     } catch (error) {
@@ -455,12 +466,28 @@ const UsersManagement = () => {
               required
             />
             <Input
+              label="Middle Name"
+              value={newUser.middleName}
+              onChange={(e) =>
+                setNewUser({ ...newUser, middleName: e.target.value })
+              }
+            />
+            <Input
               label="Last Name"
               value={newUser.lastName}
               onChange={(e) =>
                 setNewUser({ ...newUser, lastName: e.target.value })
               }
               required
+            />
+            <Input
+              label="Phone"
+              type="tel"
+              value={newUser.phone}
+              onChange={(e) =>
+                setNewUser({ ...newUser, phone: e.target.value })
+              }
+              placeholder="+63-XXX-XXX-XXXX"
             />
           </div>
 
@@ -472,24 +499,15 @@ const UsersManagement = () => {
             required
           />
 
-          <Input
+          <PasswordInput
             label="Password"
-            type="password"
+            name="password"
             value={newUser.password}
             onChange={(e) =>
               setNewUser({ ...newUser, password: e.target.value })
             }
             required
-            minLength={6}
-          />
-
-          <Input
-            label="Phone Number"
-            value={newUser.phoneNumber}
-            onChange={(e) =>
-              setNewUser({ ...newUser, phoneNumber: e.target.value })
-            }
-            placeholder="+63-XXX-XXX-XXXX"
+            placeholder="Minimum 6 characters"
           />
 
           <div>

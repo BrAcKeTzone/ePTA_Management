@@ -354,7 +354,6 @@ const getTargetedRecipients = async (announcement) => {
                     role: client_1.UserRole.PARENT,
                     students: {
                         some: {
-                            program: announcement.targetProgram,
                             linkStatus: "APPROVED",
                         },
                     },
@@ -374,7 +373,7 @@ const getTargetedRecipients = async (announcement) => {
                     role: client_1.UserRole.PARENT,
                     students: {
                         some: {
-                            yearLevel: announcement.targetYearLevel,
+                            yearEnrolled: announcement.targetYearLevel,
                             linkStatus: "APPROVED",
                         },
                     },

@@ -51,9 +51,10 @@ const UserManagement = () => {
 
   const [newUserData, setNewUserData] = useState({
     firstName: "",
+    middleName: "",
     lastName: "",
     email: "",
-    phoneNumber: "",
+    phone: "",
     role: "APPLICANT",
     password: "",
     confirmPassword: "",
@@ -174,9 +175,10 @@ const UserManagement = () => {
     try {
       await addUser({
         firstName: newUserData.firstName,
+        middleName: newUserData.middleName,
         lastName: newUserData.lastName,
         email: newUserData.email,
-        phoneNumber: newUserData.phoneNumber,
+        phone: newUserData.phone,
         role: newUserData.role,
         password: newUserData.password,
       });
@@ -184,9 +186,10 @@ const UserManagement = () => {
       setShowAddUserModal(false);
       setNewUserData({
         firstName: "",
+        middleName: "",
         lastName: "",
         email: "",
-        phoneNumber: "",
+        phone: "",
         role: "APPLICANT",
         password: "",
         confirmPassword: "",
@@ -563,9 +566,10 @@ const UserManagement = () => {
           setAddUserError("");
           setNewUserData({
             firstName: "",
+            middleName: "",
             lastName: "",
             email: "",
-            phoneNumber: "",
+            phone: "",
             role: "APPLICANT",
             password: "",
             confirmPassword: "",
@@ -592,12 +596,30 @@ const UserManagement = () => {
             />
 
             <Input
+              label="Middle Name"
+              value={newUserData.middleName}
+              onChange={(e) =>
+                setNewUserData({ ...newUserData, middleName: e.target.value })
+              }
+            />
+
+            <Input
               label="Last Name"
               value={newUserData.lastName}
               onChange={(e) =>
                 setNewUserData({ ...newUserData, lastName: e.target.value })
               }
               required
+            />
+
+            <Input
+              label="Phone"
+              type="tel"
+              value={newUserData.phone}
+              onChange={(e) =>
+                setNewUserData({ ...newUserData, phone: e.target.value })
+              }
+              placeholder="+63-XXX-XXX-XXXX"
             />
 
             <div className="sm:col-span-2">
@@ -664,9 +686,10 @@ const UserManagement = () => {
                 setAddUserError("");
                 setNewUserData({
                   firstName: "",
+                  middleName: "",
                   lastName: "",
                   email: "",
-                  phoneNumber: "",
+                  phone: "",
                   role: "APPLICANT",
                   password: "",
                   confirmPassword: "",

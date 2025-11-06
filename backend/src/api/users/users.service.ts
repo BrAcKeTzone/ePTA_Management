@@ -3,6 +3,16 @@ import { User, UserRole } from "@prisma/client";
 import ApiError from "../../utils/ApiError";
 import bcrypt from "bcrypt";
 
+interface CreateUserData {
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  password: string;
+  role: UserRole;
+}
+
 interface UpdateUserProfileData {
   firstName?: string;
   middleName?: string;
@@ -50,6 +60,41 @@ interface UserSafeData {
 const excludePassword = (user: any): UserSafeData => {
   const { password, ...userWithoutPassword } = user;
   return userWithoutPassword;
+};
+
+// Create new user (admin only)
+export const createUser = async (
+  data: CreateUserData
+): Promise<UserSafeData> => {
+  const { email, password, firstName, middleName, lastName, phone, role } =
+    data;
+
+  // Check if email already exists
+  const existingUser = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (existingUser) {
+    throw new ApiError(400, "Email already exists");
+  }
+
+  // Hash password
+  const hashedPassword = await bcrypt.hash(password, 12);
+
+  const user = await prisma.user.create({
+    data: {
+      email,
+      password: hashedPassword,
+      firstName,
+      middleName: middleName || null,
+      lastName,
+      phone: phone || null,
+      role,
+      isActive: true,
+    },
+  });
+
+  return excludePassword(user);
 };
 
 // Get user by ID (admin only)
@@ -422,9 +467,19 @@ export const updateUserByAdmin = async (
     }
   }
 
+  // Filter data to only include allowed fields
+  const updateData: any = {};
+  if (data.firstName !== undefined) updateData.firstName = data.firstName;
+  if (data.middleName !== undefined) updateData.middleName = data.middleName;
+  if (data.lastName !== undefined) updateData.lastName = data.lastName;
+  if (data.email !== undefined) updateData.email = data.email;
+  if (data.phone !== undefined) updateData.phone = data.phone;
+  if (data.role !== undefined) updateData.role = data.role;
+  if (data.isActive !== undefined) updateData.isActive = data.isActive;
+
   const updatedUser = await prisma.user.update({
     where: { id: userId },
-    data,
+    data: updateData,
   });
 
   return excludePassword(updatedUser);

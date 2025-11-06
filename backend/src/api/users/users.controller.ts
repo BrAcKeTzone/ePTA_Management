@@ -3,6 +3,13 @@ import asyncHandler from "../../utils/asyncHandler";
 import ApiResponse from "../../utils/ApiResponse";
 import * as userService from "./users.service";
 
+// Create new user (admin only)
+export const createUser = asyncHandler(async (req: Request, res: Response) => {
+  const user = await userService.createUser(req.body);
+
+  res.status(201).json(new ApiResponse(201, user, "User created successfully"));
+});
+
 // Get user by ID (admin only)
 export const getUserById = asyncHandler(async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);

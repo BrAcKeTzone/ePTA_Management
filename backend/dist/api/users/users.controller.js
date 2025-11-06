@@ -36,10 +36,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserStats = exports.changePassword = exports.deleteUser = exports.updateUserByAdmin = exports.activateUser = exports.deactivateUser = exports.updateUserRole = exports.getAllUsers = exports.updateUserProfile = exports.getUserProfile = exports.getUserById = void 0;
+exports.getUserStats = exports.changePassword = exports.deleteUser = exports.updateUserByAdmin = exports.activateUser = exports.deactivateUser = exports.updateUserRole = exports.getAllUsers = exports.updateUserProfile = exports.getUserProfile = exports.getUserById = exports.createUser = void 0;
 const asyncHandler_1 = __importDefault(require("../../utils/asyncHandler"));
 const ApiResponse_1 = __importDefault(require("../../utils/ApiResponse"));
 const userService = __importStar(require("./users.service"));
+// Create new user (admin only)
+exports.createUser = (0, asyncHandler_1.default)(async (req, res) => {
+    const user = await userService.createUser(req.body);
+    res
+        .status(201)
+        .json(new ApiResponse_1.default(201, user, "User created successfully"));
+});
 // Get user by ID (admin only)
 exports.getUserById = (0, asyncHandler_1.default)(async (req, res) => {
     const id = parseInt(req.params.id);

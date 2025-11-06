@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserStats = exports.changePassword = exports.deleteUser = exports.updateUserByAdmin = exports.activateUser = exports.deactivateUser = exports.updateUserRole = exports.getAllUsers = exports.updateUserProfile = exports.getUserProfile = exports.getUserById = void 0;
+exports.getUserStats = exports.changePassword = exports.deleteUser = exports.updateUserByAdmin = exports.activateUser = exports.deactivateUser = exports.updateUserRole = exports.getAllUsers = exports.updateUserProfile = exports.getUserProfile = exports.getUserById = exports.createUser = void 0;
 const prisma_1 = __importDefault(require("../../configs/prisma"));
 const client_1 = require("@prisma/client");
 const ApiError_1 = __importDefault(require("../../utils/ApiError"));
@@ -13,6 +13,33 @@ const excludePassword = (user) => {
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
 };
+// Create new user (admin only)
+const createUser = async (data) => {
+    const { email, password, firstName, middleName, lastName, phone, role } = data;
+    // Check if email already exists
+    const existingUser = await prisma_1.default.user.findUnique({
+        where: { email },
+    });
+    if (existingUser) {
+        throw new ApiError_1.default(400, "Email already exists");
+    }
+    // Hash password
+    const hashedPassword = await bcrypt_1.default.hash(password, 12);
+    const user = await prisma_1.default.user.create({
+        data: {
+            email,
+            password: hashedPassword,
+            firstName,
+            middleName: middleName || null,
+            lastName,
+            phone: phone || null,
+            role,
+            isActive: true,
+        },
+    });
+    return excludePassword(user);
+};
+exports.createUser = createUser;
 // Get user by ID (admin only)
 const getUserById = async (id) => {
     const user = await prisma_1.default.user.findUnique({
@@ -23,12 +50,6 @@ const getUserById = async (id) => {
                     id: true,
                     studentId: true,
                     firstName: true,
-                    lastName: true,
-                    middleName: true,
-                    lastfirstName: true,
-                    lastName: true,
-                    middleName: true,
-                    middlefirstName: true,
                     lastName: true,
                     middleName: true,
                     birthDate: true,
@@ -68,12 +89,6 @@ const getUserProfile = async (userId) => {
                     id: true,
                     studentId: true,
                     firstName: true,
-                    lastName: true,
-                    middleName: true,
-                    lastfirstName: true,
-                    lastName: true,
-                    middleName: true,
-                    middlefirstName: true,
                     lastName: true,
                     middleName: true,
                     birthDate: true,
@@ -165,7 +180,15 @@ const getAllUsers = async (filter) => {
     // Build orderBy clause
     const orderBy = [];
     if (sortBy &&
-        ["firstName", "lastName", "email", "role", "createdAt", "updatedAt", "isActive"].includes(sortBy)) {
+        [
+            "firstName",
+            "lastName",
+            "email",
+            "role",
+            "createdAt",
+            "updatedAt",
+            "isActive",
+        ].includes(sortBy)) {
         orderBy.push({ [sortBy]: sortOrder || "asc" });
     }
     else {
@@ -183,12 +206,6 @@ const getAllUsers = async (filter) => {
                 id: true,
                 email: true,
                 firstName: true,
-                lastName: true,
-                middleName: true,
-                middlefirstName: true,
-                lastName: true,
-                middleName: true,
-                lastfirstName: true,
                 lastName: true,
                 middleName: true,
                 phone: true,
@@ -292,14 +309,16 @@ const activateUser = async (userId) => {
 exports.activateUser = activateUser;
 // Update user by admin (admin only)
 const updateUserByAdmin = async (userId, data) => {
-    const user = await prisma_1.default.user.findUnique({
-        where: { id: userId },
+    const userCheck = await prisma_1.default.user.findUnique({
+        where: {
+            id: userId,
+        },
     });
-    if (!user) {
+    if (!userCheck) {
         throw new ApiError_1.default(404, "User not found");
     }
     // Check if email is being changed and is already taken
-    if (data.email && data.email !== user.email) {
+    if (data.email && data.email !== userCheck.email) {
         const existingUser = await prisma_1.default.user.findUnique({
             where: { email: data.email },
         });
@@ -309,7 +328,7 @@ const updateUserByAdmin = async (userId, data) => {
     }
     // Check if changing role from admin
     if (data.role &&
-        user.role === client_1.UserRole.ADMIN &&
+        userCheck.role === client_1.UserRole.ADMIN &&
         data.role !== client_1.UserRole.ADMIN) {
         const adminCount = await prisma_1.default.user.count({
             where: { role: client_1.UserRole.ADMIN },
@@ -320,8 +339,8 @@ const updateUserByAdmin = async (userId, data) => {
     }
     // Check if deactivating admin
     if (data.isActive === false &&
-        user.role === client_1.UserRole.ADMIN &&
-        user.isActive) {
+        userCheck.role === client_1.UserRole.ADMIN &&
+        userCheck.isActive) {
         const activeAdminCount = await prisma_1.default.user.count({
             where: {
                 role: client_1.UserRole.ADMIN,
@@ -332,9 +351,25 @@ const updateUserByAdmin = async (userId, data) => {
             throw new ApiError_1.default(400, "Cannot deactivate the last active admin");
         }
     }
+    // Filter data to only include allowed fields
+    const updateData = {};
+    if (data.firstName !== undefined)
+        updateData.firstName = data.firstName;
+    if (data.middleName !== undefined)
+        updateData.middleName = data.middleName;
+    if (data.lastName !== undefined)
+        updateData.lastName = data.lastName;
+    if (data.email !== undefined)
+        updateData.email = data.email;
+    if (data.phone !== undefined)
+        updateData.phone = data.phone;
+    if (data.role !== undefined)
+        updateData.role = data.role;
+    if (data.isActive !== undefined)
+        updateData.isActive = data.isActive;
     const updatedUser = await prisma_1.default.user.update({
         where: { id: userId },
-        data,
+        data: updateData,
     });
     return excludePassword(updatedUser);
 };
