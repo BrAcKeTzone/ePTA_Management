@@ -10,7 +10,7 @@ import ForgotPasswordPage from "../pages/ForgotPasswordPage";
 // Admin pages (PTA Management)
 import AdminDashboard from "../pages/Admin/Dashboard";
 import AdminContributions from "../pages/Admin/Contributions";
-import AdminProjects from "../pages/Admin/Projects";
+import ProjectsAndDocuments from "../pages/Admin/ProjectsAndDocuments";
 import AdminAnnouncements from "../pages/Admin/Announcements";
 import AdminClearance from "../pages/Admin/Clearance";
 import AdminStudents from "../pages/Admin/Students";
@@ -173,7 +173,7 @@ const AppRoutes = () => {
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="meetings" element={<MeetingsAndAttendance />} />
         <Route path="contributions" element={<AdminContributions />} />
-        <Route path="projects" element={<AdminProjects />} />
+        <Route path="projects" element={<ProjectsAndDocuments />} />
         <Route path="announcements" element={<AdminAnnouncements />} />
         <Route path="clearance" element={<AdminClearance />} />
         <Route path="students" element={<AdminStudents />} />
