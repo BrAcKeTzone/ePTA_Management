@@ -43,9 +43,7 @@ const userService = __importStar(require("./users.service"));
 // Create new user (admin only)
 exports.createUser = (0, asyncHandler_1.default)(async (req, res) => {
     const user = await userService.createUser(req.body);
-    res
-        .status(201)
-        .json(new ApiResponse_1.default(201, user, "User created successfully"));
+    res.status(201).json(new ApiResponse_1.default(201, user, "User created successfully"));
 });
 // Get user by ID (admin only)
 exports.getUserById = (0, asyncHandler_1.default)(async (req, res) => {

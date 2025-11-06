@@ -222,11 +222,13 @@ export const getAllUsers = async (filter: GetUsersFilter) => {
   const whereClause: any = {};
 
   if (search) {
+    // For SQLite compatibility, use contains without mode
+    // SQLite is case-insensitive by default for text searches
     whereClause.OR = [
-      { firstName: { contains: search, mode: "insensitive" } },
-      { lastName: { contains: search, mode: "insensitive" } },
-      { email: { contains: search, mode: "insensitive" } },
-      { phone: { contains: search, mode: "insensitive" } },
+      { firstName: { contains: search } },
+      { lastName: { contains: search } },
+      { email: { contains: search } },
+      { phone: { contains: search } },
     ];
   }
 

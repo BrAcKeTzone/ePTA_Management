@@ -1,6 +1,7 @@
 # Password Visibility Toggle - Add/Edit User Forms
 
 ## Overview
+
 Updated Add User and Edit User forms to use the `PasswordInput` component which provides a show/hide password toggle button, just like the signup form.
 
 ## Changes Made
@@ -8,10 +9,12 @@ Updated Add User and Edit User forms to use the `PasswordInput` component which 
 ### File: `frontend/src/pages/Admin/Users.jsx`
 
 **Changes:**
+
 1. Added import for `PasswordInput` component
 2. Replaced plain `<Input type="password">` with `<PasswordInput>` in Create User modal
 
 **Before:**
+
 ```jsx
 <Input
   label="Password"
@@ -24,6 +27,7 @@ Updated Add User and Edit User forms to use the `PasswordInput` component which 
 ```
 
 **After:**
+
 ```jsx
 <PasswordInput
   label="Password"
@@ -42,8 +46,9 @@ Updated Add User and Edit User forms to use the `PasswordInput` component which 
 ## Features
 
 The `PasswordInput` component provides:
+
 - **Show/Hide Toggle**: Click the eye icon to toggle between showing and hiding the password
-- **Visual Feedback**: 
+- **Visual Feedback**:
   - Eye icon (👁️) when password is hidden
   - Eye with slash icon (👁️‍🗨️) when password is visible
 - **Consistent UI**: Matches the signup form styling and behavior
@@ -53,21 +58,26 @@ The `PasswordInput` component provides:
 ## User Experience
 
 ### Before:
+
 - Users had to rely on memory or separate password manager when typing
 - No way to verify password was typed correctly before clicking submit
 
 ### After:
+
 - Users can toggle visibility to verify password entry
 - Same experience as signup form
 - Quick visual verification of password content
 
 ## Files Modified
+
 1. `frontend/src/pages/Admin/Users.jsx` - Added PasswordInput import and replaced password input
 
 ## Testing
 
 ### Test Cases:
+
 1. ✅ Add User form in Admin Users page:
+
    - Click password field
    - Click eye icon to show password
    - Verify password becomes visible
@@ -79,6 +89,7 @@ The `PasswordInput` component provides:
    - Verify Confirm Password field has show/hide toggle
 
 ### Expected Behavior:
+
 - Eye icon appears on the right side of password input
 - Clicking toggles between text and password input types
 - Icon changes accordingly
@@ -87,6 +98,7 @@ The `PasswordInput` component provides:
 ## Technical Details
 
 ### PasswordInput Component Props:
+
 - `label` (string): Label text displayed above input
 - `name` (string): Input name attribute
 - `value` (string): Current password value
@@ -97,6 +109,7 @@ The `PasswordInput` component provides:
 - `className` (string): Additional CSS classes
 
 ### Styling:
+
 - Uses Tailwind CSS for responsive styling
 - Eye icon button has hover effects
 - Input has focus ring styling
