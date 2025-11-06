@@ -25,6 +25,12 @@ const getUserById = async (id) => {
                     firstName: true,
                     lastName: true,
                     middleName: true,
+                    lastfirstName: true,
+                    lastName: true,
+                    middleName: true,
+                    middlefirstName: true,
+                    lastName: true,
+                    middleName: true,
                     birthDate: true,
                     yearEnrolled: true,
                     status: true,
@@ -64,6 +70,12 @@ const getUserProfile = async (userId) => {
                     firstName: true,
                     lastName: true,
                     middleName: true,
+                    lastfirstName: true,
+                    lastName: true,
+                    middleName: true,
+                    middlefirstName: true,
+                    lastName: true,
+                    middleName: true,
                     birthDate: true,
                     yearEnrolled: true,
                     status: true,
@@ -98,7 +110,9 @@ const updateUserProfile = async (userId, data) => {
     const updatedUser = await prisma_1.default.user.update({
         where: { id: userId },
         data: {
-            name: data.name,
+            firstName: data.firstName,
+            middleName: data.middleName,
+            lastName: data.lastName,
             phone: data.phone,
             email: data.email,
         },
@@ -118,9 +132,10 @@ const getAllUsers = async (filter) => {
     const whereClause = {};
     if (search) {
         whereClause.OR = [
-            { name: { contains: search, mode: 'insensitive' } },
-            { email: { contains: search, mode: 'insensitive' } },
-            { phone: { contains: search, mode: 'insensitive' } },
+            { firstName: { contains: search, mode: "insensitive" } },
+            { lastName: { contains: search, mode: "insensitive" } },
+            { email: { contains: search, mode: "insensitive" } },
+            { phone: { contains: search, mode: "insensitive" } },
         ];
     }
     if (role) {
@@ -149,8 +164,9 @@ const getAllUsers = async (filter) => {
     }
     // Build orderBy clause
     const orderBy = [];
-    if (sortBy && ['name', 'email', 'role', 'createdAt', 'updatedAt', 'isActive'].includes(sortBy)) {
-        orderBy.push({ [sortBy]: sortOrder || 'asc' });
+    if (sortBy &&
+        ["firstName", "lastName", "email", "role", "createdAt", "updatedAt", "isActive"].includes(sortBy)) {
+        orderBy.push({ [sortBy]: sortOrder || "asc" });
     }
     else {
         // Default sorting
@@ -166,7 +182,15 @@ const getAllUsers = async (filter) => {
             select: {
                 id: true,
                 email: true,
-                name: true,
+                firstName: true,
+                lastName: true,
+                middleName: true,
+                middlefirstName: true,
+                lastName: true,
+                middleName: true,
+                lastfirstName: true,
+                lastName: true,
+                middleName: true,
                 phone: true,
                 role: true,
                 isActive: true,

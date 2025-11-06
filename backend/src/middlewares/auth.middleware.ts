@@ -11,7 +11,8 @@ declare global {
       user?: {
         id: number;
         email: string;
-        name: string;
+        firstName: string;
+        lastName: string;
         role: string;
         isActive: boolean;
       };
@@ -51,7 +52,8 @@ export const authenticate = asyncHandler(
         select: {
           id: true,
           email: true,
-          name: true,
+          firstName: true,
+          lastName: true,
           role: true,
           isActive: true,
         },

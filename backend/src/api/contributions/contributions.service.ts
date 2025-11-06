@@ -127,7 +127,9 @@ export const createContribution = async (data: CreateContributionData) => {
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -135,7 +137,9 @@ export const createContribution = async (data: CreateContributionData) => {
       project: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           description: true,
           budget: true,
         },
@@ -199,7 +203,9 @@ export const getContributions = async (filters: GetContributionsFilters) => {
         parent: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+          lastName: true,
+          middleName: true,
             email: true,
             phone: true,
           },
@@ -207,7 +213,9 @@ export const getContributions = async (filters: GetContributionsFilters) => {
         project: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+          lastName: true,
+          middleName: true,
             description: true,
             budget: true,
           },
@@ -242,7 +250,9 @@ export const getContributionById = async (id: number) => {
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -250,7 +260,9 @@ export const getContributionById = async (id: number) => {
       project: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           description: true,
           budget: true,
           startDate: true,
@@ -326,7 +338,9 @@ export const updateContribution = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -334,7 +348,9 @@ export const updateContribution = async (
       project: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           description: true,
           budget: true,
         },
@@ -441,7 +457,9 @@ export const recordPayment = async (id: number, data: RecordPaymentData) => {
         parent: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+          lastName: true,
+          middleName: true,
             email: true,
             phone: true,
           },
@@ -449,7 +467,9 @@ export const recordPayment = async (id: number, data: RecordPaymentData) => {
         project: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+          lastName: true,
+          middleName: true,
           },
         },
         payments: {
@@ -506,7 +526,9 @@ export const waiveContribution = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -514,7 +536,9 @@ export const waiveContribution = async (
       project: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
         },
       },
     },
@@ -602,7 +626,9 @@ export const generateContributionReport = async (filters: any) => {
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -610,7 +636,9 @@ export const generateContributionReport = async (filters: any) => {
       project: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           description: true,
           budget: true,
         },
@@ -1010,14 +1038,18 @@ export const verifyContributionPayment = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
       project: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
         },
       },
       payments: true,
@@ -1099,3 +1131,8 @@ export const generateFinancialReportCSV = async (filters: any) => {
 
   return csvContent;
 };
+
+
+
+
+

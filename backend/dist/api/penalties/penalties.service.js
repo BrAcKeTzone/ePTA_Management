@@ -61,7 +61,9 @@ const createPenalty = async (data) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     phone: true,
                 },
@@ -128,7 +130,9 @@ const getPenalties = async (filters) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     phone: true,
                 },
@@ -168,7 +172,9 @@ const getPenaltyById = async (id) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     phone: true,
                 },
@@ -246,7 +252,9 @@ const updatePenalty = async (id, data) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                 },
             },
@@ -348,7 +356,9 @@ const recordPayment = async (penaltyId, paymentData, recordedBy) => {
                 parent: {
                     select: {
                         id: true,
-                        name: true,
+                        firstName: true,
+                        lastName: true,
+                        middleName: true,
                         email: true,
                     },
                 },
@@ -403,7 +413,9 @@ const waivePenalty = async (id, waiverReason, waivedBy) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                 },
             },
@@ -490,7 +502,9 @@ const generatePenaltyReport = async (filters) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                 },
             },

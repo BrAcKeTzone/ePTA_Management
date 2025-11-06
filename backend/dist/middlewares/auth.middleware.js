@@ -31,7 +31,8 @@ exports.authenticate = (0, asyncHandler_1.default)(async (req, res, next) => {
             select: {
                 id: true,
                 email: true,
-                name: true,
+                firstName: true,
+                lastName: true,
                 role: true,
                 isActive: true,
             },

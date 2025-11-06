@@ -54,7 +54,9 @@ const createAnnouncement = async (data) => {
             createdBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     role: true,
                 },
@@ -101,7 +103,9 @@ const getAnnouncements = async (filter) => {
                 createdBy: {
                     select: {
                         id: true,
-                        name: true,
+                        firstName: true,
+                        lastName: true,
+                        middleName: true,
                         email: true,
                         role: true,
                     },
@@ -136,7 +140,9 @@ const getActiveAnnouncements = async (page = 1, limit = 10) => {
                 createdBy: {
                     select: {
                         id: true,
-                        name: true,
+                        firstName: true,
+                        lastName: true,
+                        middleName: true,
                         email: true,
                         role: true,
                     },
@@ -161,7 +167,9 @@ const getAnnouncementById = async (id) => {
             createdBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     role: true,
                 },
@@ -207,7 +215,9 @@ const updateAnnouncement = async (id, data) => {
             createdBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     role: true,
                 },
@@ -238,7 +248,9 @@ const publishAnnouncement = async (id, publishDate, sendNotifications = true) =>
             createdBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                 },
             },
@@ -261,7 +273,9 @@ const publishAnnouncement = async (id, publishDate, sendNotifications = true) =>
             createdBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     role: true,
                 },
@@ -308,7 +322,9 @@ const unpublishAnnouncement = async (id) => {
             createdBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     role: true,
                 },
@@ -345,7 +361,9 @@ const getTargetedRecipients = async (announcement) => {
                 },
                 select: {
                     email: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                 },
             });
             return parentsInProgram;
@@ -363,7 +381,9 @@ const getTargetedRecipients = async (announcement) => {
                 },
                 select: {
                     email: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                 },
             });
             return parentsInYearLevel;
@@ -374,7 +394,9 @@ const getTargetedRecipients = async (announcement) => {
         where: whereClause,
         select: {
             email: true,
-            name: true,
+            firstName: true,
+            lastName: true,
+            middleName: true,
         },
     });
     return users;
@@ -502,7 +524,9 @@ const getMyReadStatus = async (userId, page = 1, limit = 10) => {
             createdBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                 },
             },

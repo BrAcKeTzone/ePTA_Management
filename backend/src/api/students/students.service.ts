@@ -77,7 +77,9 @@ export const createStudent = async (
         parent: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
+            middleName: true,
             email: true,
             phone: true,
           },
@@ -165,7 +167,9 @@ export const getStudents = async (
         parent: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
+            middleName: true,
             email: true,
             phone: true,
           },
@@ -194,7 +198,9 @@ export const getStudentById = async (id: number): Promise<Student> => {
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -219,7 +225,9 @@ export const getStudentByStudentId = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -256,7 +264,9 @@ export const updateStudent = async (
         parent: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
+            middleName: true,
             email: true,
             phone: true,
           },
@@ -310,7 +320,9 @@ export const approveStudentLink = async (id: number): Promise<Student> => {
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -348,7 +360,9 @@ export const rejectStudentLink = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -369,7 +383,9 @@ export const getStudentsByParentId = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -489,7 +505,9 @@ export const requestLinkStudent = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -552,7 +570,9 @@ export const getPendingLinksByParentId = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -579,7 +599,9 @@ export const getAllLinkRequestsByParentId = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -604,7 +626,9 @@ export const getApprovedStudentsByParentId = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },

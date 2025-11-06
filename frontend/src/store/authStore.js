@@ -18,7 +18,9 @@ export const useAuthStore = create(
       signupData: {
         email: "",
         otp: "",
-        name: "",
+        firstName: "",
+        middleName: "",
+        lastName: "",
         password: "",
         confirmPassword: "",
       },
@@ -175,7 +177,9 @@ export const useAuthStore = create(
           const registrationData = {
             email: signupData.email,
             password: personalData.password,
-            name: personalData.name,
+            firstName: personalData.firstName,
+            middleName: personalData.middleName,
+            lastName: personalData.lastName,
           };
 
           // Call backend API
@@ -211,7 +215,9 @@ export const useAuthStore = create(
           signupData: {
             email: "",
             otp: "",
-            name: "",
+            firstName: "",
+            middleName: "",
+            lastName: "",
             password: "",
             confirmPassword: "",
           },

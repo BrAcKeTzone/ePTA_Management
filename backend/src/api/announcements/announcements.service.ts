@@ -112,7 +112,9 @@ export const createAnnouncement = async (
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -176,7 +178,9 @@ export const getAnnouncements = async (filter: GetAnnouncementsFilter) => {
         createdBy: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
+            middleName: true,
             email: true,
             role: true,
           },
@@ -217,7 +221,9 @@ export const getActiveAnnouncements = async (
         createdBy: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
+            middleName: true,
             email: true,
             role: true,
           },
@@ -245,7 +251,9 @@ export const getAnnouncementById = async (
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -308,7 +316,9 @@ export const updateAnnouncement = async (
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -346,7 +356,9 @@ export const publishAnnouncement = async (
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
@@ -372,7 +384,9 @@ export const publishAnnouncement = async (
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -428,7 +442,9 @@ export const unpublishAnnouncement = async (
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -442,7 +458,14 @@ export const unpublishAnnouncement = async (
 // Helper function to get targeted recipients based on announcement audience
 const getTargetedRecipients = async (
   announcement: Announcement
-): Promise<Array<{ email: string; name: string }>> => {
+): Promise<
+  Array<{
+    email: string;
+    firstName: string;
+    lastName: string;
+    middleName: string | null;
+  }>
+> => {
   let whereClause: any = {};
 
   switch (announcement.targetAudience) {
@@ -472,7 +495,9 @@ const getTargetedRecipients = async (
         },
         select: {
           email: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
         },
       });
       return parentsInProgram;
@@ -491,7 +516,9 @@ const getTargetedRecipients = async (
         },
         select: {
           email: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
         },
       });
       return parentsInYearLevel;
@@ -504,7 +531,9 @@ const getTargetedRecipients = async (
     where: whereClause,
     select: {
       email: true,
-      name: true,
+      firstName: true,
+      lastName: true,
+      middleName: true,
     },
   });
 
@@ -673,7 +702,9 @@ export const getMyReadStatus = async (
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
@@ -707,3 +738,6 @@ export const getMyReadStatus = async (
     },
   };
 };
+
+
+

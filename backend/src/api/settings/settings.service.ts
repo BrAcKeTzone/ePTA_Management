@@ -26,7 +26,15 @@ export const getSettings = async (): Promise<Settings> => {
       updatedBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -55,7 +63,15 @@ export const getSettings = async (): Promise<Settings> => {
         updatedBy: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
             email: true,
             role: true,
           },
@@ -156,7 +172,15 @@ export const updateSettings = async (
       updatedBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -193,7 +217,15 @@ export const initializeSettings = async (
       updatedBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -355,3 +387,10 @@ export const removeDocumentCategory = async (
 
   return categories;
 };
+
+
+
+
+
+
+

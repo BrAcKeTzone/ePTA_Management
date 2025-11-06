@@ -4,13 +4,17 @@ import ApiError from "../../utils/ApiError";
 import bcrypt from "bcrypt";
 
 interface UpdateUserProfileData {
-  name?: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
   phone?: string;
   email?: string;
 }
 
 interface UpdateUserByAdminData {
-  name?: string;
+  firstName?: string;
+  middleName?: string;
+  lastName?: string;
   phone?: string;
   email?: string;
   role?: UserRole;
@@ -32,7 +36,9 @@ interface GetUsersFilter {
 interface UserSafeData {
   id: number;
   email: string;
-  name: string;
+  firstName: string;
+  middleName: string | null;
+  lastName: string;
   phone: string | null;
   role: UserRole;
   isActive: boolean;
@@ -142,7 +148,9 @@ export const updateUserProfile = async (
   const updatedUser = await prisma.user.update({
     where: { id: userId },
     data: {
-      name: data.name,
+      firstName: data.firstName,
+      middleName: data.middleName,
+      lastName: data.lastName,
       phone: data.phone,
       email: data.email,
     },
@@ -170,7 +178,8 @@ export const getAllUsers = async (filter: GetUsersFilter) => {
 
   if (search) {
     whereClause.OR = [
-      { name: { contains: search, mode: "insensitive" } },
+      { firstName: { contains: search, mode: "insensitive" } },
+      { lastName: { contains: search, mode: "insensitive" } },
       { email: { contains: search, mode: "insensitive" } },
       { phone: { contains: search, mode: "insensitive" } },
     ];
@@ -207,9 +216,15 @@ export const getAllUsers = async (filter: GetUsersFilter) => {
 
   if (
     sortBy &&
-    ["name", "email", "role", "createdAt", "updatedAt", "isActive"].includes(
-      sortBy
-    )
+    [
+      "firstName",
+      "lastName",
+      "email",
+      "role",
+      "createdAt",
+      "updatedAt",
+      "isActive",
+    ].includes(sortBy)
   ) {
     orderBy.push({ [sortBy]: sortOrder || "asc" });
   } else {
@@ -227,7 +242,9 @@ export const getAllUsers = async (filter: GetUsersFilter) => {
       select: {
         id: true,
         email: true,
-        name: true,
+        firstName: true,
+        lastName: true,
+        middleName: true,
         phone: true,
         role: true,
         isActive: true,

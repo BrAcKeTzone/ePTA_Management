@@ -24,7 +24,9 @@ const SignupForm = () => {
   const [formData, setFormData] = useState({
     email: "",
     otp: "",
-    name: "",
+    firstName: "",
+    middleName: "",
+    lastName: "",
     password: "",
     confirmPassword: "",
   });
@@ -78,8 +80,12 @@ const SignupForm = () => {
   const validatePersonalDetails = () => {
     const errors = {};
 
-    if (!formData.name.trim()) {
-      errors.name = "Full name is required";
+    if (!formData.firstName.trim()) {
+      errors.firstName = "First name is required";
+    }
+
+    if (!formData.lastName.trim()) {
+      errors.lastName = "Last name is required";
     }
 
     if (!formData.password) {
@@ -128,7 +134,9 @@ const SignupForm = () => {
 
     try {
       await completeRegistration({
-        name: formData.name,
+        firstName: formData.firstName,
+        middleName: formData.middleName,
+        lastName: formData.lastName,
         password: formData.password,
       });
     } catch (err) {
@@ -141,7 +149,9 @@ const SignupForm = () => {
     setFormData({
       email: "",
       otp: "",
-      name: "",
+      firstName: "",
+      middleName: "",
+      lastName: "",
       password: "",
       confirmPassword: "",
     });
@@ -233,21 +243,51 @@ const SignupForm = () => {
         </h3>
 
         <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Input
+                label="First Name"
+                name="firstName"
+                type="text"
+                value={formData.firstName}
+                onChange={handleChange}
+                required
+                placeholder="John"
+              />
+              {validationErrors.firstName && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.firstName}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Input
+                label="Last Name"
+                name="lastName"
+                type="text"
+                value={formData.lastName}
+                onChange={handleChange}
+                required
+                placeholder="Doe"
+              />
+              {validationErrors.lastName && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.lastName}
+                </p>
+              )}
+            </div>
+          </div>
+
           <div>
             <Input
-              label="Full Name"
-              name="name"
+              label="Middle Name (Optional)"
+              name="middleName"
               type="text"
-              value={formData.name}
+              value={formData.middleName}
               onChange={handleChange}
-              required
-              placeholder="John Doe"
+              placeholder="M."
             />
-            {validationErrors.name && (
-              <p className="mt-1 text-sm text-red-600">
-                {validationErrors.name}
-              </p>
-            )}
           </div>
 
           <div>
@@ -323,7 +363,8 @@ const SignupForm = () => {
           Your account has been created successfully.
         </p>
         <p className="text-sm text-gray-500">
-          Welcome to BCFI HR Application System, {signupData.name}!
+          Welcome to BCFI HR Application System, {signupData.firstName}{" "}
+          {signupData.lastName}!
         </p>
       </div>
 

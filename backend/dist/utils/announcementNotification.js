@@ -48,7 +48,8 @@ const sendAnnouncementNotifications = async (options) => {
         const batch = recipients.slice(i, i + batchSize);
         const promises = batch.map(async (recipient) => {
             try {
-                const message = formatAnnouncementEmail(title, content, priority, recipient.name, attachmentUrl);
+                const recipientName = `${recipient.firstName} ${recipient.lastName}`;
+                const message = formatAnnouncementEmail(title, content, priority, recipientName, attachmentUrl);
                 await (0, email_1.default)({
                     email: recipient.email,
                     subject: `[${getPriorityLabel(priority)}] ${title}`,
@@ -73,8 +74,9 @@ const sendAnnouncementNotifications = async (options) => {
     return { sent, failed, errors };
 };
 exports.sendAnnouncementNotifications = sendAnnouncementNotifications;
-const sendSingleAnnouncementNotification = async (email, name, title, content, priority, attachmentUrl) => {
-    const message = formatAnnouncementEmail(title, content, priority, name, attachmentUrl);
+const sendSingleAnnouncementNotification = async (email, firstName, lastName, title, content, priority, attachmentUrl) => {
+    const recipientName = `${firstName} ${lastName}`;
+    const message = formatAnnouncementEmail(title, content, priority, recipientName, attachmentUrl);
     await (0, email_1.default)({
         email,
         subject: `[${getPriorityLabel(priority)}] ${title}`,

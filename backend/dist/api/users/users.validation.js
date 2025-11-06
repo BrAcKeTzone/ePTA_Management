@@ -27,13 +27,11 @@ exports.getUsers = joi_1.default.object().keys({
     page: joi_1.default.number().integer().min(1).optional(),
     limit: joi_1.default.number().integer().min(1).max(100).optional(),
     sortBy: joi_1.default.string()
-        .valid('name', 'email', 'role', 'createdAt', 'updatedAt', 'isActive')
+        .valid("name", "email", "role", "createdAt", "updatedAt", "isActive")
         .optional(),
-    sortOrder: joi_1.default.string()
-        .valid('asc', 'desc')
-        .optional(),
+    sortOrder: joi_1.default.string().valid("asc", "desc").optional(),
     dateFrom: joi_1.default.date().iso().optional(),
-    dateTo: joi_1.default.date().iso().min(joi_1.default.ref('dateFrom')).optional(),
+    dateTo: joi_1.default.date().iso().min(joi_1.default.ref("dateFrom")).optional(),
 });
 exports.changePassword = joi_1.default.object().keys({
     currentPassword: joi_1.default.string().min(6).required(),

@@ -186,7 +186,7 @@ const verifyOtp = async (email, otp) => {
 };
 exports.verifyOtp = verifyOtp;
 const register = async (userData) => {
-    const { email, password, name } = userData;
+    const { email, password, firstName, middleName, lastName } = userData;
     // Check if OTP has been verified for this email
     const otpRecord = await prisma_1.default.otp.findFirst({
         where: {
@@ -210,7 +210,9 @@ const register = async (userData) => {
             data: {
                 email,
                 password: hashedPassword,
-                name,
+                firstName,
+                middleName: middleName || null,
+                lastName,
                 // First user automatically becomes an admin
                 role: isFirstUser ? "ADMIN" : "PARENT",
             },

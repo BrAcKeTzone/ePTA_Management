@@ -30,7 +30,9 @@ exports.sendOtpChange = joi_1.default.object().keys({
 exports.register = joi_1.default.object().keys({
     email: joi_1.default.string().email().required(),
     password: joi_1.default.string().required().min(8),
-    name: joi_1.default.string().required(),
+    firstName: joi_1.default.string().required(),
+    middleName: joi_1.default.string().allow("", null).optional(),
+    lastName: joi_1.default.string().required(),
 });
 exports.login = joi_1.default.object().keys({
     email: joi_1.default.string().email().required(),

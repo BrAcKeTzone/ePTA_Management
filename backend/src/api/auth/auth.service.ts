@@ -227,13 +227,15 @@ export const verifyOtp = async (
 interface RegisterData {
   email: string;
   password: string;
-  name: string;
+  firstName: string;
+  middleName?: string;
+  lastName: string;
 }
 
 export const register = async (
   userData: RegisterData
 ): Promise<{ user: User; token: string }> => {
-  const { email, password, name } = userData;
+  const { email, password, firstName, middleName, lastName } = userData;
 
   // Check if OTP has been verified for this email
   const otpRecord = await prisma.otp.findFirst({
@@ -265,7 +267,9 @@ export const register = async (
       data: {
         email,
         password: hashedPassword,
-        name,
+        firstName,
+        middleName: middleName || null,
+        lastName,
         // First user automatically becomes an admin
         role: isFirstUser ? "ADMIN" : "PARENT",
       },
@@ -462,3 +466,8 @@ export const changePassword = async (
 
   return { message: "Password changed successfully." };
 };
+
+
+
+
+

@@ -116,7 +116,9 @@ export const createPenalty = async (data: CreatePenaltyInput) => {
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -211,7 +213,9 @@ export const getPenalties = async (filters: PenaltyFilters) => {
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -252,7 +256,9 @@ export const getPenaltyById = async (id: number) => {
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -348,7 +354,9 @@ export const updatePenalty = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
@@ -472,7 +480,9 @@ export const recordPayment = async (
         parent: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+          lastName: true,
+          middleName: true,
             email: true,
           },
         },
@@ -537,7 +547,9 @@ export const waivePenalty = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
@@ -647,7 +659,9 @@ export const generatePenaltyReport = async (filters: PenaltyReportFilters) => {
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
@@ -905,3 +919,8 @@ export const getPenaltyStats = async (filters?: {
     },
   };
 };
+
+
+
+
+

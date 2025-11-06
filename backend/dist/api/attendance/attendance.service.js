@@ -77,7 +77,9 @@ const recordAttendance = async (data, recordedById) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                 },
             },
@@ -92,7 +94,9 @@ const recordAttendance = async (data, recordedById) => {
             recordedBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                 },
             },
         },
@@ -182,7 +186,9 @@ const bulkRecordAttendance = async (data, recordedById) => {
                 parent: {
                     select: {
                         id: true,
-                        name: true,
+                        firstName: true,
+                        lastName: true,
+                        middleName: true,
                         email: true,
                     },
                 },
@@ -197,7 +203,9 @@ const bulkRecordAttendance = async (data, recordedById) => {
                 recordedBy: {
                     select: {
                         id: true,
-                        name: true,
+                        firstName: true,
+                        lastName: true,
+                        middleName: true,
                     },
                 },
             },
@@ -255,7 +263,9 @@ const getAttendance = async (filters) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     phone: true,
                 },
@@ -275,7 +285,9 @@ const getAttendance = async (filters) => {
             recordedBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                 },
             },
         },
@@ -301,7 +313,9 @@ const getAttendanceById = async (id) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     phone: true,
                 },
@@ -322,7 +336,9 @@ const getAttendanceById = async (id) => {
             recordedBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                 },
             },
         },
@@ -381,7 +397,9 @@ const updateAttendance = async (id, data) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                 },
             },
@@ -396,7 +414,9 @@ const updateAttendance = async (id, data) => {
             recordedBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                 },
             },
         },
@@ -452,7 +472,9 @@ const generateAttendanceReport = async (filters) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                 },
             },
@@ -593,7 +615,9 @@ const calculatePenalties = async (input) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                 },
             },
@@ -618,7 +642,7 @@ const calculatePenalties = async (input) => {
     const penaltyDetails = attendances.map((attendance) => ({
         attendanceId: attendance.id,
         parentId: attendance.parentId,
-        parentName: attendance.parent.name,
+        parentName: `${attendance.parent.firstName} ${attendance.parent.lastName}`,
         meetingId: attendance.meetingId,
         meetingTitle: attendance.meeting.title,
         meetingDate: attendance.meeting.date,
@@ -848,14 +872,16 @@ const getAttendanceByMeeting = async (meetingId) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     role: true,
                 },
             },
         },
         orderBy: {
-            parent: { name: "asc" },
+            parent: { lastName: "asc" },
         },
     });
     const summary = {

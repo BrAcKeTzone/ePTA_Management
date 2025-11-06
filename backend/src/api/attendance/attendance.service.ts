@@ -144,7 +144,9 @@ export const recordAttendance = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
@@ -159,7 +161,9 @@ export const recordAttendance = async (
       recordedBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
         },
       },
     },
@@ -269,7 +273,9 @@ export const bulkRecordAttendance = async (
         parent: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
+            middleName: true,
             email: true,
           },
         },
@@ -284,7 +290,9 @@ export const bulkRecordAttendance = async (
         recordedBy: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
+            middleName: true,
           },
         },
       },
@@ -367,7 +375,9 @@ export const getAttendance = async (filters: AttendanceFilters) => {
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -387,7 +397,9 @@ export const getAttendance = async (filters: AttendanceFilters) => {
       recordedBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
         },
       },
     },
@@ -414,7 +426,9 @@ export const getAttendanceById = async (id: number) => {
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           phone: true,
         },
@@ -435,7 +449,9 @@ export const getAttendanceById = async (id: number) => {
       recordedBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
         },
       },
     },
@@ -504,7 +520,9 @@ export const updateAttendance = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
@@ -519,7 +537,9 @@ export const updateAttendance = async (
       recordedBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
         },
       },
     },
@@ -596,7 +616,9 @@ export const generateAttendanceReport = async (
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
@@ -762,7 +784,9 @@ export const calculatePenalties = async (input: PenaltyCalculationInput) => {
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
@@ -789,7 +813,7 @@ export const calculatePenalties = async (input: PenaltyCalculationInput) => {
   const penaltyDetails = attendances.map((attendance) => ({
     attendanceId: attendance.id,
     parentId: attendance.parentId,
-    parentName: attendance.parent.name,
+    parentName: `${attendance.parent.firstName} ${attendance.parent.lastName}`,
     meetingId: attendance.meetingId,
     meetingTitle: attendance.meeting.title,
     meetingDate: attendance.meeting.date,
@@ -1068,14 +1092,16 @@ export const getAttendanceByMeeting = async (meetingId: number) => {
       parent: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
       },
     },
     orderBy: {
-      parent: { name: "asc" },
+      parent: { lastName: "asc" },
     },
   });
 
@@ -1100,3 +1126,6 @@ export const getAttendanceByMeeting = async (meetingId: number) => {
     summary,
   };
 };
+
+
+

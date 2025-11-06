@@ -77,7 +77,9 @@ export const createMeeting = async (
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -149,7 +151,9 @@ export const getMeetings = async (
         createdBy: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
+            middleName: true,
             email: true,
             role: true,
           },
@@ -192,7 +196,9 @@ export const getMeetingById = async (id: number): Promise<Meeting> => {
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -202,7 +208,9 @@ export const getMeetingById = async (id: number): Promise<Meeting> => {
           parent: {
             select: {
               id: true,
-              name: true,
+              firstName: true,
+              lastName: true,
+              middleName: true,
               email: true,
               role: true,
             },
@@ -270,7 +278,9 @@ export const updateMeeting = async (
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -364,7 +374,9 @@ export const addMinutes = async (
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -409,7 +421,9 @@ export const addResolutions = async (
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -461,7 +475,9 @@ export const updateQuorum = async (
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -499,7 +515,9 @@ export const getMeetingHistory = async (
         createdBy: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
+            middleName: true,
             email: true,
             role: true,
           },
@@ -562,7 +580,9 @@ export const getUpcomingMeetings = async (
         createdBy: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+            lastName: true,
+            middleName: true,
             email: true,
             role: true,
           },
@@ -700,7 +720,9 @@ export const sendMeetingNotifications = async (
     where: whereClause,
     select: {
       email: true,
-      name: true,
+      firstName: true,
+      lastName: true,
+      middleName: true,
     },
   });
 
@@ -716,7 +738,7 @@ export const sendMeetingNotifications = async (
       batch.map((recipient) =>
         sendMeetingNotification(
           recipient.email,
-          recipient.name,
+          `${recipient.firstName} ${recipient.lastName}`,
           meeting,
           customMessage
         )
@@ -784,7 +806,9 @@ export const cancelMeeting = async (
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
           email: true,
           role: true,
         },
@@ -794,3 +818,6 @@ export const cancelMeeting = async (
 
   return updatedMeeting;
 };
+
+
+

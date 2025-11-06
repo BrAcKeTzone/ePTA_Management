@@ -93,7 +93,15 @@ export const createProject = async (data: CreateProjectData) => {
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
@@ -153,7 +161,15 @@ export const getProjects = async (filters: GetProjectsFilters) => {
         createdBy: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
             email: true,
           },
         },
@@ -207,7 +223,15 @@ export const getProjectById = async (id: number) => {
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
@@ -216,7 +240,15 @@ export const getProjectById = async (id: number) => {
           parent: {
             select: {
               id: true,
-              name: true,
+              firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
               email: true,
             },
           },
@@ -279,7 +311,15 @@ export const updateProject = async (id: number, data: UpdateProjectData) => {
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
@@ -378,7 +418,15 @@ export const recordExpense = async (
         createdBy: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
             email: true,
           },
         },
@@ -698,7 +746,15 @@ export const generateProjectReport = async (filters: any) => {
       createdBy: {
         select: {
           id: true,
-          name: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
           email: true,
         },
       },
@@ -916,14 +972,30 @@ export const getAllDocuments = async (filters: any = {}) => {
       take: limit,
       select: {
         id: true,
-        name: true,
+        firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
         description: true,
         attachments: true,
         createdAt: true,
         createdBy: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
             email: true,
           },
         },
@@ -1009,7 +1081,15 @@ export const getPublicDocuments = async (filters: any = {}) => {
         project: {
           select: {
             id: true,
-            name: true,
+            firstName: true,
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
+
+          lastName: true,
+          middleName: true,
           },
         },
       },
@@ -1064,3 +1144,10 @@ export const getPublicDocuments = async (filters: any = {}) => {
     },
   };
 };
+
+
+
+
+
+
+

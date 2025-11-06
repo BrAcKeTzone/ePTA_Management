@@ -5,7 +5,12 @@ interface AnnouncementNotificationOptions {
   title: string;
   content: string;
   priority: AnnouncementPriority;
-  recipients: Array<{ email: string; name: string }>;
+  recipients: Array<{
+    email: string;
+    firstName: string;
+    lastName: string;
+    middleName: string | null;
+  }>;
   attachmentUrl?: string;
 }
 
@@ -65,11 +70,12 @@ export const sendAnnouncementNotifications = async (
     const batch = recipients.slice(i, i + batchSize);
     const promises = batch.map(async (recipient) => {
       try {
+        const recipientName = `${recipient.firstName} ${recipient.lastName}`;
         const message = formatAnnouncementEmail(
           title,
           content,
           priority,
-          recipient.name,
+          recipientName,
           attachmentUrl
         );
 
@@ -104,17 +110,19 @@ export const sendAnnouncementNotifications = async (
 
 export const sendSingleAnnouncementNotification = async (
   email: string,
-  name: string,
+  firstName: string,
+  lastName: string,
   title: string,
   content: string,
   priority: AnnouncementPriority,
   attachmentUrl?: string
 ): Promise<void> => {
+  const recipientName = `${firstName} ${lastName}`;
   const message = formatAnnouncementEmail(
     title,
     content,
     priority,
-    name,
+    recipientName,
     attachmentUrl
   );
 

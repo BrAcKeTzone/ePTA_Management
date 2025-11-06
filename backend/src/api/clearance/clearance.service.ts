@@ -183,3 +183,8 @@ export const exportClearanceReport = async (params: any) => {
   // Return a placeholder Excel buffer
   return Buffer.from("Placeholder Excel content for clearance report");
 };
+
+
+
+
+

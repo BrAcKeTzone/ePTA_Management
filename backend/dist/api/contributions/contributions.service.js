@@ -63,7 +63,9 @@ const createContribution = async (data) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     phone: true,
                 },
@@ -71,7 +73,9 @@ const createContribution = async (data) => {
             project: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     description: true,
                     budget: true,
                 },
@@ -124,7 +128,9 @@ const getContributions = async (filters) => {
                 parent: {
                     select: {
                         id: true,
-                        name: true,
+                        firstName: true,
+                        lastName: true,
+                        middleName: true,
                         email: true,
                         phone: true,
                     },
@@ -132,7 +138,9 @@ const getContributions = async (filters) => {
                 project: {
                     select: {
                         id: true,
-                        name: true,
+                        firstName: true,
+                        lastName: true,
+                        middleName: true,
                         description: true,
                         budget: true,
                     },
@@ -166,7 +174,9 @@ const getContributionById = async (id) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     phone: true,
                 },
@@ -174,7 +184,9 @@ const getContributionById = async (id) => {
             project: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     description: true,
                     budget: true,
                     startDate: true,
@@ -237,7 +249,9 @@ const updateContribution = async (id, data) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     phone: true,
                 },
@@ -245,7 +259,9 @@ const updateContribution = async (id, data) => {
             project: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     description: true,
                     budget: true,
                 },
@@ -334,7 +350,9 @@ const recordPayment = async (id, data) => {
                 parent: {
                     select: {
                         id: true,
-                        name: true,
+                        firstName: true,
+                        lastName: true,
+                        middleName: true,
                         email: true,
                         phone: true,
                     },
@@ -342,7 +360,9 @@ const recordPayment = async (id, data) => {
                 project: {
                     select: {
                         id: true,
-                        name: true,
+                        firstName: true,
+                        lastName: true,
+                        middleName: true,
                     },
                 },
                 payments: {
@@ -389,7 +409,9 @@ const waiveContribution = async (id, waiverReason, waivedBy) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     phone: true,
                 },
@@ -397,7 +419,9 @@ const waiveContribution = async (id, waiverReason, waivedBy) => {
             project: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                 },
             },
         },
@@ -470,7 +494,9 @@ const generateContributionReport = async (filters) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                     phone: true,
                 },
@@ -478,7 +504,9 @@ const generateContributionReport = async (filters) => {
             project: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     description: true,
                     budget: true,
                 },
@@ -835,14 +863,18 @@ const verifyContributionPayment = async (contributionId, verified, notes) => {
             parent: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                     email: true,
                 },
             },
             project: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
+                    middleName: true,
                 },
             },
             payments: true,
