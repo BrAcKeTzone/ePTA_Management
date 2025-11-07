@@ -918,7 +918,7 @@ const MeetingsAndAttendance = () => {
         title="Create New Meeting"
         size="lg"
       >
-        <form onSubmit={handleCreateMeeting} className="space-y-4">
+        <form onSubmit={handleCreateMeeting} className="h-full flex flex-col space-y-4 md:space-y-6">
           <Input
             label="Meeting Title"
             placeholder="e.g., Monthly General Assembly"
@@ -1041,15 +1041,16 @@ const MeetingsAndAttendance = () => {
             required
           />
 
-          <div className="flex justify-end space-x-2 pt-4">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 mt-auto border-t md:border-t-0 pt-4 -mx-4 md:-mx-6 px-4 md:px-6 bg-gray-50 md:bg-transparent">
             <Button
               type="button"
               variant="outline"
               onClick={() => setShowCreateMeetingModal(false)}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
-            <Button type="submit">Create Meeting</Button>
+            <Button type="submit" className="w-full sm:w-auto">Create Meeting</Button>
           </div>
         </form>
       </Modal>
