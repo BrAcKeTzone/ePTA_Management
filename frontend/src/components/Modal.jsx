@@ -34,7 +34,7 @@ const Modal = ({
     md: "w-1/2 max-w-2xl",
     lg: "w-2/3 max-w-4xl",
     xl: "w-3/4 max-w-6xl",
-    full: "w-11/12 max-w-7xl",
+    full: "w-full h-full md:w-11/12 md:h-auto md:max-w-7xl md:max-h-[90vh]",
   };
 
   const handleOverlayClick = (e) => {
@@ -45,11 +45,15 @@ const Modal = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className={`fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 ${
+        size === "full" ? "p-0 md:p-4" : "p-4"
+      }`}
       onClick={handleOverlayClick}
     >
       <div
-        className={`bg-white rounded-lg shadow-xl ${sizeClasses[size]} max-h-[90vh] overflow-hidden`}
+        className={`bg-white shadow-xl overflow-hidden ${
+          size === "full" ? "rounded-none md:rounded-lg" : "rounded-lg"
+        } ${sizeClasses[size]} ${size === "full" ? "" : "max-h-[90vh]"}`}
       >
         {title && (
           <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -76,7 +80,13 @@ const Modal = ({
             )}
           </div>
         )}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-8rem)]">
+        <div
+          className={`p-6 overflow-y-auto ${
+            size === "full"
+              ? "h-full max-h-[calc(100vh-8rem)] md:max-h-[calc(90vh-8rem)]"
+              : "max-h-[calc(90vh-8rem)]"
+          }`}
+        >
           {children}
         </div>
         {!title && showCloseButton && (

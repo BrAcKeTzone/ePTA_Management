@@ -136,7 +136,12 @@ const MeetingsAndAttendance = () => {
               }`
             : "Unknown Parent",
           email: record.parent?.email,
-          studentName: record.student?.name || "",
+          students: record.parent?.students || [],
+          studentNames: record.parent?.students
+            ? record.parent.students
+                .map((student) => `${student.firstName} ${student.lastName}`)
+                .join(", ")
+            : "No students linked",
           isPresent:
             record.status === "PRESENT"
               ? true
@@ -159,7 +164,12 @@ const MeetingsAndAttendance = () => {
               }`
             : "Unknown Parent",
           email: record.parent?.email,
-          studentName: record.student?.name || "",
+          students: record.parent?.students || [],
+          studentNames: record.parent?.students
+            ? record.parent.students
+                .map((student) => `${student.firstName} ${student.lastName}`)
+                .join(", ")
+            : "No students linked",
           isPresent:
             record.status === "PRESENT"
               ? true
@@ -1264,10 +1274,10 @@ const MeetingsAndAttendance = () => {
           setAttendanceUpdates({});
         }}
         title="Record Attendance"
-        size="lg"
+        size="full"
       >
-        <div className="space-y-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+        <div className="h-full flex flex-col space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex-shrink-0">
             <p className="text-sm text-blue-700">
               📋 <strong>Instructions:</strong> Check the checkbox to mark as{" "}
               <strong>Present</strong>, uncheck to mark as{" "}
@@ -1276,20 +1286,23 @@ const MeetingsAndAttendance = () => {
             </p>
           </div>
 
-          <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+          <div className="flex-1 overflow-y-auto border border-gray-200 rounded-lg min-h-0">
             {attendance && attendance.length > 0 ? (
               <div className="divide-y divide-gray-200">
                 {attendance.map((record) => (
                   <div
                     key={record.recordId || record.parentId}
-                    className="flex items-center justify-between p-4 hover:bg-gray-50 transition"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-gray-50 transition gap-3"
                   >
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <div className="font-medium text-gray-900">
                         {record.parentName}
                       </div>
                       <div className="text-sm text-gray-600">
                         {record.email}
+                      </div>
+                      <div className="text-xs text-blue-600 font-medium">
+                        👨‍👩‍👧‍👦 Students: {record.studentNames}
                       </div>
                       <div className="flex gap-4 mt-2 text-xs">
                         {record.isLate && (
@@ -1305,7 +1318,7 @@ const MeetingsAndAttendance = () => {
                       </div>
                     </div>
 
-                    <div className="ml-4 flex items-center gap-3">
+                    <div className="sm:ml-4 flex items-center justify-end gap-3 flex-shrink-0">
                       <div className="flex items-center">
                         <input
                           type="checkbox"
@@ -1318,11 +1331,11 @@ const MeetingsAndAttendance = () => {
                           onChange={() =>
                             handleToggleAttendance(record.parentId)
                           }
-                          className="w-5 h-5 text-blue-600 rounded cursor-pointer"
+                          className="w-6 h-6 sm:w-5 sm:h-5 text-blue-600 rounded cursor-pointer"
                         />
                         <label
                           htmlFor={`attendance-${record.parentId}`}
-                          className="ml-2 cursor-pointer font-medium text-gray-700 hover:text-blue-600"
+                          className="ml-2 cursor-pointer font-medium text-gray-700 hover:text-blue-600 text-base sm:text-sm"
                         >
                           Present
                         </label>
@@ -1343,12 +1356,12 @@ const MeetingsAndAttendance = () => {
           </div>
 
           {attendance && attendance.length > 0 && (
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+            <div className="flex-shrink-0 mt-4 p-3 bg-gray-50 rounded-lg border-t md:border-t-0">
               <p className="text-sm text-gray-700 mb-3">
                 <strong>{Object.keys(attendanceUpdates).length}</strong>{" "}
                 record(s) marked for update
               </p>
-              <div className="flex justify-end gap-3">
+              <div className="flex flex-col sm:flex-row justify-end gap-3">
                 <Button
                   variant="outline"
                   onClick={() => {

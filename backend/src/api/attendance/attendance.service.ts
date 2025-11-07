@@ -1155,9 +1155,8 @@ export const getAttendanceByMeeting = async (meetingId: number) => {
         middleName: parent.middleName,
         email: parent.email,
         role: parent.role,
+        students: parent.students, // Include student info for attendance context
       },
-      // Add student info for context (commented out for now)
-      // students: parent.students,
     };
   });
 
