@@ -410,7 +410,7 @@ const ProfilePage = () => {
                       setValidationErrors(rest);
                     }
                   }}
-                  disabled={!isEditing}
+                  disabled={true}
                   required
                 />
                 {validationErrors.email && (
