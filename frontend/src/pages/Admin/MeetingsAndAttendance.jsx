@@ -118,11 +118,16 @@ const MeetingsAndAttendance = () => {
     try {
       const response = await attendanceApi.getAttendanceByMeeting(meetingId);
 
+      // Debug: Log the response to see what structure is returned
+      console.log("Attendance API Response:", response);
+      console.log("Response data:", response.data);
+
       // Handle the response structure from backend
       let attendanceArray = [];
 
       if (response.data?.attendances) {
         // Backend returns: { meeting, attendances, summary }
+        console.log("Using response.data.attendances structure");
         attendanceArray = response.data.attendances.map((record) => ({
           parentId: record.parent?.id,
           parentName: record.parent
@@ -145,6 +150,7 @@ const MeetingsAndAttendance = () => {
         }));
       } else if (response.data?.data?.attendances) {
         // Alternative structure
+        console.log("Using response.data.data.attendances structure");
         attendanceArray = response.data.data.attendances.map((record) => ({
           parentId: record.parent?.id,
           parentName: record.parent
@@ -167,6 +173,7 @@ const MeetingsAndAttendance = () => {
         }));
       } else if (Array.isArray(response.data)) {
         // Direct array response
+        console.log("Using direct array structure");
         attendanceArray = response.data.map((record) => ({
           parentId: record.parent?.id,
           parentName: record.parent
@@ -187,7 +194,11 @@ const MeetingsAndAttendance = () => {
           hasPenalty: record.hasPenalty,
           recordId: record.id,
         }));
+      } else {
+        console.warn("Unknown response structure:", response.data);
       }
+
+      console.log("Processed attendance array:", attendanceArray);
 
       // Cache the attendance data
       setMeetingAttendanceMap((prev) => ({
@@ -362,30 +373,38 @@ const MeetingsAndAttendance = () => {
   // Save all attendance records
   const handleSaveAttendance = async () => {
     try {
-      const updates = Object.entries(attendanceUpdates).map(
+      const attendances = Object.entries(attendanceUpdates).map(
         ([parentId, isPresent]) => ({
-          meetingId: selectedMeetingForAttendance,
           parentId: parseInt(parentId),
-          isPresent,
+          status: isPresent ? "PRESENT" : "ABSENT", // Convert boolean to status string
         })
       );
 
-      if (updates.length === 0) {
+      if (attendances.length === 0) {
         alert("Please select at least one attendance status to save.");
         return;
       }
 
+      // Prepare data in the format expected by backend validation schema
+      const bulkData = {
+        meetingId: selectedMeetingForAttendance,
+        attendances: attendances,
+      };
+
       // Use bulk record attendance if available, otherwise record one by one
       if (attendanceApi.bulkRecordAttendance) {
-        await attendanceApi.bulkRecordAttendance(updates);
+        await attendanceApi.bulkRecordAttendance(bulkData);
       } else {
         // Fallback: record individually
-        for (const update of updates) {
-          await attendanceApi.recordAttendance(update);
+        for (const attendance of attendances) {
+          await attendanceApi.recordAttendance({
+            meetingId: selectedMeetingForAttendance,
+            ...attendance,
+          });
         }
       }
 
-      alert(`${updates.length} attendance record(s) saved successfully!`);
+      alert(`${attendances.length} attendance record(s) saved successfully!`);
       setAttendanceUpdates({});
       fetchAttendanceForMeeting(selectedMeetingForAttendance);
     } catch (error) {
@@ -1281,11 +1300,6 @@ const MeetingsAndAttendance = () => {
                         {record.hasPenalty && (
                           <span className="text-red-600 font-semibold">
                             🚩 Has Penalty
-                          </span>
-                        )}
-                        {record.status && (
-                          <span className="text-gray-700">
-                            Current: <strong>{record.status}</strong>
                           </span>
                         )}
                       </div>

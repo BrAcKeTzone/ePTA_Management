@@ -1084,25 +1084,81 @@ export const getAttendanceByMeeting = async (meetingId: number) => {
     throw new ApiError(404, "Meeting not found");
   }
 
-  const attendances = await prisma.attendance.findMany({
+  // Get all parents who have active students
+  const allParents = await prisma.user.findMany({
     where: {
-      meetingId,
+      role: "PARENT",
+      isActive: true,
+      students: {
+        some: {
+          status: "ACTIVE", // Only parents with active students
+        },
+      },
     },
-    include: {
-      parent: {
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      middleName: true,
+      email: true,
+      role: true,
+      students: {
+        where: { status: "ACTIVE" },
         select: {
           id: true,
           firstName: true,
           lastName: true,
-          middleName: true,
-          email: true,
-          role: true,
         },
       },
     },
     orderBy: {
-      parent: { lastName: "asc" },
+      lastName: "asc",
     },
+  });
+
+  // Get existing attendance records for this meeting
+  const existingAttendances = await prisma.attendance.findMany({
+    where: {
+      meetingId,
+    },
+    include: {
+      parent: true,
+    },
+  });
+
+  // Create a map of existing attendance by parentId
+  const attendanceMap = new Map();
+  existingAttendances.forEach((attendance) => {
+    attendanceMap.set(attendance.parentId, attendance);
+  });
+
+  // Merge all parents with their attendance status (if any)
+  const attendances = allParents.map((parent) => {
+    const existingRecord = attendanceMap.get(parent.id);
+
+    return {
+      id: existingRecord?.id || null,
+      meetingId,
+      parentId: parent.id,
+      status: existingRecord?.status || "PENDING", // Default to PENDING if no record
+      isLate: existingRecord?.isLate || false,
+      hasPenalty: existingRecord?.hasPenalty || false,
+      remarks: existingRecord?.remarks || null,
+      recordedBy: existingRecord?.recordedBy || null,
+      recordedAt: existingRecord?.recordedAt || null,
+      createdAt: existingRecord?.createdAt || new Date(),
+      updatedAt: existingRecord?.updatedAt || new Date(),
+      parent: {
+        id: parent.id,
+        firstName: parent.firstName,
+        lastName: parent.lastName,
+        middleName: parent.middleName,
+        email: parent.email,
+        role: parent.role,
+      },
+      // Add student info for context (commented out for now)
+      // students: parent.students,
+    };
   });
 
   const summary = {
@@ -1110,6 +1166,7 @@ export const getAttendanceByMeeting = async (meetingId: number) => {
     present: attendances.filter((a) => a.status === "PRESENT").length,
     absent: attendances.filter((a) => a.status === "ABSENT").length,
     excused: attendances.filter((a) => a.status === "EXCUSED").length,
+    pending: attendances.filter((a) => a.status === "PENDING").length,
     late: attendances.filter((a) => a.isLate).length,
     withPenalty: attendances.filter((a) => a.hasPenalty).length,
   };
@@ -1126,6 +1183,3 @@ export const getAttendanceByMeeting = async (meetingId: number) => {
     summary,
   };
 };
-
-
-

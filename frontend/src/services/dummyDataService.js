@@ -323,6 +323,34 @@ export const dummyDataService = {
     return createResponse(newAttendance);
   },
 
+  async bulkRecordAttendance(bulkData) {
+    await delay();
+
+    const { meetingId, attendances } = bulkData;
+    const results = [];
+
+    for (const attendance of attendances) {
+      const newAttendance = {
+        id: `att${Date.now()}_${attendance.parentId}`,
+        meetingId,
+        parentId: attendance.parentId,
+        status: attendance.status,
+        timeIn:
+          attendance.status === "PRESENT" ? new Date().toISOString() : null,
+        notes: attendance.remarks || "",
+        isLate: attendance.isLate || false,
+        createdAt: new Date().toISOString(),
+      };
+      results.push(newAttendance);
+    }
+
+    return createResponse({
+      count: results.length,
+      attendances: results,
+      message: `Successfully recorded ${results.length} attendance records`,
+    });
+  },
+
   // Contributions
   async getContributions(params = {}) {
     await delay();

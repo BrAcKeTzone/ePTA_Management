@@ -18,6 +18,13 @@ export const attendanceApi = {
     return await fetchClient.post("/api/attendance/record", attendanceData);
   },
 
+  bulkRecordAttendance: async (bulkAttendanceData) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.bulkRecordAttendance(bulkAttendanceData);
+    }
+    return await fetchClient.post("/api/attendance/bulk", bulkAttendanceData);
+  },
+
   updateAttendance: async (attendanceId, attendanceData) => {
     if (config.USE_DUMMY_DATA) {
       return await dummyDataService.updateAttendance(
