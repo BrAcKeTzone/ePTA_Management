@@ -318,13 +318,22 @@ const UserManagement = () => {
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-          User Management
-        </h1>
-        <p className="text-gray-600">
-          Manage user accounts, roles, and permissions.
-        </p>
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6 sm:mb-8">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+            User Management
+          </h1>
+          <p className="text-gray-600">
+            Manage user accounts with advanced filtering and sorting
+          </p>
+        </div>
+        <Button
+          onClick={() => setShowAddUserModal(true)}
+          variant="primary"
+          className="w-full md:w-auto"
+        >
+          Add New User
+        </Button>
       </div>
 
       {/* Error Display */}
@@ -356,17 +365,7 @@ const UserManagement = () => {
       </div>
 
       {/* Actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button
-            onClick={() => setShowAddUserModal(true)}
-            variant="primary"
-            className="w-full sm:w-auto"
-          >
-            Add New User
-          </Button>
-        </div>
-      </div>
+      <div className="mb-6" />
 
       {/* Filters */}
       <DashboardCard title="Filter Users" className="mb-6">

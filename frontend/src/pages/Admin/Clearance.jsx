@@ -208,7 +208,7 @@ const ClearanceManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             Clearance Management
@@ -217,14 +217,16 @@ const ClearanceManagement = () => {
             Verify parent obligations and manage clearance requests
           </p>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
           <Input
             placeholder="Search parent or student..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-64"
+            className="w-full sm:flex-1"
           />
-          <Button onClick={handleSearch}>Search & Verify</Button>
+          <Button onClick={handleSearch} className="w-full sm:w-auto">
+            Search & Verify
+          </Button>
         </div>
       </div>
 

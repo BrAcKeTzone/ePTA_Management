@@ -37,6 +37,12 @@ const MeetingsAndAttendance = () => {
     useState(null);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
 
+  // Sorting state
+  const [sortConfig, setSortConfig] = useState({
+    key: "date", // Default sort by date
+    direction: "desc", // 'asc' or 'desc' - desc for latest first
+  });
+
   // Meeting type options
   const meetingTypes = [
     { value: "GENERAL", label: "General Meeting" },
@@ -274,11 +280,80 @@ const MeetingsAndAttendance = () => {
     return colors[status] || "bg-gray-100 text-gray-800";
   };
 
+  // Sorting function
+  const getSortedMeetings = (meetingsToSort) => {
+    if (!sortConfig.key) return meetingsToSort;
+
+    const sorted = [...meetingsToSort].sort((a, b) => {
+      let aValue, bValue;
+
+      switch (sortConfig.key) {
+        case "title":
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
+          break;
+        case "date":
+          aValue = new Date(a.date).getTime();
+          bValue = new Date(b.date).getTime();
+          break;
+        case "startTime":
+          // Sort by start time
+          aValue = a.startTime;
+          bValue = b.startTime;
+          break;
+        case "venue":
+          aValue = (a.venue || "").toLowerCase();
+          bValue = (b.venue || "").toLowerCase();
+          break;
+        case "status":
+          aValue = a.status.toLowerCase();
+          bValue = b.status.toLowerCase();
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) {
+        return sortConfig.direction === "asc" ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === "asc" ? 1 : -1;
+      }
+      return 0;
+    });
+
+    return sorted;
+  };
+
+  // Handle column header click for sorting
+  const handleHeaderClick = (columnKey) => {
+    setSortConfig((prevConfig) => ({
+      key: columnKey,
+      direction:
+        prevConfig.key === columnKey && prevConfig.direction === "asc"
+          ? "desc"
+          : "asc",
+    }));
+  };
+
+  // Get sort indicator icon
+  const getSortIndicator = (columnKey) => {
+    if (sortConfig.key !== columnKey) return " ↕";
+    return sortConfig.direction === "asc" ? " ↑" : " ↓";
+  };
+
   // Table columns
   const meetingColumns = [
     {
       key: "title",
-      header: "Meeting Details",
+      header: (
+        <button
+          onClick={() => handleHeaderClick("title")}
+          className="hover:text-blue-600 transition cursor-pointer flex items-center gap-1"
+        >
+          Meeting Details{getSortIndicator("title")}
+        </button>
+      ),
       cell: (meeting) => (
         <div>
           <div className="font-medium text-gray-900">{meeting.title}</div>
@@ -290,7 +365,14 @@ const MeetingsAndAttendance = () => {
     },
     {
       key: "dateTime",
-      header: "Date & Time",
+      header: (
+        <button
+          onClick={() => handleHeaderClick("date")}
+          className="hover:text-blue-600 transition cursor-pointer flex items-center gap-1"
+        >
+          Date & Time{getSortIndicator("date")}
+        </button>
+      ),
       cell: (meeting) => (
         <div>
           <div className="text-gray-900">{formatDate(meeting.date)}</div>
@@ -303,14 +385,28 @@ const MeetingsAndAttendance = () => {
     },
     {
       key: "venue",
-      header: "Location",
+      header: (
+        <button
+          onClick={() => handleHeaderClick("venue")}
+          className="hover:text-blue-600 transition cursor-pointer flex items-center gap-1"
+        >
+          Location{getSortIndicator("venue")}
+        </button>
+      ),
       cell: (meeting) => (
         <div className="text-gray-900">{meeting.venue || "N/A"}</div>
       ),
     },
     {
       key: "status",
-      header: "Status",
+      header: (
+        <button
+          onClick={() => handleHeaderClick("status")}
+          className="hover:text-blue-600 transition cursor-pointer flex items-center gap-1"
+        >
+          Status{getSortIndicator("status")}
+        </button>
+      ),
       cell: (meeting) => (
         <span
           className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeColor(
@@ -396,7 +492,7 @@ const MeetingsAndAttendance = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             Meetings & Attendance Management
@@ -406,7 +502,10 @@ const MeetingsAndAttendance = () => {
           </p>
         </div>
         {activeTab === "meetings" && (
-          <Button onClick={() => setShowCreateMeetingModal(true)}>
+          <Button
+            onClick={() => setShowCreateMeetingModal(true)}
+            className="w-full md:w-auto"
+          >
             Create New Meeting
           </Button>
         )}
@@ -445,11 +544,94 @@ const MeetingsAndAttendance = () => {
             <div className="p-6 border-b">
               <h2 className="text-lg font-semibold">All Meetings</h2>
             </div>
-            <Table
-              data={meetings}
-              columns={meetingColumns}
-              emptyMessage="No meetings found"
-            />
+
+            {/* Desktop Table View */}
+            <div className="hidden lg:block">
+              <Table
+                data={getSortedMeetings(meetings)}
+                columns={meetingColumns}
+                emptyMessage="No meetings found"
+              />
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="lg:hidden">
+              {meetings && meetings.length > 0 ? (
+                <div className="space-y-4 p-6">
+                  {getSortedMeetings(meetings).map((meeting, index) => (
+                    <div
+                      key={index}
+                      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-900 break-words">
+                            {meeting.title}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            {getMeetingTypeLabel(meeting.meetingType)}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end space-y-1">
+                          <span
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeColor(
+                              meeting.status
+                            )}`}
+                          >
+                            {meeting.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 text-sm mb-3">
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Date:</span>
+                          <span className="text-gray-900 font-medium">
+                            {formatDate(meeting.date)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Time:</span>
+                          <span className="text-gray-900 font-medium">
+                            {formatTimeDisplay(meeting.startTime)} -{" "}
+                            {formatTimeDisplay(meeting.endTime)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-500">Location:</span>
+                          <span className="text-gray-900 font-medium">
+                            {meeting.venue || "N/A"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleViewMeeting(meeting)}
+                          className="flex-1"
+                        >
+                          View
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteMeeting(meeting.id)}
+                          className="flex-1 text-red-600 border-red-300 hover:bg-red-50"
+                        >
+                          Delete
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 p-6">
+                  <p className="text-gray-500">No meetings found</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -463,11 +645,60 @@ const MeetingsAndAttendance = () => {
                 Record or View Attendance
               </h2>
             </div>
-            <Table
-              data={meetings}
-              columns={attendanceColumns}
-              emptyMessage="No meetings found"
-            />
+
+            {/* Desktop Table View */}
+            <div className="hidden lg:block">
+              <Table
+                data={meetings}
+                columns={attendanceColumns}
+                emptyMessage="No meetings found"
+              />
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="lg:hidden">
+              {meetings && meetings.length > 0 ? (
+                <div className="space-y-4 p-6">
+                  {meetings.map((meeting, index) => (
+                    <div
+                      key={index}
+                      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                    >
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-900 break-words">
+                            {meeting.title}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            {formatDate(meeting.date)}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center text-sm mb-3">
+                        <span className="text-gray-500">Attendees:</span>
+                        <span className="text-gray-900 font-medium">
+                          {meeting.attendeeCount || 0} recorded
+                        </span>
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fetchAttendanceForMeeting(meeting.id)}
+                        className="w-full"
+                      >
+                        Record/View Attendance
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 p-6">
+                  <p className="text-gray-500">No meetings found</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

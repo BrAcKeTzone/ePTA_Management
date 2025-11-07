@@ -237,7 +237,7 @@ const AnnouncementsManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             Announcements Management
@@ -246,7 +246,10 @@ const AnnouncementsManagement = () => {
             Create and manage announcements for parents
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)}>
+        <Button
+          onClick={() => setShowCreateModal(true)}
+          className="w-full md:w-auto"
+        >
           Create Announcement
         </Button>
       </div>

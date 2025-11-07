@@ -1,10 +1,13 @@
 # Mobile Sidebar Z-Index Fix
 
 ## Issue
+
 After implementing the sticky navbar with `z-50`, the navbar was covering the sidebar on mobile screens, making the sidebar inaccessible.
 
 ## Root Cause
+
 **Z-Index Layering Problem:**
+
 - Navbar: `z-50` (fixed at top)
 - Sidebar (before): `z-30` (below navbar)
 - Overlay (before): `z-20` (below sidebar)
@@ -12,9 +15,11 @@ After implementing the sticky navbar with `z-50`, the navbar was covering the si
 This caused the navbar to appear above the sidebar on mobile devices.
 
 ## Solution
+
 Adjusted the z-index values for mobile-only behavior:
 
 ### Before
+
 ```jsx
 {/* Overlay for mobile */}
 <div className="fixed inset-0 z-20 bg-black/20 ...">
@@ -24,6 +29,7 @@ Adjusted the z-index values for mobile-only behavior:
 ```
 
 ### After
+
 ```jsx
 {/* Overlay for mobile */}
 <div className="fixed inset-0 z-30 bg-black/20 ...">
@@ -52,8 +58,9 @@ Adjusted the z-index values for mobile-only behavior:
 | Page Content | Default flow | Normal stacking |
 
 ### Key Change: Responsive Z-Index
+
 ```jsx
-className="... z-50 ... lg:z-0 ..."
+className = "... z-50 ... lg:z-0 ...";
 ```
 
 - **Mobile:** `z-50` - Sidebar fixed and on top (for overlay)
@@ -63,6 +70,7 @@ className="... z-50 ... lg:z-0 ..."
 ## How It Works
 
 ### On Mobile Screens
+
 1. When hamburger menu clicked, sidebar slides from left
 2. Sidebar has `z-50` (same as navbar but comes later in DOM/stacking context)
 3. Overlay appears behind sidebar with `z-30`
@@ -70,6 +78,7 @@ className="... z-50 ... lg:z-0 ..."
 5. User can click outside sidebar to close or use close button
 
 ### On Desktop Screens
+
 1. Sidebar displayed as permanent part of layout
 2. `lg:relative` switches sidebar to relative positioning
 3. `lg:z-0` removes fixed z-index behavior
@@ -79,6 +88,7 @@ className="... z-50 ... lg:z-0 ..."
 ## Visual Result
 
 ### Before (Problem)
+
 ```
 Mobile View:
 ┌─ [Navbar] ────────────────────────┐  z-50 (covers everything)
@@ -89,6 +99,7 @@ Mobile View:
 ```
 
 ### After (Fixed)
+
 ```
 Mobile View:
 ┌─ [Navbar] ────────────────────────┐
@@ -106,9 +117,11 @@ Mobile View:
 ## Affected Files
 
 **Modified:**
+
 - `frontend/src/components/Sidebar.jsx`
 
 **Related Files (Not modified):**
+
 - `frontend/src/components/Navbar.jsx` - Remains at `z-50`
 - `frontend/src/layouts/AdminLayout.jsx` - Uses both components
 - `frontend/src/layouts/MainLayout.jsx` - Uses both components
@@ -131,17 +144,20 @@ Mobile View:
 ## Responsive Behavior
 
 ### Mobile (< 768px)
+
 - Hamburger menu visible
 - Sidebar slides in as overlay with `z-50`
 - Fixed positioning with transform animation
 - Click outside or close button to dismiss
 
 ### Tablet (768px - 1024px)
+
 - Hamburger menu still visible
 - Same behavior as mobile
 - Sidebar overlays content
 
 ### Desktop (> 1024px)
+
 - Hamburger menu hidden
 - Sidebar visible as permanent layout component
 - Relative positioning (part of normal flow)
@@ -151,6 +167,7 @@ Mobile View:
 ## Performance Impact
 
 **None:**
+
 - Pure CSS z-index adjustments
 - No JavaScript changes
 - No additional DOM elements
@@ -159,6 +176,7 @@ Mobile View:
 ## Browser Compatibility
 
 Works in all modern browsers:
+
 - Chrome/Edge (v90+)
 - Firefox (v88+)
 - Safari (v14+)
@@ -180,6 +198,7 @@ Works in all modern browsers:
 ## Rollback Instructions
 
 If needed to revert:
+
 ```jsx
 // Change this:
 <div className="fixed inset-0 z-30 ... lg:hidden">
@@ -195,6 +214,7 @@ If needed to revert:
 ## Summary
 
 Successfully fixed the mobile sidebar z-index issue by adjusting the z-index values to be responsive:
+
 - **Mobile:** Sidebar at `z-50` (above navbar overlay)
 - **Desktop:** Sidebar at `z-0` (part of normal layout flow)
 

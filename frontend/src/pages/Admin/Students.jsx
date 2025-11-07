@@ -390,7 +390,7 @@ const StudentsManagement = () => {
   return (
     <div className="p-4 sm:p-6 max-w-7xl mx-auto">
       {/* Header with Title and Add Button */}
-      <div className="flex justify-between items-center mb-6 sm:mb-8">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6 sm:mb-8">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
             Students Management
@@ -402,7 +402,7 @@ const StudentsManagement = () => {
         <Button
           onClick={() => setShowCreateModal(true)}
           variant="primary"
-          className="whitespace-nowrap"
+          className="w-full md:w-auto whitespace-nowrap"
         >
           Add New Student
         </Button>

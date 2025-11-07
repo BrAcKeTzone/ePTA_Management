@@ -188,7 +188,7 @@ const ContributionsManagement = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
             Contributions Management
@@ -197,11 +197,18 @@ const ContributionsManagement = () => {
             Track and manage parent contributions
           </p>
         </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" onClick={() => setShowReportsModal(true)}>
+        <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+          <Button
+            variant="outline"
+            onClick={() => setShowReportsModal(true)}
+            className="w-full sm:w-auto"
+          >
             Generate Report
           </Button>
-          <Button onClick={() => setShowRecordModal(true)}>
+          <Button
+            onClick={() => setShowRecordModal(true)}
+            className="w-full sm:w-auto"
+          >
             Record Contribution
           </Button>
         </div>
