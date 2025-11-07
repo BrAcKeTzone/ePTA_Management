@@ -334,7 +334,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
     <>
       {/* Overlay for mobile */}
       <div
-        className={`fixed inset-0 z-20 bg-black/20 backdrop-blur-sm transition-opacity lg:hidden ${
+        className={`fixed inset-0 z-30 bg-black/20 backdrop-blur-sm transition-opacity lg:hidden ${
           isOpen ? "block" : "hidden"
         }`}
         onClick={() => setIsOpen(false)}
@@ -342,7 +342,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-white h-full shadow-sm border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white h-full shadow-sm border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:relative lg:z-0 lg:translate-x-0 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
