@@ -37,6 +37,10 @@ const MeetingsAndAttendance = () => {
     useState(null);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
 
+  // Unified view state
+  const [expandedMeetingId, setExpandedMeetingId] = useState(null);
+  const [meetingAttendanceMap, setMeetingAttendanceMap] = useState({});
+
   // Sorting state
   const [sortConfig, setSortConfig] = useState({
     key: "date", // Default sort by date
@@ -114,7 +118,17 @@ const MeetingsAndAttendance = () => {
       const response = await attendanceApi.getAttendanceByMeeting(meetingId);
       // Handle nested data structure: response.data?.data or response.data directly
       const attendanceData = response.data?.data || response.data || [];
-      setAttendance(Array.isArray(attendanceData) ? attendanceData : []);
+      const attendanceArray = Array.isArray(attendanceData)
+        ? attendanceData
+        : [];
+
+      // Cache the attendance data
+      setMeetingAttendanceMap((prev) => ({
+        ...prev,
+        [meetingId]: attendanceArray,
+      }));
+
+      setAttendance(attendanceArray);
       setSelectedMeetingForAttendance(meetingId);
       setShowAttendanceModal(true);
     } catch (error) {
@@ -501,187 +515,215 @@ const MeetingsAndAttendance = () => {
             Manage meetings and record attendance
           </p>
         </div>
-        {activeTab === "meetings" && (
-          <Button
-            onClick={() => setShowCreateMeetingModal(true)}
-            className="w-full md:w-auto"
-          >
-            Create New Meeting
-          </Button>
-        )}
+        <Button
+          onClick={() => setShowCreateMeetingModal(true)}
+          className="w-full md:w-auto"
+        >
+          Create New Meeting
+        </Button>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <div className="flex space-x-8">
-          <button
-            onClick={() => setActiveTab("meetings")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "meetings"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
-          >
-            Meetings
-          </button>
-          <button
-            onClick={() => setActiveTab("attendance")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "attendance"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
-          >
-            Attendance
-          </button>
-        </div>
-      </div>
+      {/* Unified Meetings with Attendance View */}
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow-sm border">
+          <div className="p-6 border-b">
+            <h2 className="text-lg font-semibold">
+              All Meetings with Attendance
+            </h2>
+          </div>
 
-      {/* Meetings Tab */}
-      {activeTab === "meetings" && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border">
-            <div className="p-6 border-b">
-              <h2 className="text-lg font-semibold">All Meetings</h2>
-            </div>
-
-            {/* Desktop Table View */}
-            <div className="hidden lg:block">
-              <Table
-                data={getSortedMeetings(meetings)}
-                columns={meetingColumns}
-                emptyMessage="No meetings found"
-              />
-            </div>
-
-            {/* Mobile Card View */}
-            <div className="lg:hidden">
-              {meetings && meetings.length > 0 ? (
-                <div className="space-y-4 p-6">
-                  {getSortedMeetings(meetings).map((meeting, index) => (
-                    <div
-                      key={index}
-                      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
-                    >
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-gray-900 break-words">
-                            {meeting.title}
-                          </h3>
-                          <p className="text-sm text-gray-500">
-                            {getMeetingTypeLabel(meeting.meetingType)}
-                          </p>
-                        </div>
-                        <div className="flex flex-col items-end space-y-1">
-                          <span
-                            className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeColor(
-                              meeting.status
-                            )}`}
-                          >
-                            {meeting.status}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2 text-sm mb-3">
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Date:</span>
-                          <span className="text-gray-900 font-medium">
-                            {formatDate(meeting.date)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Time:</span>
-                          <span className="text-gray-900 font-medium">
-                            {formatTimeDisplay(meeting.startTime)} -{" "}
-                            {formatTimeDisplay(meeting.endTime)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-500">Location:</span>
-                          <span className="text-gray-900 font-medium">
+          {/* Desktop Table View */}
+          <div className="hidden lg:block">
+            {getSortedMeetings(meetings).length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        <button
+                          onClick={() => handleHeaderClick("title")}
+                          className="hover:text-blue-600 transition cursor-pointer flex items-center gap-1"
+                        >
+                          Meeting Details{getSortIndicator("title")}
+                        </button>
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        <button
+                          onClick={() => handleHeaderClick("date")}
+                          className="hover:text-blue-600 transition cursor-pointer flex items-center gap-1"
+                        >
+                          Date & Time{getSortIndicator("date")}
+                        </button>
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        <button
+                          onClick={() => handleHeaderClick("venue")}
+                          className="hover:text-blue-600 transition cursor-pointer flex items-center gap-1"
+                        >
+                          Location{getSortIndicator("venue")}
+                        </button>
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        <button
+                          onClick={() => handleHeaderClick("status")}
+                          className="hover:text-blue-600 transition cursor-pointer flex items-center gap-1"
+                        >
+                          Status{getSortIndicator("status")}
+                        </button>
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        Attendance
+                      </th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {getSortedMeetings(meetings).map((meeting, index) => (
+                      <React.Fragment key={index}>
+                        <tr className="border-b border-gray-200 hover:bg-gray-50">
+                          <td className="px-6 py-4">
+                            <div className="font-medium text-gray-900">
+                              {meeting.title}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {getMeetingTypeLabel(meeting.meetingType)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-gray-900">
+                              {formatDate(meeting.date)}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {formatTimeDisplay(meeting.startTime)} -{" "}
+                              {formatTimeDisplay(meeting.endTime)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-gray-900">
                             {meeting.venue || "N/A"}
-                          </span>
-                        </div>
-                      </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeColor(
+                                meeting.status
+                              )}`}
+                            >
+                              {meeting.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className="text-sm font-medium text-gray-900">
+                              {meeting.attendeeCount || 0} recorded
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex flex-wrap gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewMeeting(meeting)}
+                              >
+                                View
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  fetchAttendanceForMeeting(meeting.id)
+                                }
+                              >
+                                Attendance
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleDeleteMeeting(meeting.id)}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-8 p-6">
+                <p className="text-gray-500">No meetings found</p>
+              </div>
+            )}
+          </div>
 
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewMeeting(meeting)}
-                          className="flex-1"
+          {/* Mobile Card View */}
+          <div className="lg:hidden">
+            {getSortedMeetings(meetings).length > 0 ? (
+              <div className="space-y-4 p-6">
+                {getSortedMeetings(meetings).map((meeting, index) => (
+                  <div
+                    key={index}
+                    className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                  >
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-gray-900 break-words">
+                          {meeting.title}
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                          {getMeetingTypeLabel(meeting.meetingType)}
+                        </p>
+                      </div>
+                      <div className="flex flex-col items-end space-y-1">
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadgeColor(
+                            meeting.status
+                          )}`}
                         >
-                          View
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteMeeting(meeting.id)}
-                          className="flex-1 text-red-600 border-red-300 hover:bg-red-50"
-                        >
-                          Delete
-                        </Button>
+                          {meeting.status}
+                        </span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 p-6">
-                  <p className="text-gray-500">No meetings found</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Attendance Tab */}
-      {activeTab === "attendance" && (
-        <div className="space-y-6">
-          <div className="bg-white rounded-lg shadow-sm border">
-            <div className="p-6 border-b">
-              <h2 className="text-lg font-semibold">
-                Record or View Attendance
-              </h2>
-            </div>
-
-            {/* Desktop Table View */}
-            <div className="hidden lg:block">
-              <Table
-                data={meetings}
-                columns={attendanceColumns}
-                emptyMessage="No meetings found"
-              />
-            </div>
-
-            {/* Mobile Card View */}
-            <div className="lg:hidden">
-              {meetings && meetings.length > 0 ? (
-                <div className="space-y-4 p-6">
-                  {meetings.map((meeting, index) => (
-                    <div
-                      key={index}
-                      className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
-                    >
-                      <div className="flex justify-between items-start mb-3">
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-gray-900 break-words">
-                            {meeting.title}
-                          </h3>
-                          <p className="text-sm text-gray-500">
-                            {formatDate(meeting.date)}
-                          </p>
-                        </div>
+                    <div className="space-y-2 text-sm mb-3">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Date:</span>
+                        <span className="text-gray-900 font-medium">
+                          {formatDate(meeting.date)}
+                        </span>
                       </div>
-
-                      <div className="flex justify-between items-center text-sm mb-3">
-                        <span className="text-gray-500">Attendees:</span>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Time:</span>
+                        <span className="text-gray-900 font-medium">
+                          {formatTimeDisplay(meeting.startTime)} -{" "}
+                          {formatTimeDisplay(meeting.endTime)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Location:</span>
+                        <span className="text-gray-900 font-medium">
+                          {meeting.venue || "N/A"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Attendance:</span>
                         <span className="text-gray-900 font-medium">
                           {meeting.attendeeCount || 0} recorded
                         </span>
                       </div>
+                    </div>
 
+                    <div className="space-y-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewMeeting(meeting)}
+                        className="w-full"
+                      >
+                        View Meeting
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"
@@ -690,18 +732,26 @@ const MeetingsAndAttendance = () => {
                       >
                         Record/View Attendance
                       </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteMeeting(meeting.id)}
+                        className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                      >
+                        Delete
+                      </Button>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 p-6">
-                  <p className="text-gray-500">No meetings found</p>
-                </div>
-              )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 p-6">
+                <p className="text-gray-500">No meetings found</p>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       {/* Create Meeting Modal */}
       <Modal
