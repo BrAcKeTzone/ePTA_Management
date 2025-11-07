@@ -36,6 +36,7 @@ const MeetingsAndAttendance = () => {
   const [selectedMeetingForAttendance, setSelectedMeetingForAttendance] =
     useState(null);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  const [attendanceUpdates, setAttendanceUpdates] = useState({});
 
   // Unified view state
   const [expandedMeetingId, setExpandedMeetingId] = useState(null);
@@ -116,11 +117,77 @@ const MeetingsAndAttendance = () => {
   const fetchAttendanceForMeeting = async (meetingId) => {
     try {
       const response = await attendanceApi.getAttendanceByMeeting(meetingId);
-      // Handle nested data structure: response.data?.data or response.data directly
-      const attendanceData = response.data?.data || response.data || [];
-      const attendanceArray = Array.isArray(attendanceData)
-        ? attendanceData
-        : [];
+
+      // Handle the response structure from backend
+      let attendanceArray = [];
+
+      if (response.data?.attendances) {
+        // Backend returns: { meeting, attendances, summary }
+        attendanceArray = response.data.attendances.map((record) => ({
+          parentId: record.parent?.id,
+          parentName: record.parent
+            ? `${record.parent.firstName} ${record.parent.lastName}${
+                record.parent.middleName ? ` ${record.parent.middleName}` : ""
+              }`
+            : "Unknown Parent",
+          email: record.parent?.email,
+          studentName: record.student?.name || "",
+          isPresent:
+            record.status === "PRESENT"
+              ? true
+              : record.status === "ABSENT"
+              ? false
+              : null,
+          status: record.status,
+          isLate: record.isLate,
+          hasPenalty: record.hasPenalty,
+          recordId: record.id,
+        }));
+      } else if (response.data?.data?.attendances) {
+        // Alternative structure
+        attendanceArray = response.data.data.attendances.map((record) => ({
+          parentId: record.parent?.id,
+          parentName: record.parent
+            ? `${record.parent.firstName} ${record.parent.lastName}${
+                record.parent.middleName ? ` ${record.parent.middleName}` : ""
+              }`
+            : "Unknown Parent",
+          email: record.parent?.email,
+          studentName: record.student?.name || "",
+          isPresent:
+            record.status === "PRESENT"
+              ? true
+              : record.status === "ABSENT"
+              ? false
+              : null,
+          status: record.status,
+          isLate: record.isLate,
+          hasPenalty: record.hasPenalty,
+          recordId: record.id,
+        }));
+      } else if (Array.isArray(response.data)) {
+        // Direct array response
+        attendanceArray = response.data.map((record) => ({
+          parentId: record.parent?.id,
+          parentName: record.parent
+            ? `${record.parent.firstName} ${record.parent.lastName}${
+                record.parent.middleName ? ` ${record.parent.middleName}` : ""
+              }`
+            : "Unknown Parent",
+          email: record.parent?.email,
+          studentName: record.student?.name || "",
+          isPresent:
+            record.status === "PRESENT"
+              ? true
+              : record.status === "ABSENT"
+              ? false
+              : null,
+          status: record.status,
+          isLate: record.isLate,
+          hasPenalty: record.hasPenalty,
+          recordId: record.id,
+        }));
+      }
 
       // Cache the attendance data
       setMeetingAttendanceMap((prev) => ({
@@ -133,7 +200,12 @@ const MeetingsAndAttendance = () => {
       setShowAttendanceModal(true);
     } catch (error) {
       console.error("Error fetching attendance:", error);
-      alert("Error fetching attendance records.");
+      console.error("Error response:", error.response?.data);
+      alert(
+        `Error fetching attendance records: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     }
   };
 
@@ -266,6 +338,63 @@ const MeetingsAndAttendance = () => {
     } catch (error) {
       console.error("Error recording attendance:", error);
       alert("Error recording attendance.");
+    }
+  };
+
+  // Toggle attendance checkbox
+  const handleToggleAttendance = (parentId) => {
+    setAttendanceUpdates((prev) => {
+      const current = prev[parentId];
+      // Cycle through: undefined (not set) -> true (present) -> false (absent) -> undefined
+      const newValue =
+        current === undefined ? true : current === true ? false : undefined;
+
+      const updated = { ...prev };
+      if (newValue === undefined) {
+        delete updated[parentId];
+      } else {
+        updated[parentId] = newValue;
+      }
+      return updated;
+    });
+  };
+
+  // Save all attendance records
+  const handleSaveAttendance = async () => {
+    try {
+      const updates = Object.entries(attendanceUpdates).map(
+        ([parentId, isPresent]) => ({
+          meetingId: selectedMeetingForAttendance,
+          parentId: parseInt(parentId),
+          isPresent,
+        })
+      );
+
+      if (updates.length === 0) {
+        alert("Please select at least one attendance status to save.");
+        return;
+      }
+
+      // Use bulk record attendance if available, otherwise record one by one
+      if (attendanceApi.bulkRecordAttendance) {
+        await attendanceApi.bulkRecordAttendance(updates);
+      } else {
+        // Fallback: record individually
+        for (const update of updates) {
+          await attendanceApi.recordAttendance(update);
+        }
+      }
+
+      alert(`${updates.length} attendance record(s) saved successfully!`);
+      setAttendanceUpdates({});
+      fetchAttendanceForMeeting(selectedMeetingForAttendance);
+    } catch (error) {
+      console.error("Error saving attendance:", error);
+      alert(
+        `Error saving attendance: ${
+          error.response?.data?.message || error.message
+        }`
+      );
     }
   };
 
@@ -1111,49 +1240,124 @@ const MeetingsAndAttendance = () => {
       {/* Attendance Recording Modal */}
       <Modal
         isOpen={showAttendanceModal}
-        onClose={() => setShowAttendanceModal(false)}
+        onClose={() => {
+          setShowAttendanceModal(false);
+          setAttendanceUpdates({});
+        }}
         title="Record Attendance"
         size="lg"
       >
         <div className="space-y-4">
-          <p className="text-gray-600">
-            Mark attendance for each parent below:
-          </p>
-          <div className="max-h-96 overflow-y-auto">
-            {attendance.map((record) => (
-              <div
-                key={record.parentId}
-                className="flex items-center justify-between p-3 border border-gray-200 rounded-lg mb-2"
-              >
-                <div>
-                  <div className="font-medium">{record.parentName}</div>
-                  <div className="text-sm text-gray-600">
-                    {record.studentName}
-                  </div>
-                </div>
-                <div className="flex space-x-2">
-                  <Button
-                    size="sm"
-                    variant={record.isPresent === true ? "default" : "outline"}
-                    onClick={() =>
-                      handleRecordAttendance(record.parentId, true)
-                    }
-                  >
-                    Present
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={record.isPresent === false ? "default" : "outline"}
-                    onClick={() =>
-                      handleRecordAttendance(record.parentId, false)
-                    }
-                  >
-                    Absent
-                  </Button>
-                </div>
-              </div>
-            ))}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-blue-700">
+              📋 <strong>Instructions:</strong> Check the checkbox to mark as{" "}
+              <strong>Present</strong>, uncheck to mark as{" "}
+              <strong>Absent</strong>. Click "Save Attendance" to update all
+              records.
+            </p>
           </div>
+
+          <div className="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+            {attendance && attendance.length > 0 ? (
+              <div className="divide-y divide-gray-200">
+                {attendance.map((record) => (
+                  <div
+                    key={record.recordId || record.parentId}
+                    className="flex items-center justify-between p-4 hover:bg-gray-50 transition"
+                  >
+                    <div className="flex-1">
+                      <div className="font-medium text-gray-900">
+                        {record.parentName}
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {record.email}
+                      </div>
+                      <div className="flex gap-4 mt-2 text-xs">
+                        {record.isLate && (
+                          <span className="text-yellow-600 font-semibold">
+                            ⚠️ Marked as Late
+                          </span>
+                        )}
+                        {record.hasPenalty && (
+                          <span className="text-red-600 font-semibold">
+                            🚩 Has Penalty
+                          </span>
+                        )}
+                        {record.status && (
+                          <span className="text-gray-700">
+                            Current: <strong>{record.status}</strong>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="ml-4 flex items-center gap-3">
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`attendance-${record.parentId}`}
+                          checked={
+                            attendanceUpdates[record.parentId] === true ||
+                            (attendanceUpdates[record.parentId] === undefined &&
+                              record.isPresent === true)
+                          }
+                          onChange={() =>
+                            handleToggleAttendance(record.parentId)
+                          }
+                          className="w-5 h-5 text-blue-600 rounded cursor-pointer"
+                        />
+                        <label
+                          htmlFor={`attendance-${record.parentId}`}
+                          className="ml-2 cursor-pointer font-medium text-gray-700 hover:text-blue-600"
+                        >
+                          Present
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500 p-6">
+                <p>📭 No parents found for this meeting.</p>
+                <p className="text-sm mt-2">
+                  Attendance records may still be loading or there are no
+                  parents linked to students in this meeting.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {attendance && attendance.length > 0 && (
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-700 mb-3">
+                <strong>{Object.keys(attendanceUpdates).length}</strong>{" "}
+                record(s) marked for update
+              </p>
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowAttendanceModal(false);
+                    setAttendanceUpdates({});
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveAttendance}
+                  disabled={Object.keys(attendanceUpdates).length === 0}
+                  className={
+                    Object.keys(attendanceUpdates).length === 0
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }
+                >
+                  Save Attendance ({Object.keys(attendanceUpdates).length})
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
     </div>
