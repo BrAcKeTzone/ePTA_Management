@@ -33,6 +33,8 @@ const MeetingsAndAttendance = () => {
 
   // Attendance state
   const [attendance, setAttendance] = useState([]);
+  const [filteredAttendance, setFilteredAttendance] = useState([]);
+  const [attendanceSearchTerm, setAttendanceSearchTerm] = useState("");
   const [selectedMeetingForAttendance, setSelectedMeetingForAttendance] =
     useState(null);
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
@@ -97,6 +99,34 @@ const MeetingsAndAttendance = () => {
   useEffect(() => {
     fetchMeetings();
   }, []);
+
+  // Filter attendance based on search term
+  useEffect(() => {
+    if (!attendance) {
+      setFilteredAttendance([]);
+      return;
+    }
+
+    if (!attendanceSearchTerm || attendanceSearchTerm.length < 3) {
+      setFilteredAttendance(attendance);
+      return;
+    }
+
+    const searchLower = attendanceSearchTerm.toLowerCase();
+    const filtered = attendance.filter((record) => {
+      const parentName = record.parentName?.toLowerCase() || "";
+      const email = record.email?.toLowerCase() || "";
+      const studentNames = record.studentNames?.toLowerCase() || "";
+
+      return (
+        parentName.includes(searchLower) ||
+        email.includes(searchLower) ||
+        studentNames.includes(searchLower)
+      );
+    });
+
+    setFilteredAttendance(filtered);
+  }, [attendance, attendanceSearchTerm]);
 
   // Fetch meetings
   const fetchMeetings = async () => {
@@ -1267,6 +1297,7 @@ const MeetingsAndAttendance = () => {
         onClose={() => {
           setShowAttendanceModal(false);
           setAttendanceUpdates({});
+          setAttendanceSearchTerm("");
         }}
         title="Record Attendance"
         size="full"
@@ -1281,10 +1312,27 @@ const MeetingsAndAttendance = () => {
             </p>
           </div>
 
+          {/* Search Field */}
+          <div className="flex-shrink-0">
+            <Input
+              type="text"
+              placeholder="🔍 Search parents (name, email, or student names)... Type at least 3 characters"
+              value={attendanceSearchTerm}
+              onChange={(e) => setAttendanceSearchTerm(e.target.value)}
+              className="w-full"
+            />
+            {attendanceSearchTerm && attendanceSearchTerm.length >= 3 && (
+              <p className="text-sm text-gray-600 mt-1">
+                Showing {filteredAttendance.length} of {attendance.length}{" "}
+                parents
+              </p>
+            )}
+          </div>
+
           <div className="flex-1 overflow-y-auto border border-gray-200 rounded-lg min-h-0">
-            {attendance && attendance.length > 0 ? (
+            {filteredAttendance && filteredAttendance.length > 0 ? (
               <div className="divide-y divide-gray-200">
-                {attendance.map((record) => (
+                {filteredAttendance.map((record) => (
                   <div
                     key={record.recordId || record.parentId}
                     className="flex flex-col sm:flex-row sm:items-center justify-between p-4 hover:bg-gray-50 transition gap-3"
@@ -1341,11 +1389,22 @@ const MeetingsAndAttendance = () => {
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500 p-6">
-                <p>📭 No parents found for this meeting.</p>
-                <p className="text-sm mt-2">
-                  Attendance records may still be loading or there are no
-                  parents linked to students in this meeting.
-                </p>
+                {attendanceSearchTerm && attendanceSearchTerm.length >= 3 ? (
+                  <>
+                    <p>� No parents found matching "{attendanceSearchTerm}"</p>
+                    <p className="text-sm mt-2">
+                      Try a different search term or check your spelling.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p>�📭 No parents found for this meeting.</p>
+                    <p className="text-sm mt-2">
+                      Attendance records may still be loading or there are no
+                      parents linked to students in this meeting.
+                    </p>
+                  </>
+                )}
               </div>
             )}
           </div>
