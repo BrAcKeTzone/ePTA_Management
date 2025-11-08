@@ -111,7 +111,6 @@ const SignupForm = () => {
     try {
       const result = await sendOtp(formData.email);
       // OTP will be sent to the user's email
-      console.log("OTP sent successfully");
     } catch (err) {
       console.error("Failed to send OTP:", err);
     }

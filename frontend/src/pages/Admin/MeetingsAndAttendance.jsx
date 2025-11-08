@@ -118,16 +118,11 @@ const MeetingsAndAttendance = () => {
     try {
       const response = await attendanceApi.getAttendanceByMeeting(meetingId);
 
-      // Debug: Log the response to see what structure is returned
-      console.log("Attendance API Response:", response);
-      console.log("Response data:", response.data);
-
       // Handle the response structure from backend
       let attendanceArray = [];
 
       if (response.data?.attendances) {
         // Backend returns: { meeting, attendances, summary }
-        console.log("Using response.data.attendances structure");
         attendanceArray = response.data.attendances.map((record) => ({
           parentId: record.parent?.id,
           parentName: record.parent
@@ -155,7 +150,6 @@ const MeetingsAndAttendance = () => {
         }));
       } else if (response.data?.data?.attendances) {
         // Alternative structure
-        console.log("Using response.data.data.attendances structure");
         attendanceArray = response.data.data.attendances.map((record) => ({
           parentId: record.parent?.id,
           parentName: record.parent
@@ -183,7 +177,6 @@ const MeetingsAndAttendance = () => {
         }));
       } else if (Array.isArray(response.data)) {
         // Direct array response
-        console.log("Using direct array structure");
         attendanceArray = response.data.map((record) => ({
           parentId: record.parent?.id,
           parentName: record.parent
@@ -204,11 +197,7 @@ const MeetingsAndAttendance = () => {
           hasPenalty: record.hasPenalty,
           recordId: record.id,
         }));
-      } else {
-        console.warn("Unknown response structure:", response.data);
       }
-
-      console.log("Processed attendance array:", attendanceArray);
 
       // Cache the attendance data
       setMeetingAttendanceMap((prev) => ({
@@ -918,7 +907,10 @@ const MeetingsAndAttendance = () => {
         title="Create New Meeting"
         size="lg"
       >
-        <form onSubmit={handleCreateMeeting} className="h-full flex flex-col space-y-4 md:space-y-6">
+        <form
+          onSubmit={handleCreateMeeting}
+          className="h-full flex flex-col space-y-4 md:space-y-6"
+        >
           <Input
             label="Meeting Title"
             placeholder="e.g., Monthly General Assembly"
@@ -1041,7 +1033,7 @@ const MeetingsAndAttendance = () => {
             required
           />
 
-          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 mt-auto border-t md:border-t-0 pt-4 -mx-4 md:-mx-6 px-4 md:px-6 bg-gray-50 md:bg-transparent">
+          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 mt-auto border-t md:border-t-0 -mx-4 md:-mx-6 px-4 md:px-6 bg-gray-50 md:bg-transparent">
             <Button
               type="button"
               variant="outline"
@@ -1050,7 +1042,9 @@ const MeetingsAndAttendance = () => {
             >
               Cancel
             </Button>
-            <Button type="submit" className="w-full sm:w-auto">Create Meeting</Button>
+            <Button type="submit" className="w-full sm:w-auto">
+              Create Meeting
+            </Button>
           </div>
         </form>
       </Modal>

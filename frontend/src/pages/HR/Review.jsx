@@ -68,7 +68,6 @@ const ApplicationReview = () => {
 
   const downloadDocument = async (applicationId, documentName) => {
     // Implementation for downloading documents
-    console.log("Download document:", applicationId, documentName);
   };
 
   const filteredApplications =

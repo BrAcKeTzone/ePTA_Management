@@ -25,11 +25,6 @@ export const useScheduleStore = create((set, get) => ({
       await delay(800);
 
       // Simulate setting the schedule
-      console.log(
-        `Setting demo schedule for application ${applicationId}:`,
-        scheduleData
-      );
-
       set({
         loading: false,
         error: null,
@@ -51,11 +46,6 @@ export const useScheduleStore = create((set, get) => ({
       await delay(800);
 
       // Simulate updating the schedule
-      console.log(
-        `Updating demo schedule for application ${applicationId}:`,
-        scheduleData
-      );
-
       set({
         loading: false,
         error: null,
@@ -200,10 +190,6 @@ export const useScheduleStore = create((set, get) => ({
       set({ loading: true, error: null });
       await delay(600);
 
-      console.log(
-        `Cancelling demo schedule for application ${applicationId}. Reason: ${reason}`
-      );
-
       // Update schedules if they exist
       const { schedules } = get();
       if (schedules) {
@@ -267,8 +253,6 @@ export const useScheduleStore = create((set, get) => ({
     try {
       set({ loading: true, error: null });
       await delay(500);
-
-      console.log(`Confirming attendance for application ${applicationId}`);
 
       // Update my schedule if it matches
       const { mySchedule } = get();

@@ -19,11 +19,6 @@ export const useScoringStore = create((set, get) => ({
       set({ loading: true, error: null });
       await delay(1000);
 
-      console.log(
-        `Submitting scores for application ${applicationId}:`,
-        scoreData
-      );
-
       set({
         loading: false,
         error: null,
@@ -43,11 +38,6 @@ export const useScoringStore = create((set, get) => ({
     try {
       set({ loading: true, error: null });
       await delay(800);
-
-      console.log(
-        `Updating scores for application ${applicationId}:`,
-        scoreData
-      );
 
       set({
         loading: false,
@@ -202,8 +192,6 @@ export const useScoringStore = create((set, get) => ({
     try {
       set({ loading: true, error: null });
       await delay(800);
-
-      console.log("Updating rubric criteria:", criteria);
 
       set({
         rubricCriteria: criteria,

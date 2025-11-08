@@ -12,29 +12,14 @@ const ApplicationHistory = () => {
   const [viewMode, setViewMode] = useState("grid"); // grid or list
 
   useEffect(() => {
-    console.log("ApplicationHistory: useEffect running", {
-      user,
-      applications,
+    fetchApplications().catch((error) => {
+      console.error("fetchApplications error:", error);
     });
-    fetchApplications()
-      .then((result) => {
-        console.log("fetchApplications result:", result);
-      })
-      .catch((error) => {
-        console.error("fetchApplications error:", error);
-      });
   }, [fetchApplications]);
 
   // Show all applications for now (for testing/demo purposes)
   // Later this can be filtered by user: apps.filter(app => app.applicant_email === user?.email)
   const userApplications = applications;
-
-  console.log("ApplicationHistory render:", {
-    applications,
-    userApplications,
-    loading,
-    applicationsLength: applications?.length,
-  });
 
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {

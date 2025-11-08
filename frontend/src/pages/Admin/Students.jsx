@@ -237,9 +237,6 @@ const StudentsManagement = () => {
   const handleEditStudent = async (e) => {
     e.preventDefault();
     try {
-      console.log("Updating student:", selectedStudent);
-      console.log("Student ID:", selectedStudent.id);
-      console.log("Student ID type:", typeof selectedStudent.id);
       await studentsApi.updateStudent(selectedStudent.id, selectedStudent);
       setShowEditModal(false);
       setSelectedStudent(null);
