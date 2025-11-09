@@ -10,6 +10,7 @@ import {
   updateQuorumSchema,
   getMeetingsSchema,
   sendNotificationsSchema,
+  scanQRCodeSchema,
 } from "./meetings.validation";
 
 const router = express.Router();
@@ -144,6 +145,35 @@ router.post(
   "/:id/cancel",
   authorize("ADMIN"),
   meetingsController.cancelMeeting
+);
+
+/**
+ * @route   POST /api/meetings/:id/qr-code
+ * @desc    Generate QR code for meeting
+ * @access  Private (Admin only)
+ */
+router.post(
+  "/:id/qr-code",
+  authorize("ADMIN"),
+  meetingsController.generateQRCode
+);
+
+/**
+ * @route   GET /api/meetings/:id/qr-code
+ * @desc    Get QR code for meeting
+ * @access  Private
+ */
+router.get("/:id/qr-code", meetingsController.getQRCode);
+
+/**
+ * @route   POST /api/meetings/scan-qr
+ * @desc    Scan QR code to mark attendance
+ * @access  Private (Parent only)
+ */
+router.post(
+  "/scan-qr",
+  validate(scanQRCodeSchema),
+  meetingsController.scanQRCode
 );
 
 export default router;

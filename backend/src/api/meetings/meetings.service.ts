@@ -5,6 +5,8 @@ import {
   sendMeetingNotification,
   sendMeetingReminder,
 } from "../../utils/meetingNotification";
+import { v4 as uuidv4 } from "uuid";
+import * as QRCode from "qrcode";
 
 export interface MeetingSearchFilters {
   search?: string;
@@ -43,6 +45,202 @@ export interface UpdateMeetingInput {
   agenda?: string;
   expectedAttendees?: number;
 }
+
+/**
+ * Generate QR code for meeting attendance
+ */
+export const generateMeetingQRCode = async (
+  meetingId: number
+): Promise<{ qrCode: string; qrCodeDataUrl: string }> => {
+  // Generate unique QR code identifier
+  const qrCodeId = uuidv4();
+
+  // Calculate expiration time (meeting end time + 1 hour)
+  const meeting = await prisma.meeting.findUnique({
+    where: { id: meetingId },
+  });
+
+  if (!meeting) {
+    throw new ApiError(404, "Meeting not found");
+  }
+
+  // Calculate expiration: meeting date + end time + 1 hour buffer
+  const [endHour, endMinute] = meeting.endTime.split(":").map(Number);
+  const expirationDate = new Date(meeting.date);
+  expirationDate.setHours(endHour + 1, endMinute, 0, 0);
+
+  // Update meeting with QR code info
+  await prisma.meeting.update({
+    where: { id: meetingId },
+    data: {
+      qrCode: qrCodeId,
+      qrCodeGeneratedAt: new Date(),
+      qrCodeExpiresAt: expirationDate,
+      qrCodeActive: true,
+    },
+  });
+
+  // Create QR code data URL for display
+  const qrData = JSON.stringify({
+    meetingId: meetingId,
+    qrCodeId: qrCodeId,
+    timestamp: Date.now(),
+  });
+
+  const qrCodeDataUrl = await QRCode.toDataURL(qrData, {
+    width: 256,
+    margin: 2,
+    color: {
+      dark: "#000000",
+      light: "#FFFFFF",
+    },
+  });
+
+  return {
+    qrCode: qrCodeId,
+    qrCodeDataUrl,
+  };
+};
+
+/**
+ * Validate QR code scan and mark attendance
+ */
+export const scanQRCodeForAttendance = async (
+  qrCodeData: string,
+  parentId: number
+): Promise<{ success: boolean; message: string; attendance?: any }> => {
+  try {
+    // Parse QR code data
+    const { meetingId, qrCodeId } = JSON.parse(qrCodeData);
+
+    // Find the meeting with this QR code
+    const meeting = await prisma.meeting.findFirst({
+      where: {
+        id: meetingId,
+        qrCode: qrCodeId,
+        qrCodeActive: true,
+      },
+    });
+
+    if (!meeting) {
+      return {
+        success: false,
+        message: "Invalid QR code or meeting not found",
+      };
+    }
+
+    // Check if QR code has expired
+    if (meeting.qrCodeExpiresAt && new Date() > meeting.qrCodeExpiresAt) {
+      return {
+        success: false,
+        message: "QR code has expired",
+      };
+    }
+
+    // Check if meeting is today or in the future
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const meetingDate = new Date(meeting.date);
+    meetingDate.setHours(0, 0, 0, 0);
+
+    if (meetingDate > today) {
+      return {
+        success: false,
+        message: "Cannot check in to future meetings",
+      };
+    }
+
+    // Check if meeting is too old (more than 24 hours past)
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    if (meetingDate < twentyFourHoursAgo) {
+      return {
+        success: false,
+        message: "Meeting is too old for check-in",
+      };
+    }
+
+    // Check if parent already has attendance record for this meeting
+    let existingAttendance = await prisma.attendance.findUnique({
+      where: {
+        meetingId_parentId: {
+          meetingId: meetingId,
+          parentId: parentId,
+        },
+      },
+    });
+
+    const now = new Date();
+
+    if (existingAttendance) {
+      // Update existing attendance if not already present
+      if (existingAttendance.status !== "PRESENT") {
+        existingAttendance = await prisma.attendance.update({
+          where: { id: existingAttendance.id },
+          data: {
+            status: "PRESENT",
+            scannedViaQR: true,
+            qrScannedAt: now,
+            checkInTime: now,
+          },
+          include: {
+            meeting: {
+              select: {
+                title: true,
+                date: true,
+                venue: true,
+              },
+            },
+          },
+        });
+
+        return {
+          success: true,
+          message: "Attendance updated successfully via QR scan",
+          attendance: existingAttendance,
+        };
+      } else {
+        return {
+          success: false,
+          message: "You are already marked as present for this meeting",
+        };
+      }
+    } else {
+      // Create new attendance record
+      const newAttendance = await prisma.attendance.create({
+        data: {
+          meetingId: meetingId,
+          parentId: parentId,
+          status: "PRESENT",
+          scannedViaQR: true,
+          qrScannedAt: now,
+          checkInTime: now,
+          recordedById: parentId, // Self-recorded
+        },
+        include: {
+          meeting: {
+            select: {
+              title: true,
+              date: true,
+              venue: true,
+            },
+          },
+        },
+      });
+
+      return {
+        success: true,
+        message: "Attendance recorded successfully via QR scan",
+        attendance: newAttendance,
+      };
+    }
+  } catch (error) {
+    console.error("QR scan error:", error);
+    return {
+      success: false,
+      message: "Invalid QR code format",
+    };
+  }
+};
 
 /**
  * Create a new meeting
@@ -87,7 +285,27 @@ export const createMeeting = async (
     },
   });
 
-  return meeting;
+  // Automatically generate QR code for the meeting
+  await generateMeetingQRCode(meeting.id);
+
+  // Return the meeting with QR code data
+  const meetingWithQR = await prisma.meeting.findUnique({
+    where: { id: meeting.id },
+    include: {
+      createdBy: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+          email: true,
+          role: true,
+        },
+      },
+    },
+  });
+
+  return meetingWithQR!;
 };
 
 /**

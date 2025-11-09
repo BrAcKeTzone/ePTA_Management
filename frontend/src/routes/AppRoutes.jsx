@@ -26,6 +26,7 @@ import ParentAnnouncements from "../pages/Parent/Announcements";
 import ParentProjects from "../pages/Parent/Projects";
 import ParentClearance from "../pages/Parent/Clearance";
 import ParentMyChildren from "../pages/Parent/MyChildren";
+import QRScanner from "../pages/Parent/QRScanner";
 
 // Legacy HR/Applicant pages (keep for backward compatibility)
 import ApplicantDashboard from "../pages/Applicant/Dashboard";
@@ -198,6 +199,7 @@ const AppRoutes = () => {
         <Route path="projects" element={<ParentProjects />} />
         <Route path="clearance" element={<ParentClearance />} />
         <Route path="my-children" element={<ParentMyChildren />} />
+        <Route path="qr-scanner" element={<QRScanner />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 

@@ -16,6 +16,10 @@ const MeetingsAndAttendance = () => {
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // QR Code state
+  const [qrCodeData, setQrCodeData] = useState(null);
+  const [qrCodeLoading, setQrCodeLoading] = useState(false);
+
   // Meetings state
   const [showCreateMeetingModal, setShowCreateMeetingModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
@@ -334,13 +338,153 @@ const MeetingsAndAttendance = () => {
     }
   };
 
-  const handleViewMeeting = (meeting) => {
+  const handleViewMeeting = async (meeting) => {
     setSelectedMeeting({
       ...meeting,
       date: meeting.date ? meeting.date.split("T")[0] : "",
     });
     setIsEditMode(false);
     setShowViewModal(true);
+
+    // Fetch QR code data for the meeting
+    await fetchQRCode(meeting.id);
+  };
+
+  const fetchQRCode = async (meetingId) => {
+    try {
+      setQrCodeLoading(true);
+      const response = await meetingsApi.getQRCode(meetingId);
+      setQrCodeData(response.data.data);
+    } catch (error) {
+      console.error("Failed to fetch QR code:", error);
+      // If QR code doesn't exist, generate one
+      try {
+        const generateResponse = await meetingsApi.generateQRCode(meetingId);
+        setQrCodeData(generateResponse.data.data);
+      } catch (generateError) {
+        console.error("Failed to generate QR code:", generateError);
+        setQrCodeData(null);
+      }
+    } finally {
+      setQrCodeLoading(false);
+    }
+  };
+
+  const handlePrintQRCode = () => {
+    if (!qrCodeData || !selectedMeeting) {
+      alert("QR Code not available for printing");
+      return;
+    }
+
+    // Create a new window for printing
+    const printWindow = window.open("", "_blank");
+
+    // Generate print-friendly HTML
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Meeting QR Code - ${selectedMeeting.title}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              margin: 0;
+              padding: 20px;
+              text-align: center;
+              background: white;
+            }
+            .qr-container {
+              max-width: 400px;
+              margin: 0 auto;
+              padding: 20px;
+              border: 2px solid #000;
+              border-radius: 10px;
+            }
+            .qr-title {
+              font-size: 24px;
+              font-weight: bold;
+              margin-bottom: 10px;
+              color: #000;
+            }
+            .qr-subtitle {
+              font-size: 18px;
+              margin-bottom: 20px;
+              color: #333;
+            }
+            .qr-image {
+              width: 250px;
+              height: 250px;
+              margin: 20px auto;
+              border: 1px solid #ccc;
+            }
+            .meeting-info {
+              font-size: 14px;
+              margin-top: 20px;
+              line-height: 1.5;
+              color: #333;
+            }
+            .meeting-info p {
+              margin: 5px 0;
+            }
+            .instructions {
+              font-size: 16px;
+              margin-top: 20px;
+              padding: 10px;
+              background-color: #f0f8ff;
+              border: 1px solid #007bff;
+              border-radius: 5px;
+              color: #007bff;
+            }
+            @media print {
+              body { margin: 0; padding: 10px; }
+              .qr-container { border: 2px solid #000; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="qr-container">
+            <div class="qr-title">PTA Meeting Attendance</div>
+            <div class="qr-subtitle">Scan to Mark Present</div>
+            
+            <img src="${
+              qrCodeData.qrCodeDataUrl
+            }" alt="QR Code" class="qr-image" />
+            
+            <div class="meeting-info">
+              <p><strong>Meeting:</strong> ${selectedMeeting.title}</p>
+              <p><strong>Date:</strong> ${formatDate(selectedMeeting.date)}</p>
+              <p><strong>Time:</strong> ${formatTimeDisplay(
+                selectedMeeting.startTime
+              )} - ${formatTimeDisplay(selectedMeeting.endTime)}</p>
+              <p><strong>Venue:</strong> ${selectedMeeting.venue || "TBA"}</p>
+              ${
+                qrCodeData.expiresAt
+                  ? `<p><strong>Valid until:</strong> ${new Date(
+                      qrCodeData.expiresAt
+                    ).toLocaleString()}</p>`
+                  : ""
+              }
+            </div>
+            
+            <div class="instructions">
+              📱 Parents: Use the "QR Scanner" in your account to scan this code and mark your attendance
+            </div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    // Write content and print
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+
+    // Wait for the image to load before printing
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+    };
   };
 
   const handleEnterEditMode = () => {
@@ -351,6 +495,7 @@ const MeetingsAndAttendance = () => {
     setIsEditMode(false);
     setShowViewModal(false);
     setSelectedMeeting(null);
+    setQrCodeData(null);
   };
 
   const handleDeleteMeeting = async (meetingId) => {
@@ -1087,6 +1232,7 @@ const MeetingsAndAttendance = () => {
             setShowViewModal(false);
             setIsEditMode(false);
             setSelectedMeeting(null);
+            setQrCodeData(null);
           }}
           title={isEditMode ? "Edit Meeting" : "View Meeting"}
           size="lg"
@@ -1258,13 +1404,84 @@ const MeetingsAndAttendance = () => {
               />
             </div>
 
+            {/* QR Code Section */}
+            {!isEditMode && (
+              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-medium text-gray-900">
+                    QR Code for Attendance
+                  </h3>
+                  <div className="flex space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handlePrintQRCode}
+                      className="text-xs"
+                    >
+                      🖨️ Print QR Code
+                    </Button>
+                  </div>
+                </div>
+
+                {qrCodeLoading ? (
+                  <div className="flex justify-center py-8">
+                    <LoadingSpinner />
+                  </div>
+                ) : qrCodeData ? (
+                  <div className="text-center">
+                    <div className="inline-block bg-white p-4 rounded-lg border">
+                      <img
+                        src={qrCodeData.qrCodeDataUrl}
+                        alt="Meeting QR Code"
+                        className="w-48 h-48 mx-auto"
+                      />
+                    </div>
+                    <div className="mt-3 text-xs text-gray-600 space-y-1">
+                      <p>
+                        <strong>Meeting:</strong> {selectedMeeting.title}
+                      </p>
+                      <p>
+                        <strong>Date:</strong>{" "}
+                        {formatDate(selectedMeeting.date)}
+                      </p>
+                      <p>
+                        <strong>Time:</strong>{" "}
+                        {formatTimeDisplay(selectedMeeting.startTime)} -{" "}
+                        {formatTimeDisplay(selectedMeeting.endTime)}
+                      </p>
+                      {qrCodeData.expiresAt && (
+                        <p>
+                          <strong>QR Code expires:</strong>{" "}
+                          {new Date(qrCodeData.expiresAt).toLocaleString()}
+                        </p>
+                      )}
+                      <p className="text-blue-600 font-medium">
+                        📱 Parents can scan this QR code to mark attendance
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>⚠️ QR Code not available</p>
+                    <p className="text-sm">
+                      Unable to generate QR code for this meeting
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="flex justify-end space-x-2 pt-4 border-t border-gray-200">
               {!isEditMode ? (
                 <>
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => setShowViewModal(false)}
+                    onClick={() => {
+                      setShowViewModal(false);
+                      setQrCodeData(null);
+                    }}
                   >
                     Close
                   </Button>

@@ -357,3 +357,14 @@ export const sendNotificationsSchema = Joi.object({
       "string.max": "Custom message cannot exceed 1000 characters",
     }),
 });
+
+/**
+ * Validation schema for QR code scanning
+ */
+export const scanQRCodeSchema = Joi.object({
+  qrCodeData: Joi.string().trim().required().messages({
+    "string.base": "QR code data must be a string",
+    "string.empty": "QR code data is required",
+    "any.required": "QR code data is required",
+  }),
+});

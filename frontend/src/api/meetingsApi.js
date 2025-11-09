@@ -76,4 +76,19 @@ export const meetingsApi = {
       actualAttendees,
     });
   },
+
+  // Generate QR code for meeting (Admin only)
+  generateQRCode: async (meetingId) => {
+    return await fetchClient.post(`/api/meetings/${meetingId}/qr-code`);
+  },
+
+  // Get QR code for meeting
+  getQRCode: async (meetingId) => {
+    return await fetchClient.get(`/api/meetings/${meetingId}/qr-code`);
+  },
+
+  // Scan QR code for attendance (Parent only)
+  scanQRCode: async (qrCodeData) => {
+    return await fetchClient.post("/api/meetings/scan-qr", { qrCodeData });
+  },
 };

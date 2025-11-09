@@ -336,3 +336,106 @@ export const cancelMeeting = asyncHandler(
       .json(new ApiResponse(200, meeting, "Meeting cancelled successfully"));
   }
 );
+
+/**
+ * @desc    Generate QR code for meeting
+ * @route   POST /api/meetings/:id/qr-code
+ * @access  Private (Admin only)
+ */
+export const generateQRCode = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const meetingId = parseInt(id, 10);
+
+    if (isNaN(meetingId)) {
+      throw new ApiError(400, "Invalid meeting ID");
+    }
+
+    const qrData = await meetingService.generateMeetingQRCode(meetingId);
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, qrData, "QR code generated successfully"));
+  }
+);
+
+/**
+ * @desc    Get QR code data URL for meeting (for display)
+ * @route   GET /api/meetings/:id/qr-code
+ * @access  Private
+ */
+export const getQRCode = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const meetingId = parseInt(id, 10);
+
+  if (isNaN(meetingId)) {
+    throw new ApiError(400, "Invalid meeting ID");
+  }
+
+  const meeting = await meetingService.getMeetingById(meetingId);
+
+  if (!meeting.qrCode) {
+    throw new ApiError(404, "QR code not found for this meeting");
+  }
+
+  // Regenerate QR code data URL
+  const qrData = JSON.stringify({
+    meetingId: meetingId,
+    qrCodeId: meeting.qrCode,
+    timestamp: Date.now(),
+  });
+
+  const QRCode = require("qrcode");
+  const qrCodeDataUrl = await QRCode.toDataURL(qrData, {
+    width: 256,
+    margin: 2,
+    color: {
+      dark: "#000000",
+      light: "#FFFFFF",
+    },
+  });
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {
+        qrCode: meeting.qrCode,
+        qrCodeDataUrl,
+        expiresAt: meeting.qrCodeExpiresAt,
+        isActive: meeting.qrCodeActive,
+      },
+      "QR code retrieved successfully"
+    )
+  );
+});
+
+/**
+ * @desc    Scan QR code to mark attendance
+ * @route   POST /api/meetings/scan-qr
+ * @access  Private (Parent only)
+ */
+export const scanQRCode = asyncHandler(async (req: Request, res: Response) => {
+  const { qrCodeData } = req.body;
+  const userId = req.user?.id;
+
+  if (!userId) {
+    throw new ApiError(401, "User not authenticated");
+  }
+
+  if (!qrCodeData) {
+    throw new ApiError(400, "QR code data is required");
+  }
+
+  const result = await meetingService.scanQRCodeForAttendance(
+    qrCodeData,
+    userId
+  );
+
+  if (result.success) {
+    res
+      .status(200)
+      .json(new ApiResponse(200, result.attendance, result.message));
+  } else {
+    throw new ApiError(400, result.message);
+  }
+});

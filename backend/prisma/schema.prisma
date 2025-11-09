@@ -148,6 +148,12 @@ model Meeting {
   reminderSent         Boolean  @default(false)
   reminderSentAt       DateTime?
   
+  // QR Code for Attendance
+  qrCode               String?  @unique // Unique QR code for the meeting
+  qrCodeGeneratedAt    DateTime?        // When QR code was generated
+  qrCodeExpiresAt      DateTime?        // QR code expiration time
+  qrCodeActive         Boolean  @default(true) // Whether QR code is active
+  
   // Relations
   createdBy   User   @relation(fields: [createdById], references: [id])
   createdById Int
@@ -207,6 +213,11 @@ model Attendance {
   penaltyApplied  Boolean  @default(false)
   penaltyAppliedAt DateTime?
 
+  // QR Code scan tracking
+  scannedViaQR     Boolean   @default(false) // Whether attendance was marked via QR scan
+  qrScannedAt      DateTime?                 // When QR code was scanned
+  qrScanLocation   String?                   // Optional: GPS coordinates of scan
+  
   // Additional notes
   remarks String? @db.Text
   excuseReason String? @db.Text
