@@ -1,6 +1,7 @@
 import { ProjectStatus, ProjectPriority } from "@prisma/client";
 import prisma from "../../configs/prisma";
 import ApiError from "../../utils/ApiError";
+const cloudinary = require("../../configs/cloudinary");
 
 interface CreateProjectData {
   name: string;
@@ -45,6 +46,8 @@ interface UpdateProjectData {
   location?: string;
   venue?: string;
   notes?: string;
+  cancellationReason?: string;
+  completionImages?: string;
 }
 
 interface RecordExpenseData {
@@ -1078,5 +1081,170 @@ export const getPublicDocuments = async (filters: any = {}) => {
       limit: parseInt(limit),
       totalPages: Math.ceil(documents.length / limit),
     },
+  };
+};
+
+/**
+ * Upload completion images to Cloudinary
+ */
+export const uploadCompletionImages = async (
+  projectId: number,
+  files: Express.Multer.File[]
+) => {
+  // Check if project exists
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+  });
+
+  if (!project) {
+    throw new ApiError(404, "Project not found");
+  }
+
+  // Allow uploads for COMPLETED projects or projects that will be marked as COMPLETED
+  // (No strict validation here - let frontend control when images can be uploaded)
+
+  // Parse existing images
+  let existingImages: string[] = [];
+  if (project.completionImages) {
+    try {
+      existingImages = JSON.parse(project.completionImages);
+      if (!Array.isArray(existingImages)) {
+        existingImages = [];
+      }
+    } catch (error) {
+      existingImages = [];
+    }
+  }
+
+  // Upload each file to Cloudinary
+  const uploadPromises = files.map((file) => {
+    return new Promise<string>((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: "epta/project-completions",
+          public_id: `project-${projectId}-${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(7)}`,
+          resource_type: "auto",
+        },
+        (error: any, result: any) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result.secure_url);
+          }
+        }
+      );
+
+      uploadStream.end(file.buffer);
+    });
+  });
+
+  const uploadedUrls = await Promise.all(uploadPromises);
+
+  // Combine with existing images
+  const allImages = [...existingImages, ...uploadedUrls];
+
+  // Update project with new image URLs
+  const updatedProject = await prisma.project.update({
+    where: { id: projectId },
+    data: {
+      completionImages: JSON.stringify(allImages),
+    },
+    include: {
+      createdBy: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return {
+    project: updatedProject,
+    uploadedImages: uploadedUrls,
+    totalImages: allImages.length,
+  };
+};
+
+/**
+ * Delete a completion image from Cloudinary
+ */
+export const deleteCompletionImage = async (
+  projectId: number,
+  imageUrl: string
+) => {
+  // Check if project exists
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+  });
+
+  if (!project) {
+    throw new ApiError(404, "Project not found");
+  }
+
+  // Parse existing images
+  let existingImages: string[] = [];
+  if (project.completionImages) {
+    try {
+      existingImages = JSON.parse(project.completionImages);
+      if (!Array.isArray(existingImages)) {
+        throw new ApiError(400, "Invalid completion images format");
+      }
+    } catch (error) {
+      throw new ApiError(400, "Invalid completion images format");
+    }
+  }
+
+  // Check if image exists in the array
+  if (!existingImages.includes(imageUrl)) {
+    throw new ApiError(404, "Image not found in project completion images");
+  }
+
+  // Extract public_id from Cloudinary URL
+  try {
+    const urlParts = imageUrl.split("/");
+    const fileWithExtension = urlParts[urlParts.length - 1];
+    const fileName = fileWithExtension.split(".")[0];
+    const folder = "epta/project-completions";
+    const publicId = `${folder}/${fileName}`;
+
+    // Delete from Cloudinary
+    await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    console.error("Error deleting from Cloudinary:", error);
+    // Continue even if Cloudinary deletion fails
+  }
+
+  // Remove image from array
+  const updatedImages = existingImages.filter((img) => img !== imageUrl);
+
+  // Update project
+  const updatedProject = await prisma.project.update({
+    where: { id: projectId },
+    data: {
+      completionImages: JSON.stringify(updatedImages),
+    },
+    include: {
+      createdBy: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return {
+    project: updatedProject,
+    deletedImage: imageUrl,
+    remainingImages: updatedImages.length,
   };
 };

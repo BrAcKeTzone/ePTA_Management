@@ -3,6 +3,7 @@ import * as projectController from "./projects.controller";
 import { authenticate, authorize } from "../../middlewares/auth.middleware";
 import validate from "../../middlewares/validate.middleware";
 import * as projectValidation from "./projects.validation";
+import upload from "../../middlewares/upload.middleware";
 
 const router = express.Router();
 
@@ -81,6 +82,21 @@ router.put(
   authorize("ADMIN"),
   validate(projectValidation.updateProjectSchema, "body"),
   projectController.updateProject
+);
+
+// Upload completion images (admin only)
+router.post(
+  "/:id/completion-images",
+  authorize("ADMIN"),
+  upload.array("images", 10),
+  projectController.uploadCompletionImages
+);
+
+// Delete completion image (admin only)
+router.delete(
+  "/:id/completion-images",
+  authorize("ADMIN"),
+  projectController.deleteCompletionImage
 );
 
 // Update project status (admin only)

@@ -226,4 +226,34 @@ export const projectsApi = {
       `/api/projects/${projectId}/timeline/${timelineId}`
     );
   },
+
+  // Upload completion images to Cloudinary
+  uploadCompletionImages: async (projectId, files) => {
+    const formData = new FormData();
+
+    // Append each file to the FormData
+    for (let i = 0; i < files.length; i++) {
+      formData.append("images", files[i]);
+    }
+
+    return await fetchClient.post(
+      `/api/projects/${projectId}/completion-images`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+  },
+
+  // Delete a completion image
+  deleteCompletionImage: async (projectId, imageUrl) => {
+    return await fetchClient.delete(
+      `/api/projects/${projectId}/completion-images`,
+      {
+        data: { imageUrl },
+      }
+    );
+  },
 };

@@ -715,3 +715,57 @@ export const deleteTimelineEvent = asyncHandler(
       .json(new ApiResponse(200, null, "Timeline event deleted successfully"));
   }
 );
+
+/**
+ * @desc    Upload completion images to Cloudinary
+ * @route   POST /api/projects/:id/completion-images
+ * @access  Private (Admin only)
+ */
+export const uploadCompletionImages = asyncHandler(
+  async (req: Request, res: Response) => {
+    const projectId = parseInt(req.params.id);
+    const files = req.files as Express.Multer.File[];
+
+    if (!files || files.length === 0) {
+      throw new ApiError(400, "No images provided");
+    }
+
+    const result = await projectService.uploadCompletionImages(
+      projectId,
+      files
+    );
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, result, "Completion images uploaded successfully")
+      );
+  }
+);
+
+/**
+ * @desc    Delete a completion image from Cloudinary
+ * @route   DELETE /api/projects/:id/completion-images
+ * @access  Private (Admin only)
+ */
+export const deleteCompletionImage = asyncHandler(
+  async (req: Request, res: Response) => {
+    const projectId = parseInt(req.params.id);
+    const { imageUrl } = req.body;
+
+    if (!imageUrl) {
+      throw new ApiError(400, "Image URL is required");
+    }
+
+    const result = await projectService.deleteCompletionImage(
+      projectId,
+      imageUrl
+    );
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, result, "Completion image deleted successfully")
+      );
+  }
+);

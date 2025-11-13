@@ -371,6 +371,10 @@ model Project {
   attachments     String?     @db.Text  // JSON array of file URLs
   notes           String?     @db.Text  // Additional notes
   
+  // Cancellation and Completion
+  cancellationReason String?  @db.Text  // Reason if status is CANCELLED
+  completionImages   String?  @db.LongText  // JSON array of base64 image data when COMPLETED
+  
   // Relations
   createdBy   User   @relation(fields: [createdById], references: [id])
   createdById Int

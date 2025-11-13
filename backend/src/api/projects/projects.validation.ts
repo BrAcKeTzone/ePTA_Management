@@ -47,6 +47,8 @@ export const updateProjectSchema = Joi.object({
   location: Joi.string().max(200).optional().allow(null, ""),
   venue: Joi.string().max(200).optional().allow(null, ""),
   notes: Joi.string().max(5000).optional().allow(null, ""),
+  cancellationReason: Joi.string().max(5000).optional().allow(null, ""),
+  completionImages: Joi.string().max(10000).optional().allow(null, ""), // Array of Cloudinary URLs stored as JSON string
 }).min(1);
 
 // Get projects with filters
