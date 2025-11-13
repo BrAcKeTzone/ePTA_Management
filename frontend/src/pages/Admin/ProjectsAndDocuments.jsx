@@ -24,10 +24,12 @@ const ProjectsAndDocuments = () => {
     priority: "",
     status: "",
     cancellationReason: "",
-    completionImages: [], // Existing images from server
+    completionImages: [],
   });
-  const [pendingImageFiles, setPendingImageFiles] = useState([]); // New files to upload
   const [uploadingImages, setUploadingImages] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [galleryImages, setGalleryImages] = useState([]);
   const [newProject, setNewProject] = useState({
     name: "",
     description: "",
@@ -194,7 +196,6 @@ const ProjectsAndDocuments = () => {
   const handleEditProject = (project) => {
     setSelectedProject(project);
     setIsEditingProject(false);
-    setPendingImageFiles([]); // Reset pending files
 
     let parsedImages = [];
     if (project.completionImages) {
@@ -234,49 +235,11 @@ const ProjectsAndDocuments = () => {
         updateData.cancellationReason = editProjectData.cancellationReason;
       }
 
-      // Validate and upload images if status is COMPLETED
+      // Validate images if status is COMPLETED
       if (editProjectData.status === "COMPLETED") {
-        const totalImages =
-          editProjectData.completionImages.length + pendingImageFiles.length;
-
-        if (totalImages === 0) {
+        if (editProjectData.completionImages.length === 0) {
           alert("Please upload at least one completion image");
           return;
-        }
-
-        // Upload pending files to Cloudinary if any
-        if (pendingImageFiles.length > 0) {
-          setUploadingImages(true);
-          try {
-            const response = await projectsApi.uploadCompletionImages(
-              selectedProject.id,
-              pendingImageFiles
-            );
-
-            console.log("Upload response:", response);
-
-            const uploadedImages =
-              response?.data?.data?.uploadedImages ||
-              response?.data?.uploadedImages ||
-              [];
-
-            if (!uploadedImages || uploadedImages.length === 0) {
-              throw new Error("Failed to upload images");
-            }
-
-            console.log("Images uploaded successfully to Cloudinary");
-          } catch (error) {
-            console.error("Error uploading images:", error);
-            alert(
-              error.response?.data?.message ||
-                error.message ||
-                "Error uploading images. Please try again."
-            );
-            setUploadingImages(false);
-            return;
-          } finally {
-            setUploadingImages(false);
-          }
         }
       }
 
@@ -284,7 +247,6 @@ const ProjectsAndDocuments = () => {
       await projectsApi.updateProject(selectedProject.id, updateData);
       setIsEditingProject(false);
       setSelectedProject(null);
-      setPendingImageFiles([]);
       fetchProjects();
       alert("Project updated successfully!");
     } catch (error) {
@@ -293,7 +255,7 @@ const ProjectsAndDocuments = () => {
     }
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
@@ -303,60 +265,63 @@ const ProjectsAndDocuments = () => {
       return;
     }
 
-    // Store files locally - will upload on save
-    setPendingImageFiles([...pendingImageFiles, ...files]);
+    try {
+      // Upload immediately to Cloudinary
+      const response = await projectsApi.uploadCompletionImages(
+        selectedProject.id,
+        files
+      );
+
+      // Extract uploaded images from response
+      const uploadedImages =
+        response.data?.data?.uploadedImages ||
+        response.data?.uploadedImages ||
+        [];
+
+      // Add to existing images
+      setEditProjectData({
+        ...editProjectData,
+        completionImages: [
+          ...editProjectData.completionImages,
+          ...uploadedImages,
+        ],
+      });
+
+      alert("Images uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      alert(
+        error.response?.data?.message ||
+          "Error uploading images. Please try again."
+      );
+    }
 
     // Clear the file input so the same file can be selected again
     e.target.value = null;
   };
 
-  const handleRemoveImage = async (index, isPending = false) => {
-    if (isPending) {
-      // Remove from pending files (not yet uploaded)
-      const updatedPendingFiles = pendingImageFiles.filter(
-        (_, i) => i !== index
+  const handleRemoveImage = async (index) => {
+    const imageToDelete = editProjectData.completionImages[index];
+
+    // Check if image URL is from Cloudinary
+    if (
+      imageToDelete.url &&
+      (imageToDelete.url.startsWith("http://") ||
+        imageToDelete.url.startsWith("https://"))
+    ) {
+      const confirmDelete = window.confirm(
+        "Are you sure you want to delete this image from the server?"
       );
-      setPendingImageFiles(updatedPendingFiles);
-    } else {
-      // Remove existing Cloudinary image
-      const imageToDelete = editProjectData.completionImages[index];
+      if (!confirmDelete) return;
 
-      // Check if image URL is from Cloudinary
-      if (
-        imageToDelete.url &&
-        (imageToDelete.url.startsWith("http://") ||
-          imageToDelete.url.startsWith("https://"))
-      ) {
-        const confirmDelete = window.confirm(
-          "Are you sure you want to delete this image from the server?"
+      try {
+        // Delete immediately from Cloudinary
+        await projectsApi.deleteCompletionImage(
+          selectedProject.id,
+          imageToDelete.url
         );
-        if (!confirmDelete) return;
 
-        try {
-          await projectsApi.deleteCompletionImage(
-            selectedProject.id,
-            imageToDelete.url
-          );
-
-          // Remove from local state after successful deletion
-          const updatedImages = editProjectData.completionImages.filter(
-            (_, i) => i !== index
-          );
-          setEditProjectData({
-            ...editProjectData,
-            completionImages: updatedImages,
-          });
-
-          alert("Image deleted successfully!");
-        } catch (error) {
-          console.error("Error deleting image:", error);
-          alert(
-            error.response?.data?.message ||
-              "Error deleting image. Please try again."
-          );
-        }
-      } else {
-        // For base64 images (backward compatibility)
+        // Remove from local state after successful deletion
         const updatedImages = editProjectData.completionImages.filter(
           (_, i) => i !== index
         );
@@ -364,9 +329,69 @@ const ProjectsAndDocuments = () => {
           ...editProjectData,
           completionImages: updatedImages,
         });
+
+        alert("Image deleted successfully!");
+      } catch (error) {
+        console.error("Error deleting image:", error);
+        alert(
+          error.response?.data?.message ||
+            "Error deleting image. Please try again."
+        );
       }
+    } else {
+      // For base64 images (backward compatibility)
+      const updatedImages = editProjectData.completionImages.filter(
+        (_, i) => i !== index
+      );
+      setEditProjectData({
+        ...editProjectData,
+        completionImages: updatedImages,
+      });
     }
   };
+
+  // Gallery viewer functions
+  const openGallery = (images, startIndex) => {
+    setGalleryImages(images);
+    setCurrentImageIndex(startIndex);
+    setGalleryOpen(true);
+  };
+
+  const closeGallery = () => {
+    setGalleryOpen(false);
+    setCurrentImageIndex(0);
+    setGalleryImages([]);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev < galleryImages.length - 1 ? prev + 1 : 0
+    );
+  };
+
+  const previousImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev > 0 ? prev - 1 : galleryImages.length - 1
+    );
+  };
+
+  // Keyboard navigation for gallery
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (!galleryOpen) return;
+
+      if (e.key === "ArrowRight") {
+        nextImage();
+      } else if (e.key === "ArrowLeft") {
+        previousImage();
+      } else if (e.key === "Escape") {
+        closeGallery();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [galleryOpen, galleryImages.length]);
 
   const handleDeleteProject = async (projectId) => {
     if (window.confirm("Are you sure you want to delete this project?")) {
@@ -1015,10 +1040,15 @@ const ProjectsAndDocuments = () => {
             label="Budget (₱)"
             type="number"
             placeholder="0"
+            min="0"
             value={newProject.budget}
-            onChange={(e) =>
-              setNewProject({ ...newProject, budget: e.target.value })
-            }
+            onChange={(e) => {
+              const value = e.target.value;
+              // Prevent negative numbers
+              if (value === "" || parseFloat(value) >= 0) {
+                setNewProject({ ...newProject, budget: value });
+              }
+            }}
           />
 
           <div className="flex justify-end space-x-2 pt-4 border-t">
@@ -1283,13 +1313,20 @@ const ProjectsAndDocuments = () => {
                                   <img
                                     src={img.url || img}
                                     alt={`Existing ${index + 1}`}
-                                    className="w-full h-24 object-cover rounded-md border"
+                                    className="w-full h-24 object-cover rounded-md border cursor-pointer hover:opacity-80"
+                                    onClick={() =>
+                                      openGallery(
+                                        editProjectData.completionImages,
+                                        index
+                                      )
+                                    }
                                   />
                                   <button
                                     type="button"
-                                    onClick={() =>
-                                      handleRemoveImage(index, false)
-                                    }
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRemoveImage(index, false);
+                                    }}
                                     className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                     title="Delete from server"
                                   >
@@ -1302,51 +1339,13 @@ const ProjectsAndDocuments = () => {
                         </div>
                       )}
 
-                    {/* Display pending files (not yet uploaded) */}
-                    {pendingImageFiles.length > 0 && (
-                      <div>
-                        <p className="text-xs text-gray-600 mb-2">
-                          Pending upload ({pendingImageFiles.length} file
-                          {pendingImageFiles.length > 1 ? "s" : ""}):
-                        </p>
-                        <div className="grid grid-cols-3 gap-3">
-                          {pendingImageFiles.map((file, index) => (
-                            <div
-                              key={`pending-${index}`}
-                              className="relative group"
-                            >
-                              <div className="w-full h-24 bg-gray-100 rounded-md border border-dashed border-gray-400 flex items-center justify-center">
-                                <div className="text-center p-2">
-                                  <p className="text-xs text-gray-600 truncate">
-                                    {file.name}
-                                  </p>
-                                  <p className="text-xs text-gray-500">
-                                    {(file.size / 1024).toFixed(1)} KB
-                                  </p>
-                                </div>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveImage(index, true)}
-                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="Remove file"
-                              >
-                                ×
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
                     {(!Array.isArray(editProjectData.completionImages) ||
-                      editProjectData.completionImages.length === 0) &&
-                      pendingImageFiles.length === 0 && (
-                        <p className="text-sm text-gray-500 italic">
-                          No images uploaded yet. Please upload at least one
-                          image.
-                        </p>
-                      )}
+                      editProjectData.completionImages.length === 0) && (
+                      <p className="text-sm text-gray-500 italic">
+                        No images uploaded yet. Please upload at least one
+                        image.
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <div className="grid grid-cols-3 gap-3">
@@ -1363,9 +1362,7 @@ const ProjectsAndDocuments = () => {
                                   src={img.url || img}
                                   alt={`Completion ${index + 1}`}
                                   className="w-full h-24 object-cover rounded-md border cursor-pointer hover:opacity-80"
-                                  onClick={() =>
-                                    window.open(img.url || img, "_blank")
-                                  }
+                                  onClick={() => openGallery(images, index)}
                                 />
                               </div>
                             ));
@@ -1457,6 +1454,93 @@ const ProjectsAndDocuments = () => {
               )}
           </div>
         </Modal>
+      )}
+
+      {/* Gallery Viewer Overlay */}
+      {galleryOpen && galleryImages.length > 0 && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-95 z-[9999] flex items-center justify-center"
+          onClick={closeGallery}
+        >
+          {/* Close button */}
+          <button
+            onClick={closeGallery}
+            className="absolute top-4 right-4 text-white text-4xl font-bold hover:text-gray-300 z-[10000]"
+            title="Close (ESC)"
+          >
+            ×
+          </button>
+
+          {/* Image counter */}
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-lg font-semibold">
+            {currentImageIndex + 1} / {galleryImages.length}
+          </div>
+
+          {/* Previous button */}
+          {galleryImages.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                previousImage();
+              }}
+              className="absolute left-4 text-white text-6xl font-bold hover:text-gray-300 z-[10000] transition-colors"
+              title="Previous (←)"
+            >
+              ‹
+            </button>
+          )}
+
+          {/* Current image */}
+          <div
+            className="max-w-[90vw] max-h-[90vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={
+                galleryImages[currentImageIndex]?.url ||
+                galleryImages[currentImageIndex]
+              }
+              alt={`Image ${currentImageIndex + 1}`}
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+
+          {/* Next button */}
+          {galleryImages.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                nextImage();
+              }}
+              className="absolute right-4 text-white text-6xl font-bold hover:text-gray-300 z-[10000] transition-colors"
+              title="Next (→)"
+            >
+              ›
+            </button>
+          )}
+
+          {/* Thumbnail strip */}
+          {galleryImages.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 overflow-x-auto max-w-[90vw] px-4 py-2 bg-black bg-opacity-50 rounded-lg">
+              {galleryImages.map((img, index) => (
+                <img
+                  key={index}
+                  src={img.url || img}
+                  alt={`Thumbnail ${index + 1}`}
+                  className={`h-16 w-16 object-cover rounded cursor-pointer transition-all ${
+                    index === currentImageIndex
+                      ? "border-4 border-blue-500 opacity-100"
+                      : "border-2 border-gray-500 opacity-60 hover:opacity-100"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex(index);
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
