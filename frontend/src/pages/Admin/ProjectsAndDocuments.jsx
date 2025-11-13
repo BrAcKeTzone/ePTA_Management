@@ -665,12 +665,128 @@ const ProjectsAndDocuments = () => {
             </Button>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border">
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-white rounded-lg shadow-sm border">
             <Table
               data={projects}
               columns={projectColumns}
               emptyMessage="No projects found"
             />
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="lg:hidden">
+            {projects.length > 0 ? (
+              <div className="space-y-4">
+                {projects.map((project) => (
+                  <div
+                    key={project.id}
+                    className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm overflow-hidden"
+                  >
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            project.status === "COMPLETED"
+                              ? "bg-green-100 text-green-800"
+                              : project.status === "ACTIVE"
+                              ? "bg-blue-100 text-blue-800"
+                              : project.status === "CANCELLED"
+                              ? "bg-red-100 text-red-800"
+                              : project.status === "ON_HOLD"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {project.status}
+                        </span>
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            project.priority === "URGENT"
+                              ? "bg-red-100 text-red-800"
+                              : project.priority === "HIGH"
+                              ? "bg-orange-100 text-orange-800"
+                              : project.priority === "MEDIUM"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-gray-100 text-gray-800"
+                          }`}
+                        >
+                          {project.priority}
+                        </span>
+                      </div>
+                      <h3 className="font-medium text-gray-900 break-words mb-1">
+                        {project.name}
+                      </h3>
+                      <p className="text-sm text-gray-500 break-words line-clamp-2">
+                        {project.description || "No description"}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 text-sm mb-3">
+                      <div className="flex justify-between gap-2">
+                        <span className="text-gray-500 flex-shrink-0">
+                          Budget:
+                        </span>
+                        <span className="text-gray-900 font-medium text-right break-words">
+                          ₱{project.budget?.toLocaleString() || "0"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-gray-500 flex-shrink-0">
+                          Start Date:
+                        </span>
+                        <span className="text-gray-900 font-medium text-right">
+                          {formatDate(project.startDate)}
+                        </span>
+                      </div>
+                      {project.endDate && (
+                        <div className="flex justify-between gap-2">
+                          <span className="text-gray-500 flex-shrink-0">
+                            End Date:
+                          </span>
+                          <span className="text-gray-900 font-medium text-right">
+                            {formatDate(project.endDate)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between gap-2">
+                        <span className="text-gray-500 flex-shrink-0">
+                          Created By:
+                        </span>
+                        <span className="text-gray-900 font-medium text-right break-words">
+                          {project.createdBy
+                            ? `${project.createdBy.firstName} ${project.createdBy.lastName}`
+                            : "N/A"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEditProject(project)}
+                        className="w-full"
+                      >
+                        View Details
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteProject(project.id)}
+                        className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 bg-white rounded-lg border">
+                <p className="text-gray-500">No projects found</p>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -684,12 +800,104 @@ const ProjectsAndDocuments = () => {
             </Button>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm border">
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-white rounded-lg shadow-sm border">
             <Table
               data={documents}
               columns={documentColumns}
               emptyMessage="No documents found"
             />
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="lg:hidden">
+            {documents.length > 0 ? (
+              <div className="space-y-4">
+                {documents.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm overflow-hidden"
+                  >
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                          {doc.isPublic ? "Public" : "Private"}
+                        </span>
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                          {doc.category === "meeting_minutes"
+                            ? "Meeting Minutes"
+                            : doc.category === "resolution"
+                            ? "Resolution"
+                            : doc.category === "report"
+                            ? "Report"
+                            : "Other"}
+                        </span>
+                      </div>
+                      <h3 className="font-medium text-gray-900 break-words mb-1">
+                        {doc.title}
+                      </h3>
+                      {doc.description && (
+                        <p className="text-sm text-gray-600 break-words line-clamp-2">
+                          {doc.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 text-sm mb-3">
+                      <div className="flex justify-between gap-2">
+                        <span className="text-gray-500 flex-shrink-0">
+                          Project:
+                        </span>
+                        <span className="text-gray-900 font-medium text-right break-words">
+                          {doc.project?.name || "N/A"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-gray-500 flex-shrink-0">
+                          Uploaded:
+                        </span>
+                        <span className="text-gray-900 font-medium text-right">
+                          {formatDate(doc.uploadedAt)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between gap-2">
+                        <span className="text-gray-500 flex-shrink-0">
+                          Uploaded By:
+                        </span>
+                        <span className="text-gray-900 font-medium text-right break-words">
+                          {doc.uploadedBy
+                            ? `${doc.uploadedBy.firstName} ${doc.uploadedBy.lastName}`
+                            : "N/A"}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDownloadDocument(doc.id)}
+                        className="w-full"
+                      >
+                        Download
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDeleteDocument(doc.id)}
+                        className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 bg-white rounded-lg border">
+                <p className="text-gray-500">No documents found</p>
+              </div>
+            )}
           </div>
         </div>
       )}
