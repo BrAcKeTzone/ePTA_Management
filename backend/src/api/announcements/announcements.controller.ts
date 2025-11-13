@@ -213,3 +213,56 @@ export const getMyReadStatus = asyncHandler(
       .json(new ApiResponse(200, result, "Read status retrieved successfully"));
   }
 );
+
+// Toggle featured status
+export const toggleFeatured = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+
+    const announcement = await announcementService.toggleFeatured(id);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          announcement,
+          "Featured status toggled successfully"
+        )
+      );
+  }
+);
+
+// Archive announcement
+export const archiveAnnouncement = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+
+    const announcement = await announcementService.archiveAnnouncement(id);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(200, announcement, "Announcement archived successfully")
+      );
+  }
+);
+
+// Unarchive announcement
+export const unarchiveAnnouncement = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+
+    const announcement = await announcementService.unarchiveAnnouncement(id);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          announcement,
+          "Announcement unarchived successfully"
+        )
+      );
+  }
+);

@@ -571,6 +571,10 @@ model Announcement {
   publishDate DateTime?
   expiryDate  DateTime?
   
+  // Status flags
+  isFeatured Boolean @default(false)
+  isArchived Boolean @default(false)
+  
   // Optional attachment
   attachmentUrl  String?
   attachmentName String?
@@ -586,6 +590,8 @@ model Announcement {
   @@index([isPublished])
   @@index([publishDate])
   @@index([targetAudience])
+  @@index([isFeatured])
+  @@index([isArchived])
 }
 
 // Track which users have read which announcements

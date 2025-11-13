@@ -288,16 +288,150 @@ const AnnouncementsManagement = () => {
         </div>
       </div>
 
-      {/* Announcements Table */}
+      {/* Announcements Table/Cards */}
       <div className="bg-white rounded-lg shadow-sm border">
         <div className="p-6 border-b">
           <h2 className="text-lg font-semibold">All Announcements</h2>
         </div>
-        <Table
-          data={announcements}
-          columns={announcementColumns}
-          emptyMessage="No announcements found"
-        />
+
+        {/* Desktop Table View */}
+        <div className="hidden lg:block">
+          <Table
+            data={announcements}
+            columns={announcementColumns}
+            emptyMessage="No announcements found"
+          />
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="lg:hidden">
+          {announcements.length > 0 ? (
+            <div className="space-y-4 p-6">
+              {announcements.map((announcement) => (
+                <div
+                  key={announcement.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm"
+                >
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-medium text-gray-900 break-words">
+                        {announcement.title}
+                      </h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {formatDate(announcement.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mb-3">
+                    <p className="text-sm text-gray-600 line-clamp-2">
+                      {announcement.content}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        announcement.priority === "URGENT"
+                          ? "bg-red-100 text-red-800"
+                          : announcement.priority === "HIGH"
+                          ? "bg-orange-100 text-orange-800"
+                          : announcement.priority === "LOW"
+                          ? "bg-gray-100 text-gray-800"
+                          : "bg-blue-100 text-blue-800"
+                      }`}
+                    >
+                      {announcement.priority.charAt(0) +
+                        announcement.priority.slice(1).toLowerCase()}
+                    </span>
+                    {announcement.isFeatured && (
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        Featured
+                      </span>
+                    )}
+                    {isExpired(announcement.expiryDate) && (
+                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        Expired
+                      </span>
+                    )}
+                  </div>
+
+                  {announcement.expiryDate && (
+                    <div className="text-xs mb-3">
+                      <span
+                        className={`${
+                          isExpired(announcement.expiryDate)
+                            ? "text-red-600"
+                            : "text-gray-600"
+                        }`}
+                      >
+                        Expires: {formatDate(announcement.expiryDate)}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const formattedAnnouncement = {
+                            ...announcement,
+                            expiryDate: announcement.expiryDate
+                              ? new Date(announcement.expiryDate)
+                                  .toISOString()
+                                  .split("T")[0]
+                              : "",
+                          };
+                          setSelectedAnnouncement(formattedAnnouncement);
+                          setShowEditModal(true);
+                        }}
+                        className="flex-1"
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleToggleFeatured(announcement.id)}
+                        className="flex-1"
+                      >
+                        {announcement.isFeatured ? "Unfeature" : "Feature"}
+                      </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleArchiveAnnouncement(announcement.id)
+                        }
+                        className="flex-1"
+                      >
+                        Archive
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleDeleteAnnouncement(announcement.id)
+                        }
+                        className="flex-1 text-red-600 border-red-300 hover:bg-red-50"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 p-6">
+              <p className="text-gray-500">No announcements found</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Create Announcement Modal */}

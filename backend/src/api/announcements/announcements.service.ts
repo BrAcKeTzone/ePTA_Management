@@ -737,3 +737,55 @@ export const getMyReadStatus = async (
     },
   };
 };
+
+// Toggle featured status
+export const toggleFeatured = async (id: number): Promise<Announcement> => {
+  const announcement = await prisma.announcement.findUnique({
+    where: { id },
+  });
+
+  if (!announcement) {
+    throw new ApiError(404, "Announcement not found");
+  }
+
+  return await prisma.announcement.update({
+    where: { id },
+    data: { isFeatured: !announcement.isFeatured },
+  });
+};
+
+// Archive announcement
+export const archiveAnnouncement = async (
+  id: number
+): Promise<Announcement> => {
+  const announcement = await prisma.announcement.findUnique({
+    where: { id },
+  });
+
+  if (!announcement) {
+    throw new ApiError(404, "Announcement not found");
+  }
+
+  return await prisma.announcement.update({
+    where: { id },
+    data: { isArchived: true },
+  });
+};
+
+// Unarchive announcement
+export const unarchiveAnnouncement = async (
+  id: number
+): Promise<Announcement> => {
+  const announcement = await prisma.announcement.findUnique({
+    where: { id },
+  });
+
+  if (!announcement) {
+    throw new ApiError(404, "Announcement not found");
+  }
+
+  return await prisma.announcement.update({
+    where: { id },
+    data: { isArchived: false },
+  });
+};
