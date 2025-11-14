@@ -44,16 +44,33 @@ const AnnouncementsManagement = () => {
   const handleCreateAnnouncement = async (e) => {
     e.preventDefault();
     try {
-      // Convert expiryDate to ISO format if provided
+      // Convert expiryDate to ISO format at end of day if provided
+      let expiryDate = null;
+      if (newAnnouncement.expiryDate) {
+        const date = new Date(newAnnouncement.expiryDate);
+        // Set to end of day (23:59:59)
+        date.setHours(23, 59, 59, 999);
+        expiryDate = date.toISOString();
+      }
+
       const announcementData = {
         ...newAnnouncement,
-        expiryDate: newAnnouncement.expiryDate
-          ? new Date(newAnnouncement.expiryDate).toISOString()
-          : null,
+        expiryDate,
         createdById: user.id, // Add the current user's ID
       };
 
-      await announcementsApi.createAnnouncement(announcementData);
+      const response = await announcementsApi.createAnnouncement(
+        announcementData
+      );
+
+      // Add the new announcement to the state
+      const createdAnnouncement =
+        response.data?.data?.announcement || response.data?.data;
+      setAnnouncements((prevAnnouncements) => [
+        createdAnnouncement,
+        ...prevAnnouncements,
+      ]);
+
       setShowCreateModal(false);
       setNewAnnouncement({
         title: "",
@@ -63,7 +80,6 @@ const AnnouncementsManagement = () => {
         isFeatured: false,
         isPublished: true,
       });
-      fetchAnnouncements();
     } catch (error) {
       console.error("Error creating announcement:", error);
     }
@@ -72,21 +88,36 @@ const AnnouncementsManagement = () => {
   const handleEditAnnouncement = async (e) => {
     e.preventDefault();
     try {
-      // Convert expiryDate to ISO format if provided
+      // Convert expiryDate to ISO format at end of day if provided
+      let expiryDate = null;
+      if (selectedAnnouncement.expiryDate) {
+        const date = new Date(selectedAnnouncement.expiryDate);
+        // Set to end of day (23:59:59)
+        date.setHours(23, 59, 59, 999);
+        expiryDate = date.toISOString();
+      }
+
       const announcementData = {
         ...selectedAnnouncement,
-        expiryDate: selectedAnnouncement.expiryDate
-          ? new Date(selectedAnnouncement.expiryDate).toISOString()
-          : null,
+        expiryDate,
       };
 
-      await announcementsApi.updateAnnouncement(
+      const response = await announcementsApi.updateAnnouncement(
         selectedAnnouncement.id,
         announcementData
       );
+
+      // Update only the edited announcement in the state
+      const updatedAnnouncement =
+        response.data?.data?.announcement || response.data?.data;
+      setAnnouncements((prevAnnouncements) =>
+        prevAnnouncements.map((ann) =>
+          ann.id === selectedAnnouncement.id ? updatedAnnouncement : ann
+        )
+      );
+
       setShowEditModal(false);
       setSelectedAnnouncement(null);
-      fetchAnnouncements();
     } catch (error) {
       console.error("Error updating announcement:", error);
     }
@@ -96,7 +127,10 @@ const AnnouncementsManagement = () => {
     if (window.confirm("Are you sure you want to delete this announcement?")) {
       try {
         await announcementsApi.deleteAnnouncement(announcementId);
-        fetchAnnouncements();
+        // Remove the deleted announcement from state
+        setAnnouncements((prevAnnouncements) =>
+          prevAnnouncements.filter((ann) => ann.id !== announcementId)
+        );
       } catch (error) {
         console.error("Error deleting announcement:", error);
       }
@@ -105,8 +139,15 @@ const AnnouncementsManagement = () => {
 
   const handleToggleFeatured = async (announcementId) => {
     try {
-      await announcementsApi.toggleFeatured(announcementId);
-      fetchAnnouncements();
+      const response = await announcementsApi.toggleFeatured(announcementId);
+      // Update only the toggled announcement in the state
+      const updatedAnnouncement =
+        response.data?.data?.announcement || response.data?.data;
+      setAnnouncements((prevAnnouncements) =>
+        prevAnnouncements.map((ann) =>
+          ann.id === announcementId ? updatedAnnouncement : ann
+        )
+      );
     } catch (error) {
       console.error("Error toggling featured status:", error);
     }
@@ -114,8 +155,17 @@ const AnnouncementsManagement = () => {
 
   const handleArchiveAnnouncement = async (announcementId) => {
     try {
-      await announcementsApi.archiveAnnouncement(announcementId);
-      fetchAnnouncements();
+      const response = await announcementsApi.archiveAnnouncement(
+        announcementId
+      );
+      // Update only the archived announcement in the state
+      const updatedAnnouncement =
+        response.data?.data?.announcement || response.data?.data;
+      setAnnouncements((prevAnnouncements) =>
+        prevAnnouncements.map((ann) =>
+          ann.id === announcementId ? updatedAnnouncement : ann
+        )
+      );
     } catch (error) {
       console.error("Error archiving announcement:", error);
     }
@@ -199,7 +249,7 @@ const AnnouncementsManagement = () => {
             {announcements.map((announcement) => (
               <div
                 key={announcement.id}
-                className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow"
+                className="bg-white border border-gray-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col"
               >
                 {/* Header with Title and Badges */}
                 <div className="mb-4">
@@ -251,23 +301,13 @@ const AnnouncementsManagement = () => {
                 </div>
 
                 {/* Content Preview */}
-                <div className="mb-4">
+                <div className="mb-4 flex-1">
                   <p className="text-sm text-gray-600 line-clamp-3">
                     {announcement.content}
                   </p>
-                </div>
-
-                {/* Dates Info */}
-                <div className="mb-4 space-y-1 text-sm">
-                  <div className="flex justify-between text-gray-600">
-                    <span>Created:</span>
-                    <span className="font-medium text-gray-900">
-                      {formatDate(announcement.createdAt)}
-                    </span>
-                  </div>
                   {announcement.expiryDate && (
-                    <div className="flex justify-between text-gray-600">
-                      <span>Expires:</span>
+                    <div className="mt-2 text-sm text-gray-600">
+                      <span>Expires: </span>
                       <span
                         className={`font-medium ${
                           isExpired(announcement.expiryDate)
@@ -281,35 +321,44 @@ const AnnouncementsManagement = () => {
                   )}
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedAnnouncement(announcement);
-                      setShowEditModal(true);
-                    }}
-                    className="flex-1"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleArchiveAnnouncement(announcement.id)}
-                    className="flex-1"
-                  >
-                    Archive
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDeleteAnnouncement(announcement.id)}
-                    className="w-full text-red-600 hover:text-red-700"
-                  >
-                    Delete
-                  </Button>
+                {/* Bottom Section: Created Date and Action Buttons */}
+                <div className="mt-auto pt-4 border-t border-gray-100">
+                  <div className="flex justify-between items-center text-sm text-gray-500 mb-3">
+                    <span>Created:</span>
+                    <span className="font-medium text-gray-900">
+                      {formatDate(announcement.createdAt)}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedAnnouncement(announcement);
+                        setShowEditModal(true);
+                      }}
+                      className="flex-1"
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleArchiveAnnouncement(announcement.id)}
+                      className="flex-1"
+                    >
+                      Archive
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteAnnouncement(announcement.id)}
+                      className="w-full text-red-600 hover:text-red-700"
+                    >
+                      Delete
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -378,6 +427,7 @@ const AnnouncementsManagement = () => {
             <Input
               label="Expiry Date (Optional)"
               type="date"
+              min={new Date().toISOString().split("T")[0]}
               value={newAnnouncement.expiryDate}
               onChange={(e) =>
                 setNewAnnouncement({
@@ -481,6 +531,7 @@ const AnnouncementsManagement = () => {
               <Input
                 label="Expiry Date (Optional)"
                 type="date"
+                min={new Date().toISOString().split("T")[0]}
                 value={selectedAnnouncement.expiryDate || ""}
                 onChange={(e) =>
                   setSelectedAnnouncement({

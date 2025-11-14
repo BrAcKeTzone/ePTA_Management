@@ -49,12 +49,18 @@ export const createAnnouncement = async (
   }
 
   // Validate dates
-  if (
-    data.publishDate &&
-    data.expiryDate &&
-    data.expiryDate <= data.publishDate
-  ) {
-    throw new ApiError(400, "Expiry date must be after publish date");
+  const now = new Date();
+
+  if (data.expiryDate) {
+    // Check if expiry date is in the past
+    if (data.expiryDate <= now) {
+      throw new ApiError(400, "Expiry date must be in the future");
+    }
+
+    // If publishDate is provided, check if expiry is after publish
+    if (data.publishDate && data.expiryDate <= data.publishDate) {
+      throw new ApiError(400, "Expiry date must be after publish date");
+    }
   }
 
   const announcement = await prisma.announcement.create({
@@ -234,6 +240,14 @@ export const updateAnnouncement = async (
 
   if (!announcement) {
     throw new ApiError(404, "Announcement not found");
+  }
+
+  // Validate expiry date if provided
+  if (data.expiryDate !== undefined && data.expiryDate !== null) {
+    const now = new Date();
+    if (data.expiryDate <= now) {
+      throw new ApiError(400, "Expiry date must be in the future");
+    }
   }
 
   // Extract only allowed fields for update

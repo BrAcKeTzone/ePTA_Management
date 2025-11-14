@@ -10,14 +10,7 @@ export const createAnnouncement = Joi.object().keys({
     .default("MEDIUM"),
   isPublished: Joi.boolean().optional().default(true),
   publishDate: Joi.date().iso().optional().allow(null),
-  expiryDate: Joi.date()
-    .iso()
-    .greater(Joi.ref("publishDate"))
-    .optional()
-    .allow(null)
-    .messages({
-      "date.greater": "Expiry date must be after publish date",
-    }),
+  expiryDate: Joi.date().iso().optional().allow(null),
   createdById: Joi.number().integer().positive().required(),
 });
 
