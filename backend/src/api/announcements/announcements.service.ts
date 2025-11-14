@@ -1,10 +1,5 @@
 import prisma from "../../configs/prisma";
-import {
-  Announcement,
-  AnnouncementPriority,
-  TargetAudience,
-  UserRole,
-} from "@prisma/client";
+import { Announcement, AnnouncementPriority, UserRole } from "@prisma/client";
 import ApiError from "../../utils/ApiError";
 import { sendAnnouncementNotifications } from "../../utils/announcementNotification";
 
@@ -12,14 +7,9 @@ interface CreateAnnouncementData {
   title: string;
   content: string;
   priority?: AnnouncementPriority;
-  targetAudience?: TargetAudience;
-  targetProgram?: string;
-  targetYearLevel?: string;
   isPublished?: boolean;
   publishDate?: Date;
   expiryDate?: Date;
-  attachmentUrl?: string;
-  attachmentName?: string;
   createdById: number;
 }
 
@@ -27,20 +17,14 @@ interface UpdateAnnouncementData {
   title?: string;
   content?: string;
   priority?: AnnouncementPriority;
-  targetAudience?: TargetAudience;
-  targetProgram?: string;
-  targetYearLevel?: string;
   isPublished?: boolean;
-  publishDate?: Date;
-  expiryDate?: Date;
-  attachmentUrl?: string;
-  attachmentName?: string;
+  publishDate?: Date | null;
+  expiryDate?: Date | null;
 }
 
 interface GetAnnouncementsFilter {
   search?: string;
   priority?: AnnouncementPriority;
-  targetAudience?: TargetAudience;
   isPublished?: boolean;
   createdById?: number;
   page?: number;
@@ -64,27 +48,6 @@ export const createAnnouncement = async (
     throw new ApiError(403, "Only admins can create announcements");
   }
 
-  // Validate target audience logic
-  if (
-    data.targetAudience === TargetAudience.SPECIFIC_PROGRAM &&
-    !data.targetProgram
-  ) {
-    throw new ApiError(
-      400,
-      "Target program is required for SPECIFIC_PROGRAM audience"
-    );
-  }
-
-  if (
-    data.targetAudience === TargetAudience.SPECIFIC_YEAR_LEVEL &&
-    !data.targetYearLevel
-  ) {
-    throw new ApiError(
-      400,
-      "Target year level is required for SPECIFIC_YEAR_LEVEL audience"
-    );
-  }
-
   // Validate dates
   if (
     data.publishDate &&
@@ -99,14 +62,9 @@ export const createAnnouncement = async (
       title: data.title,
       content: data.content,
       priority: data.priority || AnnouncementPriority.MEDIUM,
-      targetAudience: data.targetAudience || TargetAudience.ALL,
-      targetProgram: data.targetProgram || null,
-      targetYearLevel: data.targetYearLevel || null,
       isPublished: data.isPublished || false,
       publishDate: data.isPublished ? data.publishDate || new Date() : null,
       expiryDate: data.expiryDate || null,
-      attachmentUrl: data.attachmentUrl || null,
-      attachmentName: data.attachmentName || null,
       createdById: data.createdById,
     },
     include: {
@@ -131,7 +89,6 @@ export const getAnnouncements = async (filter: GetAnnouncementsFilter) => {
   const {
     search,
     priority,
-    targetAudience,
     isPublished,
     createdById,
     page = 1,
@@ -151,10 +108,6 @@ export const getAnnouncements = async (filter: GetAnnouncementsFilter) => {
 
   if (priority) {
     whereClause.priority = priority;
-  }
-
-  if (targetAudience) {
-    whereClause.targetAudience = targetAudience;
   }
 
   if (typeof isPublished === "boolean") {
@@ -283,36 +236,16 @@ export const updateAnnouncement = async (
     throw new ApiError(404, "Announcement not found");
   }
 
-  // Validate target audience logic
-  const targetAudience = data.targetAudience || announcement.targetAudience;
-  if (targetAudience === TargetAudience.SPECIFIC_PROGRAM) {
-    const targetProgram =
-      data.targetProgram !== undefined
-        ? data.targetProgram
-        : announcement.targetProgram;
-    if (!targetProgram) {
-      throw new ApiError(
-        400,
-        "Target program is required for SPECIFIC_PROGRAM audience"
-      );
-    }
-  }
-
-  if (targetAudience === TargetAudience.SPECIFIC_YEAR_LEVEL) {
-    const targetYearLevel =
-      data.targetYearLevel !== undefined
-        ? data.targetYearLevel
-        : announcement.targetYearLevel;
-    if (!targetYearLevel) {
-      throw new ApiError(
-        400,
-        "Target year level is required for SPECIFIC_YEAR_LEVEL audience"
-      );
-    }
-  }
+  // Extract only allowed fields for update
+  const updateData: UpdateAnnouncementData = {
+    ...(data.title !== undefined && { title: data.title }),
+    ...(data.content !== undefined && { content: data.content }),
+    ...(data.priority !== undefined && { priority: data.priority }),
+    ...(data.isPublished !== undefined && { isPublished: data.isPublished }),
+    ...(data.expiryDate !== undefined && { expiryDate: data.expiryDate }),
+  };
 
   // If changing from unpublished to published, set publishDate
-  const updateData: any = { ...data };
   if (data.isPublished === true && !announcement.isPublished) {
     updateData.publishDate = data.publishDate || new Date();
   } else if (data.isPublished === false && announcement.isPublished) {
@@ -417,7 +350,6 @@ export const publishAnnouncement = async (
         content: updatedAnnouncement.content,
         priority: updatedAnnouncement.priority,
         recipients,
-        attachmentUrl: updatedAnnouncement.attachmentUrl || undefined,
       });
     }
   }
@@ -477,68 +409,11 @@ const getTargetedRecipients = async (
     middleName: string | null;
   }>
 > => {
-  let whereClause: any = {};
-
-  switch (announcement.targetAudience) {
-    case TargetAudience.ALL:
-      // Send to all users (both admins and parents)
-      break;
-
-    case TargetAudience.PARENTS:
-      whereClause.role = UserRole.PARENT;
-      break;
-
-    case TargetAudience.ADMINS:
-      whereClause.role = UserRole.ADMIN;
-      break;
-
-    case TargetAudience.SPECIFIC_PROGRAM:
-      // Get parents of students in specific program
-      const parentsInProgram = await prisma.user.findMany({
-        where: {
-          role: UserRole.PARENT,
-          students: {
-            some: {
-              linkStatus: "APPROVED",
-            },
-          },
-        },
-        select: {
-          email: true,
-          firstName: true,
-          lastName: true,
-          middleName: true,
-        },
-      });
-      return parentsInProgram;
-
-    case TargetAudience.SPECIFIC_YEAR_LEVEL:
-      // Get parents of students in specific year level
-      const parentsInYearLevel = await prisma.user.findMany({
-        where: {
-          role: UserRole.PARENT,
-          students: {
-            some: {
-              yearEnrolled: announcement.targetYearLevel!,
-              linkStatus: "APPROVED",
-            },
-          },
-        },
-        select: {
-          email: true,
-          firstName: true,
-          lastName: true,
-          middleName: true,
-        },
-      });
-      return parentsInYearLevel;
-
-    default:
-      break;
-  }
-
+  // Send to all parents
   const users = await prisma.user.findMany({
-    where: whereClause,
+    where: {
+      role: UserRole.PARENT,
+    },
     select: {
       email: true,
       firstName: true,
@@ -562,7 +437,6 @@ export const getAnnouncementStats = async () => {
     expiredAnnouncements,
     urgentAnnouncements,
     byPriority,
-    byTargetAudience,
   ] = await Promise.all([
     prisma.announcement.count(),
     prisma.announcement.count({ where: { isPublished: true } }),
@@ -589,10 +463,6 @@ export const getAnnouncementStats = async () => {
       by: ["priority"],
       _count: true,
     }),
-    prisma.announcement.groupBy({
-      by: ["targetAudience"],
-      _count: true,
-    }),
   ]);
 
   return {
@@ -604,10 +474,6 @@ export const getAnnouncementStats = async () => {
     urgentAnnouncements,
     byPriority: byPriority.map((item) => ({
       priority: item.priority,
-      count: item._count,
-    })),
-    byTargetAudience: byTargetAudience.map((item) => ({
-      targetAudience: item.targetAudience,
       count: item._count,
     })),
   };

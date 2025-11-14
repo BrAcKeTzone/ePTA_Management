@@ -343,9 +343,7 @@ model Project {
   
   // Financial tracking
   budget          Float
-  totalRaised     Float      @default(0)
-  totalExpenses   Float      @default(0)
-  balance         Float      // Budget - totalExpenses
+  balance         Float      // Budget - totalExpenses (calculated)
   
   // Status and priority
   status          ProjectStatus   @default(PLANNING)
@@ -356,20 +354,11 @@ model Project {
   endDate         DateTime?
   completedDate   DateTime?
   
-  // Goals and targets
-  fundingGoal     Float?         // Specific fundraising target
-  targetBeneficiaries Int?       // Number of people/students to benefit
-  
-  // Progress tracking
-  progressPercentage Float @default(0) // Overall progress 0-100
-  
   // Location/Venue
-  location        String?
   venue           String?
   
   // Documentation
   attachments     String?     @db.Text  // JSON array of file URLs
-  notes           String?     @db.Text  // Additional notes
   
   // Cancellation and Completion
   cancellationReason String?  @db.Text  // Reason if status is CANCELLED
@@ -547,24 +536,11 @@ enum AnnouncementPriority {
   URGENT
 }
 
-enum TargetAudience {
-  ALL
-  PARENTS
-  ADMINS
-  SPECIFIC_PROGRAM
-  SPECIFIC_YEAR_LEVEL
-}
-
 model Announcement {
   id             Int                   @id @default(autoincrement())
   title          String
   content        String                @db.Text
   priority       AnnouncementPriority  @default(MEDIUM)
-  targetAudience TargetAudience        @default(ALL)
-  
-  // Optional filters for targeted announcements
-  targetProgram   String?    // e.g., "BSIT", "BSCS" - used when targetAudience is SPECIFIC_PROGRAM
-  targetYearLevel String?    // e.g., "1st Year", "2nd Year" - used when targetAudience is SPECIFIC_YEAR_LEVEL
   
   // Publishing controls
   isPublished Boolean  @default(false)
@@ -574,10 +550,6 @@ model Announcement {
   // Status flags
   isFeatured Boolean @default(false)
   isArchived Boolean @default(false)
-  
-  // Optional attachment
-  attachmentUrl  String?
-  attachmentName String?
 
   createdBy   User @relation(fields: [createdById], references: [id])
   createdById Int
@@ -589,7 +561,6 @@ model Announcement {
   
   @@index([isPublished])
   @@index([publishDate])
-  @@index([targetAudience])
   @@index([isFeatured])
   @@index([isArchived])
 }

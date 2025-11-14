@@ -5,16 +5,12 @@ export const createProjectSchema = Joi.object({
   name: Joi.string().min(3).max(200).required(),
   description: Joi.string().max(5000).optional().allow(null, ""),
   budget: Joi.number().positive().required(),
-  fundingGoal: Joi.number().positive().optional().allow(null),
-  targetBeneficiaries: Joi.number().integer().positive().optional().allow(null),
   priority: Joi.string()
     .valid("LOW", "MEDIUM", "HIGH", "URGENT")
     .default("MEDIUM"),
   startDate: Joi.date().iso().required(),
   endDate: Joi.date().iso().min(Joi.ref("startDate")).optional().allow(null),
-  location: Joi.string().max(200).optional().allow(null, ""),
   venue: Joi.string().max(200).optional().allow(null, ""),
-  notes: Joi.string().max(5000).optional().allow(null, ""),
 });
 
 // Update project validation schema
@@ -22,8 +18,6 @@ export const updateProjectSchema = Joi.object({
   name: Joi.string().min(3).max(200).optional(),
   description: Joi.string().max(5000).optional().allow(null, ""),
   budget: Joi.number().positive().optional(),
-  fundingGoal: Joi.number().positive().optional().allow(null),
-  targetBeneficiaries: Joi.number().integer().positive().optional().allow(null),
   status: Joi.string()
     .valid(
       "PLANNING",
@@ -43,10 +37,7 @@ export const updateProjectSchema = Joi.object({
   startDate: Joi.date().iso().optional(),
   endDate: Joi.date().iso().optional().allow(null),
   completedDate: Joi.date().iso().optional().allow(null),
-  progressPercentage: Joi.number().min(0).max(100).optional(),
-  location: Joi.string().max(200).optional().allow(null, ""),
   venue: Joi.string().max(200).optional().allow(null, ""),
-  notes: Joi.string().max(5000).optional().allow(null, ""),
   cancellationReason: Joi.string().max(5000).optional().allow(null, ""),
   completionImages: Joi.string().max(10000).optional().allow(null, ""), // Array of Cloudinary URLs stored as JSON string
 }).min(1);

@@ -82,14 +82,10 @@ export const createProject = async (data: CreateProjectData) => {
       description: data.description,
       budget: data.budget,
       balance,
-      fundingGoal: data.fundingGoal,
-      targetBeneficiaries: data.targetBeneficiaries,
       priority: data.priority || ProjectPriority.MEDIUM,
       startDate: data.startDate,
       endDate: data.endDate,
-      location: data.location,
       venue: data.venue,
-      notes: data.notes,
       createdById: data.createdById,
     },
     include: {
@@ -380,11 +376,10 @@ export const recordExpense = async (
       },
     });
 
-    // Update project financials
+    // Update project balance
     const updatedProject = await tx.project.update({
       where: { id: projectId },
       data: {
-        totalExpenses: { increment: data.amount },
         balance: { decrement: data.amount },
       },
       include: {
@@ -502,7 +497,6 @@ export const updateExpense = async (
       await tx.project.update({
         where: { id: projectId },
         data: {
-          totalExpenses: { increment: amountDiff },
           balance: { decrement: amountDiff },
         },
       });
@@ -544,7 +538,6 @@ export const deleteExpense = async (projectId: number, expenseId: number) => {
     await tx.project.update({
       where: { id: projectId },
       data: {
-        totalExpenses: { decrement: expense.amount },
         balance: { increment: expense.amount },
       },
     });
@@ -665,16 +658,15 @@ export const deleteProjectUpdate = async (
  * Calculate and update project raised funds from contributions
  */
 export const updateProjectRaisedFunds = async (projectId: number) => {
-  const contributions = await prisma.contribution.findMany({
-    where: { projectId },
-  });
-
-  const totalRaised = contributions.reduce((sum, c) => sum + c.amountPaid, 0);
-
-  const project = await prisma.project.update({
+  // This function is kept for backward compatibility but no longer updates the database
+  // since totalRaised is now calculated from contributions on-demand
+  const project = await prisma.project.findUnique({
     where: { id: projectId },
-    data: { totalRaised },
   });
+
+  if (!project) {
+    throw new ApiError(404, "Project not found");
+  }
 
   return project;
 };
@@ -745,8 +737,23 @@ export const generateProjectReport = async (filters: any) => {
   if (includeStats) {
     const totalProjects = projects.length;
     const totalBudget = projects.reduce((sum, p) => sum + p.budget, 0);
-    const totalRaised = projects.reduce((sum, p) => sum + p.totalRaised, 0);
-    const totalExpenses = projects.reduce((sum, p) => sum + p.totalExpenses, 0);
+
+    // Calculate totalRaised from contributions
+    let totalRaised = 0;
+    projects.forEach((p) => {
+      p.contributions.forEach((c: any) => {
+        totalRaised += c.amountPaid || 0;
+      });
+    });
+
+    // Calculate totalExpenses from expenses
+    let totalExpenses = 0;
+    projects.forEach((p) => {
+      p.expenses.forEach((e: any) => {
+        totalExpenses += e.amount || 0;
+      });
+    });
+
     const totalBalance = projects.reduce((sum, p) => sum + p.balance, 0);
 
     const statusCounts = {
@@ -761,19 +768,22 @@ export const generateProjectReport = async (filters: any) => {
         .length,
     };
 
+    // Calculate average progress based on project status
+    const completedProjects = projects.filter(
+      (p) => p.status === ProjectStatus.COMPLETED
+    ).length;
+    const averageProgress =
+      totalProjects > 0
+        ? ((completedProjects / totalProjects) * 100).toFixed(2)
+        : "0.00";
+
     report.statistics = {
       totalProjects,
       totalBudget,
       totalRaised,
       totalExpenses,
       totalBalance,
-      averageProgress:
-        totalProjects > 0
-          ? (
-              projects.reduce((sum, p) => sum + p.progressPercentage, 0) /
-              totalProjects
-            ).toFixed(2)
-          : "0.00",
+      averageProgress,
       fundingProgress:
         totalBudget > 0
           ? ((totalRaised / totalBudget) * 100).toFixed(2)
@@ -813,8 +823,23 @@ export const getProjectStats = async (filters: any) => {
 
   const totalProjects = projects.length;
   const totalBudget = projects.reduce((sum, p) => sum + p.budget, 0);
-  const totalRaised = projects.reduce((sum, p) => sum + p.totalRaised, 0);
-  const totalExpenses = projects.reduce((sum, p) => sum + p.totalExpenses, 0);
+
+  // Calculate totalRaised from contributions
+  let totalRaised = 0;
+  projects.forEach((p) => {
+    p.contributions.forEach((c: any) => {
+      totalRaised += c.amountPaid || 0;
+    });
+  });
+
+  // Calculate totalExpenses from expenses
+  let totalExpenses = 0;
+  projects.forEach((p) => {
+    p.expenses.forEach((e: any) => {
+      totalExpenses += e.amount || 0;
+    });
+  });
+
   const totalBalance = projects.reduce((sum, p) => sum + p.balance, 0);
 
   const statusCounts = {
@@ -833,19 +858,22 @@ export const getProjectStats = async (filters: any) => {
     priorityCounts[p.priority] = (priorityCounts[p.priority] || 0) + 1;
   });
 
+  // Calculate average progress based on completed projects
+  const completedProjects = projects.filter(
+    (p) => p.status === ProjectStatus.COMPLETED
+  ).length;
+  const averageProgress =
+    totalProjects > 0
+      ? ((completedProjects / totalProjects) * 100).toFixed(2)
+      : "0.00";
+
   return {
     totalProjects,
     totalBudget,
     totalRaised,
     totalExpenses,
     totalBalance,
-    averageProgress:
-      totalProjects > 0
-        ? (
-            projects.reduce((sum, p) => sum + p.progressPercentage, 0) /
-            totalProjects
-          ).toFixed(2)
-        : "0.00",
+    averageProgress,
     fundingProgress:
       totalBudget > 0 ? ((totalRaised / totalBudget) * 100).toFixed(2) : "0.00",
     budgetUtilization:
