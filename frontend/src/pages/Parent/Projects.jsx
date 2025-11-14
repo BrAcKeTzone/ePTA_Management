@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { projectsApi } from "../../api/projectsApi";
 import LoadingSpinner from "../../components/LoadingSpinner";
+import Modal from "../../components/Modal";
 import { formatDate } from "../../utils/formatDate";
 
 const Projects = () => {
@@ -8,6 +9,10 @@ const Projects = () => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [showProjectModal, setShowProjectModal] = useState(false);
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(true);
   const [activeTab, setActiveTab] = useState("projects"); // projects, documents
 
   useEffect(() => {
@@ -84,6 +89,22 @@ const Projects = () => {
     }
   };
 
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+    setShowProjectModal(true);
+  };
+
+  const handleDocumentClick = (document) => {
+    setSelectedDocument(document);
+    setShowDocumentModal(true);
+  };
+
+  const truncateText = (text, maxLength = 120) => {
+    if (!text) return "";
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -94,6 +115,223 @@ const Projects = () => {
 
   return (
     <div className="space-y-6">
+      {/* About Modal */}
+      <Modal
+        isOpen={showAboutModal}
+        onClose={() => setShowAboutModal(false)}
+        title="About PTA Projects & Documents"
+        size="md"
+      >
+        <div className="space-y-4">
+          <div className="text-gray-700 space-y-2">
+            <p>• Click on any project or document to view full details</p>
+            <p>
+              • Projects show the current initiatives and activities of the PTA
+            </p>
+            <p>
+              • Documents include meeting minutes, resolutions, and important
+              records
+            </p>
+            <p>• All documents are available for download for transparency</p>
+            <p>
+              • Project progress is updated regularly by the PTA administration
+            </p>
+          </div>
+          <div className="pt-4 border-t">
+            <p className="text-sm text-gray-500 italic">
+              Click anywhere outside this box or press the × button to close
+            </p>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Project Detail Modal */}
+      {selectedProject && (
+        <Modal
+          isOpen={showProjectModal}
+          onClose={() => {
+            setShowProjectModal(false);
+            setSelectedProject(null);
+          }}
+          title={selectedProject.title}
+          size="lg"
+        >
+          <div className="space-y-4">
+            {/* Status Badge */}
+            <div>
+              <span
+                className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                  selectedProject.status
+                )}`}
+              >
+                {selectedProject.status.replace("_", " ")}
+              </span>
+            </div>
+
+            {/* Description */}
+            <div>
+              <h3 className="font-medium text-gray-900 mb-2">Description</h3>
+              <p className="text-gray-700">{selectedProject.description}</p>
+            </div>
+
+            {/* Project Details */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Start Date
+                </label>
+                <p className="text-sm text-gray-900">
+                  {formatDate(selectedProject.startDate)}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  End Date
+                </label>
+                <p className="text-sm text-gray-900">
+                  {formatDate(selectedProject.endDate)}
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">
+                  Budget
+                </label>
+                <p className="text-sm text-gray-900">
+                  {selectedProject.budget
+                    ? `₱${selectedProject.budget.toLocaleString()}`
+                    : "Not specified"}
+                </p>
+              </div>
+            </div>
+
+            {/* Progress */}
+            <div>
+              <div className="flex justify-between text-sm mb-1">
+                <span className="font-medium text-gray-700">Progress</span>
+                <span className="text-gray-500">
+                  {selectedProject.progress || 0}%
+                </span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full ${
+                    selectedProject.status === "completed"
+                      ? "bg-green-500"
+                      : selectedProject.status === "in_progress"
+                      ? "bg-blue-500"
+                      : "bg-yellow-500"
+                  }`}
+                  style={{ width: `${selectedProject.progress || 0}%` }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Accomplishments */}
+            {selectedProject.accomplishments &&
+              selectedProject.accomplishments.length > 0 && (
+                <div className="pt-4 border-t">
+                  <h3 className="font-medium text-gray-900 mb-3">
+                    Accomplishments
+                  </h3>
+                  <ul className="space-y-2">
+                    {selectedProject.accomplishments.map(
+                      (accomplishment, index) => (
+                        <li
+                          key={index}
+                          className="text-sm text-gray-600 flex items-start"
+                        >
+                          <span className="text-green-500 mr-2 mt-1">•</span>
+                          <div className="flex-1">
+                            <span>{accomplishment.description}</span>
+                            {accomplishment.date && (
+                              <span className="text-gray-400 ml-2">
+                                ({formatDate(accomplishment.date)})
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </div>
+              )}
+          </div>
+        </Modal>
+      )}
+
+      {/* Document Detail Modal */}
+      {selectedDocument && (
+        <Modal
+          isOpen={showDocumentModal}
+          onClose={() => {
+            setShowDocumentModal(false);
+            setSelectedDocument(null);
+          }}
+          title={selectedDocument.title}
+          size="lg"
+        >
+          <div className="space-y-4">
+            {/* Category Badge */}
+            <div>
+              <span
+                className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(
+                  selectedDocument.category
+                )}`}
+              >
+                {selectedDocument.category.replace("_", " ")}
+              </span>
+            </div>
+
+            {/* Description */}
+            {selectedDocument.description && (
+              <div>
+                <h3 className="font-medium text-gray-900 mb-2">Description</h3>
+                <p className="text-gray-700">{selectedDocument.description}</p>
+              </div>
+            )}
+
+            {/* Document Details */}
+            <div className="pt-4 border-t space-y-2 text-sm text-gray-600">
+              <p>
+                <span className="font-medium">Uploaded:</span>{" "}
+                {formatDate(selectedDocument.createdAt)}
+              </p>
+              {selectedDocument.projectTitle && (
+                <p>
+                  <span className="font-medium">Related Project:</span>{" "}
+                  {selectedDocument.projectTitle}
+                </p>
+              )}
+              <p>
+                <span className="font-medium">File Size:</span>{" "}
+                {selectedDocument.fileSize
+                  ? `${(selectedDocument.fileSize / 1024 / 1024).toFixed(2)} MB`
+                  : "Unknown"}
+              </p>
+              <p>
+                <span className="font-medium">File Name:</span>{" "}
+                {selectedDocument.fileName}
+              </p>
+            </div>
+
+            {/* Download Button */}
+            <div className="pt-4">
+              <button
+                onClick={() =>
+                  handleDownloadDocument(
+                    selectedDocument.id,
+                    selectedDocument.fileName
+                  )
+                }
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Download Document
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
@@ -134,61 +372,36 @@ const Projects = () => {
       {activeTab === "projects" && (
         <div className="space-y-6">
           {projects.length > 0 ? (
-            <div className="grid gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map((project) => (
                 <div
                   key={project.id}
-                  className="bg-white rounded-lg shadow-sm border"
+                  className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-all cursor-pointer"
+                  onClick={() => handleProjectClick(project)}
                 >
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  <div className="p-5">
+                    {/* Header */}
+                    <div className="mb-3">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900 flex-1">
                           {project.title}
                         </h3>
-                        <p className="text-gray-600">{project.description}</p>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ml-2 ${getStatusColor(
+                            project.status
+                          )}`}
+                        >
+                          {project.status.replace("_", " ")}
+                        </span>
                       </div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                          project.status
-                        )}`}
-                      >
-                        {project.status.replace("_", " ")}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">
-                          Start Date
-                        </label>
-                        <p className="text-sm text-gray-900">
-                          {formatDate(project.startDate)}
-                        </p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">
-                          End Date
-                        </label>
-                        <p className="text-sm text-gray-900">
-                          {formatDate(project.endDate)}
-                        </p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">
-                          Budget
-                        </label>
-                        <p className="text-sm text-gray-900">
-                          {project.budget
-                            ? `₱${project.budget.toLocaleString()}`
-                            : "Not specified"}
-                        </p>
-                      </div>
+                      <p className="text-sm text-gray-600">
+                        {truncateText(project.description)}
+                      </p>
                     </div>
 
                     {/* Progress Bar */}
-                    <div className="mb-4">
-                      <div className="flex justify-between text-sm mb-1">
+                    <div className="mb-3">
+                      <div className="flex justify-between text-xs mb-1">
                         <span className="font-medium text-gray-700">
                           Progress
                         </span>
@@ -196,9 +409,9 @@ const Projects = () => {
                           {project.progress || 0}%
                         </span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
                         <div
-                          className={`h-2 rounded-full ${
+                          className={`h-1.5 rounded-full ${
                             project.status === "completed"
                               ? "bg-green-500"
                               : project.status === "in_progress"
@@ -210,36 +423,29 @@ const Projects = () => {
                       </div>
                     </div>
 
-                    {/* Accomplishments */}
-                    {project.accomplishments &&
-                      project.accomplishments.length > 0 && (
-                        <div>
-                          <h4 className="font-medium text-gray-900 mb-2">
-                            Recent Accomplishments
-                          </h4>
-                          <ul className="space-y-1">
-                            {project.accomplishments
-                              .slice(0, 3)
-                              .map((accomplishment, index) => (
-                                <li
-                                  key={index}
-                                  className="text-sm text-gray-600 flex items-start"
-                                >
-                                  <span className="text-green-500 mr-2">•</span>
-                                  <span>{accomplishment.description}</span>
-                                </li>
-                              ))}
-                          </ul>
-                          {project.accomplishments.length > 3 && (
-                            <button
-                              onClick={() => setSelectedProject(project)}
-                              className="text-blue-600 hover:text-blue-700 text-sm font-medium mt-2"
-                            >
-                              View all accomplishments
-                            </button>
-                          )}
+                    {/* Footer Info */}
+                    <div className="pt-3 border-t border-gray-100 space-y-1 text-xs text-gray-600">
+                      <div className="flex justify-between">
+                        <span>Start:</span>
+                        <span className="font-medium">
+                          {formatDate(project.startDate)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>End:</span>
+                        <span className="font-medium">
+                          {formatDate(project.endDate)}
+                        </span>
+                      </div>
+                      {project.budget && (
+                        <div className="flex justify-between">
+                          <span>Budget:</span>
+                          <span className="font-medium">
+                            ₱{project.budget.toLocaleString()}
+                          </span>
                         </div>
                       )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -262,40 +468,54 @@ const Projects = () => {
       {activeTab === "documents" && (
         <div className="space-y-6">
           {documents.length > 0 ? (
-            <div className="grid gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {documents.map((document) => (
                 <div
                   key={document.id}
-                  className="bg-white rounded-lg shadow-sm border p-6"
+                  className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-all cursor-pointer"
+                  onClick={() => handleDocumentClick(document)}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">
+                  <div className="p-5">
+                    {/* Header */}
+                    <div className="mb-3">
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="text-lg font-semibold text-gray-900 flex-1">
                           {document.title}
                         </h3>
                         <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(
+                          className={`px-2 py-1 rounded-full text-xs font-medium ml-2 ${getCategoryColor(
                             document.category
                           )}`}
                         >
                           {document.category.replace("_", " ")}
                         </span>
                       </div>
-
                       {document.description && (
-                        <p className="text-gray-600 mb-2">
-                          {document.description}
+                        <p className="text-sm text-gray-600">
+                          {truncateText(document.description)}
                         </p>
                       )}
+                    </div>
 
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <span>Uploaded: {formatDate(document.createdAt)}</span>
-                        {document.projectTitle && (
-                          <span>Project: {document.projectTitle}</span>
-                        )}
-                        <span>
-                          Size:{" "}
+                    {/* Footer Info */}
+                    <div className="pt-3 border-t border-gray-100 space-y-1 text-xs text-gray-600">
+                      <div className="flex justify-between">
+                        <span>Uploaded:</span>
+                        <span className="font-medium">
+                          {formatDate(document.createdAt)}
+                        </span>
+                      </div>
+                      {document.projectTitle && (
+                        <div className="flex justify-between">
+                          <span>Project:</span>
+                          <span className="font-medium text-blue-600">
+                            {document.projectTitle}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span>Size:</span>
+                        <span className="font-medium">
                           {document.fileSize
                             ? `${(document.fileSize / 1024 / 1024).toFixed(
                                 2
@@ -305,14 +525,21 @@ const Projects = () => {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() =>
-                        handleDownloadDocument(document.id, document.fileName)
-                      }
-                      className="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      Download
-                    </button>
+                    {/* Download Button */}
+                    <div className="pt-3">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownloadDocument(
+                            document.id,
+                            document.fileName
+                          );
+                        }}
+                        className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                      >
+                        Download
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -330,85 +557,6 @@ const Projects = () => {
           )}
         </div>
       )}
-
-      {/* Project Details Modal */}
-      {selectedProject && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {selectedProject.title}
-                </h2>
-                <button
-                  onClick={() => setSelectedProject(null)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-2">
-                    Description
-                  </h3>
-                  <p className="text-gray-600">{selectedProject.description}</p>
-                </div>
-
-                {selectedProject.accomplishments &&
-                  selectedProject.accomplishments.length > 0 && (
-                    <div>
-                      <h3 className="font-medium text-gray-900 mb-2">
-                        All Accomplishments
-                      </h3>
-                      <ul className="space-y-2">
-                        {selectedProject.accomplishments.map(
-                          (accomplishment, index) => (
-                            <li
-                              key={index}
-                              className="text-sm text-gray-600 flex items-start"
-                            >
-                              <span className="text-green-500 mr-2">•</span>
-                              <div>
-                                <span>{accomplishment.description}</span>
-                                {accomplishment.date && (
-                                  <span className="text-gray-400 ml-2">
-                                    ({formatDate(accomplishment.date)})
-                                  </span>
-                                )}
-                              </div>
-                            </li>
-                          )
-                        )}
-                      </ul>
-                    </div>
-                  )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Information */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-blue-900 mb-2">
-          About PTA Projects & Documents
-        </h3>
-        <div className="text-blue-800 space-y-2">
-          <p>
-            • Projects show the current initiatives and activities of the PTA
-          </p>
-          <p>
-            • Documents include meeting minutes, resolutions, and important
-            announcements
-          </p>
-          <p>• All documents are available for download for transparency</p>
-          <p>
-            • Project progress is updated regularly by the PTA administration
-          </p>
-        </div>
-      </div>
     </div>
   );
 };

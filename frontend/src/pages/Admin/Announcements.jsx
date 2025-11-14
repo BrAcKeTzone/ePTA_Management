@@ -13,7 +13,9 @@ const AnnouncementsManagement = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const [viewAnnouncement, setViewAnnouncement] = useState(null);
   const [newAnnouncement, setNewAnnouncement] = useState({
     title: "",
     content: "",
@@ -176,6 +178,11 @@ const AnnouncementsManagement = () => {
     return new Date(expiryDate) < new Date();
   };
 
+  const handleViewAnnouncement = (announcement) => {
+    setViewAnnouncement(announcement);
+    setShowDetailModal(true);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -292,16 +299,15 @@ const AnnouncementsManagement = () => {
                         Expired
                       </span>
                     )}
-                    {announcement.isArchived && (
-                      <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                        Archived
-                      </span>
-                    )}
                   </div>
                 </div>
 
                 {/* Content Preview */}
-                <div className="mb-4 flex-1">
+                <div
+                  className="mb-4 flex-1 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors"
+                  onClick={() => handleViewAnnouncement(announcement)}
+                  title="Click to view full details"
+                >
                   <p className="text-sm text-gray-600 line-clamp-3">
                     {announcement.content}
                   </p>
@@ -346,9 +352,13 @@ const AnnouncementsManagement = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => handleArchiveAnnouncement(announcement.id)}
-                      className="flex-1"
+                      className={`flex-1 ${
+                        announcement.isArchived
+                          ? "bg-gray-600 text-white hover:bg-gray-700 border-gray-600"
+                          : ""
+                      }`}
                     >
-                      Archive
+                      {announcement.isArchived ? "Archived" : "Archive"}
                     </Button>
                     <Button
                       variant="outline"
@@ -369,6 +379,85 @@ const AnnouncementsManagement = () => {
           </div>
         )}
       </div>
+
+      {/* View Announcement Detail Modal */}
+      {viewAnnouncement && (
+        <Modal
+          isOpen={showDetailModal}
+          onClose={() => {
+            setShowDetailModal(false);
+            setViewAnnouncement(null);
+          }}
+          title={viewAnnouncement.title}
+          size="lg"
+        >
+          <div className="space-y-4">
+            {/* Badges */}
+            <div className="flex flex-wrap gap-2">
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  viewAnnouncement.priority === "URGENT"
+                    ? "bg-red-100 text-red-800"
+                    : viewAnnouncement.priority === "HIGH"
+                    ? "bg-orange-100 text-orange-800"
+                    : viewAnnouncement.priority === "LOW"
+                    ? "bg-gray-100 text-gray-800"
+                    : "bg-blue-100 text-blue-800"
+                }`}
+              >
+                {viewAnnouncement.priority?.charAt(0) +
+                  viewAnnouncement.priority?.slice(1).toLowerCase()}
+              </span>
+              {viewAnnouncement.isFeatured && (
+                <span className="px-3 py-1 text-sm font-medium rounded-full bg-yellow-100 text-yellow-800">
+                  ⭐ Featured
+                </span>
+              )}
+              {isExpired(viewAnnouncement.expiryDate) && (
+                <span className="px-3 py-1 text-sm font-medium rounded-full bg-red-100 text-red-800">
+                  Expired
+                </span>
+              )}
+            </div>
+
+            {/* Full Content */}
+            <div className="prose max-w-none">
+              <p className="text-gray-700 whitespace-pre-line">
+                {viewAnnouncement.content}
+              </p>
+            </div>
+
+            {/* Details */}
+            <div className="pt-4 border-t border-gray-200 space-y-2 text-sm text-gray-600">
+              <p>
+                <span className="font-medium">Created:</span>{" "}
+                {formatDate(viewAnnouncement.createdAt)}
+              </p>
+              {viewAnnouncement.expiryDate && (
+                <p>
+                  <span className="font-medium">Expires:</span>{" "}
+                  <span
+                    className={
+                      isExpired(viewAnnouncement.expiryDate)
+                        ? "text-red-600 font-medium"
+                        : ""
+                    }
+                  >
+                    {formatDate(viewAnnouncement.expiryDate)}
+                  </span>
+                </p>
+              )}
+              {viewAnnouncement.createdBy && (
+                <p>
+                  <span className="font-medium">Created by:</span>{" "}
+                  {viewAnnouncement.createdBy.firstName}{" "}
+                  {viewAnnouncement.createdBy.lastName}
+                </p>
+              )}
+            </div>
+          </div>
+        </Modal>
+      )}
 
       {/* Create Announcement Modal */}
       <Modal
