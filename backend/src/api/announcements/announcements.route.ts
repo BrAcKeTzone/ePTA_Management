@@ -60,6 +60,9 @@ router.patch("/:id/unpublish", announcementController.unpublishAnnouncement);
 // Toggle featured status
 router.patch("/:id/toggle-featured", announcementController.toggleFeatured);
 
+// Toggle publish status
+router.patch("/:id/toggle-publish", announcementController.togglePublish);
+
 // Archive/unarchive announcement
 router.patch("/:id/archive", announcementController.archiveAnnouncement);
 router.patch("/:id/unarchive", announcementController.unarchiveAnnouncement);

@@ -126,6 +126,15 @@ export const announcementsApi = {
     );
   },
 
+  togglePublish: async (announcementId) => {
+    if (config.USE_DUMMY_DATA) {
+      return await dummyDataService.togglePublish(announcementId);
+    }
+    return await fetchClient.patch(
+      `/api/announcements/${announcementId}/toggle-publish`
+    );
+  },
+
   getFeaturedAnnouncements: async (params = {}) => {
     if (config.USE_DUMMY_DATA) {
       return await dummyDataService.getFeaturedAnnouncements(params);

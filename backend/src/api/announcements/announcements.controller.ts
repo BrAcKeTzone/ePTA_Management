@@ -233,6 +233,25 @@ export const toggleFeatured = asyncHandler(
   }
 );
 
+// Toggle publish status
+export const togglePublish = asyncHandler(
+  async (req: Request, res: Response) => {
+    const id = parseInt(req.params.id);
+
+    const announcement = await announcementService.togglePublish(id);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          announcement,
+          "Publish status toggled successfully"
+        )
+      );
+  }
+);
+
 // Archive announcement
 export const archiveAnnouncement = asyncHandler(
   async (req: Request, res: Response) => {

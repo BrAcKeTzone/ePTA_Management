@@ -26,10 +26,21 @@ const Announcements = () => {
     try {
       setLoading(true);
       const response = await announcementsApi.getActiveAnnouncements();
-      // Response structure: response.data.data.announcements
-      setAnnouncements(response.data?.data?.announcements || []);
+      console.log("Announcements API Response:", response);
+      console.log("Response data:", response.data);
+
+      // Try multiple possible response structures
+      const announcementsData =
+        response.data?.data?.announcements ||
+        response.data?.announcements ||
+        response.data ||
+        [];
+
+      console.log("Extracted announcements:", announcementsData);
+      setAnnouncements(announcementsData);
     } catch (error) {
       console.error("Error fetching announcements:", error);
+      console.error("Error response:", error.response);
     } finally {
       setLoading(false);
     }
@@ -38,15 +49,24 @@ const Announcements = () => {
   const fetchReadStatus = async () => {
     try {
       const response = await announcementsApi.getMyReadStatus();
+      console.log("Read Status API Response:", response);
+
       const statusMap = {};
-      // Response structure: response.data.data.announcements
-      const announcements = response.data?.data?.announcements || [];
+      // Try multiple possible response structures
+      const announcements =
+        response.data?.data?.announcements ||
+        response.data?.announcements ||
+        response.data ||
+        [];
+
+      console.log("Extracted read status announcements:", announcements);
       announcements.forEach((item) => {
         statusMap[item.id] = item.isRead;
       });
       setReadStatus(statusMap);
     } catch (error) {
       console.error("Error fetching read status:", error);
+      console.error("Error response:", error.response);
     }
   };
 
@@ -74,10 +94,10 @@ const Announcements = () => {
       if (a.isFeatured && !b.isFeatured) return -1;
       if (!a.isFeatured && b.isFeatured) return 1;
 
-      // Then by priority
-      const priorityOrder = { urgent: 3, high: 2, normal: 1 };
-      const aPriority = priorityOrder[a.priority] || 1;
-      const bPriority = priorityOrder[b.priority] || 1;
+      // Then by priority (URGENT > HIGH > MEDIUM > LOW)
+      const priorityOrder = { URGENT: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
+      const aPriority = priorityOrder[a.priority] || 2;
+      const bPriority = priorityOrder[b.priority] || 2;
       if (aPriority !== bPriority) return bPriority - aPriority;
 
       // Finally by date (newest first)
@@ -108,11 +128,14 @@ const Announcements = () => {
   };
 
   const getPriorityColor = (priority) => {
-    switch (priority) {
-      case "urgent":
+    switch (priority?.toUpperCase()) {
+      case "URGENT":
         return "bg-red-100 text-red-800 border-red-200";
-      case "high":
+      case "HIGH":
         return "bg-orange-100 text-orange-800 border-orange-200";
+      case "LOW":
+        return "bg-gray-100 text-gray-800 border-gray-200";
+      case "MEDIUM":
       default:
         return "bg-blue-100 text-blue-800 border-blue-200";
     }
@@ -139,9 +162,7 @@ const Announcements = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          Announcements
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900">Announcements</h1>
         <p className="text-gray-600 mt-1">
           Stay updated with the latest PTA announcements
         </p>
@@ -227,7 +248,8 @@ const Announcements = () => {
                       announcement.priority
                     )}`}
                   >
-                    {announcement.priority}
+                    {announcement.priority?.charAt(0) +
+                      announcement.priority?.slice(1).toLowerCase()}
                   </span>
                   {isExpired(announcement.expiryDate) && (
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
@@ -251,9 +273,7 @@ const Announcements = () => {
                   {announcement.expiryDate && (
                     <span
                       className={
-                        isExpired(announcement.expiryDate)
-                          ? "text-red-600"
-                          : ""
+                        isExpired(announcement.expiryDate) ? "text-red-600" : ""
                       }
                     >
                       {" • "}Expires on {formatDate(announcement.expiryDate)}

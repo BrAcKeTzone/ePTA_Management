@@ -14,7 +14,7 @@ export const createAnnouncement = Joi.object().keys({
     .default("ALL"),
   targetProgram: Joi.string().optional().allow(""),
   targetYearLevel: Joi.string().optional().allow(""),
-  isPublished: Joi.boolean().optional().default(false),
+  isPublished: Joi.boolean().optional().default(true),
   publishDate: Joi.date().iso().optional().allow(null),
   expiryDate: Joi.date()
     .iso()

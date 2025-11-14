@@ -19,6 +19,7 @@ const AnnouncementsManagement = () => {
     priority: "normal",
     expiryDate: "",
     isFeatured: false,
+    isPublished: true, // Default to published
   });
 
   useEffect(() => {
@@ -50,6 +51,7 @@ const AnnouncementsManagement = () => {
         priority: "normal",
         expiryDate: "",
         isFeatured: false,
+        isPublished: true,
       });
       fetchAnnouncements();
     } catch (error) {
@@ -98,6 +100,15 @@ const AnnouncementsManagement = () => {
       fetchAnnouncements();
     } catch (error) {
       console.error("Error archiving announcement:", error);
+    }
+  };
+
+  const handleTogglePublish = async (announcementId) => {
+    try {
+      await announcementsApi.togglePublish(announcementId);
+      fetchAnnouncements();
+    } catch (error) {
+      console.error("Error toggling publish status:", error);
     }
   };
 
@@ -208,10 +219,24 @@ const AnnouncementsManagement = () => {
             <Button
               variant="outline"
               size="sm"
+              onClick={() => handleTogglePublish(announcement.id)}
+              className={
+                announcement.isPublished
+                  ? ""
+                  : "bg-green-50 text-green-700 border-green-300"
+              }
+            >
+              {announcement.isPublished ? "Unpublish" : "Publish"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => handleArchiveAnnouncement(announcement.id)}
             >
               Archive
             </Button>
+          </div>
+          <div className="flex space-x-1">
             <Button
               variant="outline"
               size="sm"
@@ -317,111 +342,117 @@ const AnnouncementsManagement = () => {
                       <h3 className="font-medium text-gray-900 break-words">
                         {announcement.title}
                       </h3>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {formatDate(announcement.createdAt)}
+                      <p className="text-sm text-gray-500">
+                        {announcement.priority.charAt(0) +
+                          announcement.priority.slice(1).toLowerCase()}{" "}
+                        Priority
                       </p>
                     </div>
+                    <div className="flex flex-col items-end space-y-1">
+                      {announcement.isFeatured && (
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
+                          Featured
+                        </span>
+                      )}
+                      {isExpired(announcement.expiryDate) && (
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">
+                          Expired
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="mb-3">
-                    <p className="text-sm text-gray-600 line-clamp-2">
-                      {announcement.content}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        announcement.priority === "URGENT"
-                          ? "bg-red-100 text-red-800"
-                          : announcement.priority === "HIGH"
-                          ? "bg-orange-100 text-orange-800"
-                          : announcement.priority === "LOW"
-                          ? "bg-gray-100 text-gray-800"
-                          : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {announcement.priority.charAt(0) +
-                        announcement.priority.slice(1).toLowerCase()}
-                    </span>
-                    {announcement.isFeatured && (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                        Featured
-                      </span>
-                    )}
-                    {isExpired(announcement.expiryDate) && (
-                      <span className="px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                        Expired
-                      </span>
-                    )}
-                  </div>
-
-                  {announcement.expiryDate && (
-                    <div className="text-xs mb-3">
-                      <span
-                        className={`${
-                          isExpired(announcement.expiryDate)
-                            ? "text-red-600"
-                            : "text-gray-600"
-                        }`}
-                      >
-                        Expires: {formatDate(announcement.expiryDate)}
+                  <div className="space-y-2 text-sm mb-3">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Created:</span>
+                      <span className="text-gray-900 font-medium">
+                        {formatDate(announcement.createdAt)}
                       </span>
                     </div>
-                  )}
+                    {announcement.expiryDate && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Expires:</span>
+                        <span
+                          className={`font-medium ${
+                            isExpired(announcement.expiryDate)
+                              ? "text-red-600"
+                              : "text-gray-900"
+                          }`}
+                        >
+                          {formatDate(announcement.expiryDate)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">Status:</span>
+                      <span className="text-gray-900 font-medium">
+                        {announcement.isPublished ? "Published" : "Draft"}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-gray-500 mb-1">Content:</span>
+                      <span className="text-gray-900 text-sm line-clamp-3">
+                        {announcement.content}
+                      </span>
+                    </div>
+                  </div>
 
                   <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          const formattedAnnouncement = {
-                            ...announcement,
-                            expiryDate: announcement.expiryDate
-                              ? new Date(announcement.expiryDate)
-                                  .toISOString()
-                                  .split("T")[0]
-                              : "",
-                          };
-                          setSelectedAnnouncement(formattedAnnouncement);
-                          setShowEditModal(true);
-                        }}
-                        className="flex-1"
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleToggleFeatured(announcement.id)}
-                        className="flex-1"
-                      >
-                        {announcement.isFeatured ? "Unfeature" : "Feature"}
-                      </Button>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          handleArchiveAnnouncement(announcement.id)
-                        }
-                        className="flex-1"
-                      >
-                        Archive
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          handleDeleteAnnouncement(announcement.id)
-                        }
-                        className="flex-1 text-red-600 border-red-300 hover:bg-red-50"
-                      >
-                        Delete
-                      </Button>
-                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const formattedAnnouncement = {
+                          ...announcement,
+                          expiryDate: announcement.expiryDate
+                            ? new Date(announcement.expiryDate)
+                                .toISOString()
+                                .split("T")[0]
+                            : "",
+                        };
+                        setSelectedAnnouncement(formattedAnnouncement);
+                        setShowEditModal(true);
+                      }}
+                      className="w-full"
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleTogglePublish(announcement.id)}
+                      className={`w-full ${
+                        announcement.isPublished
+                          ? ""
+                          : "bg-green-50 text-green-700 border-green-300"
+                      }`}
+                    >
+                      {announcement.isPublished ? "Unpublish" : "Publish"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleToggleFeatured(announcement.id)}
+                      className="w-full"
+                    >
+                      {announcement.isFeatured ? "Unfeature" : "Feature"}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleArchiveAnnouncement(announcement.id)}
+                      className="w-full"
+                    >
+                      Archive
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteAnnouncement(announcement.id)}
+                      className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                    >
+                      Delete
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -499,25 +530,47 @@ const AnnouncementsManagement = () => {
               }
             />
           </div>
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="featured"
-              checked={newAnnouncement.isFeatured}
-              onChange={(e) =>
-                setNewAnnouncement({
-                  ...newAnnouncement,
-                  isFeatured: e.target.checked,
-                })
-              }
-              className="mr-2"
-            />
-            <label
-              htmlFor="featured"
-              className="text-sm font-medium text-gray-700"
-            >
-              Mark as featured announcement
-            </label>
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="featured"
+                checked={newAnnouncement.isFeatured}
+                onChange={(e) =>
+                  setNewAnnouncement({
+                    ...newAnnouncement,
+                    isFeatured: e.target.checked,
+                  })
+                }
+                className="mr-2"
+              />
+              <label
+                htmlFor="featured"
+                className="text-sm font-medium text-gray-700"
+              >
+                Mark as featured announcement
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="published"
+                checked={newAnnouncement.isPublished}
+                onChange={(e) =>
+                  setNewAnnouncement({
+                    ...newAnnouncement,
+                    isPublished: e.target.checked,
+                  })
+                }
+                className="mr-2"
+              />
+              <label
+                htmlFor="published"
+                className="text-sm font-medium text-gray-700"
+              >
+                Publish immediately (visible to parents)
+              </label>
+            </div>
           </div>
           <div className="flex justify-end space-x-2">
             <Button
@@ -601,25 +654,47 @@ const AnnouncementsManagement = () => {
                 }
               />
             </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="editFeatured"
-                checked={selectedAnnouncement.isFeatured}
-                onChange={(e) =>
-                  setSelectedAnnouncement({
-                    ...selectedAnnouncement,
-                    isFeatured: e.target.checked,
-                  })
-                }
-                className="mr-2"
-              />
-              <label
-                htmlFor="editFeatured"
-                className="text-sm font-medium text-gray-700"
-              >
-                Mark as featured announcement
-              </label>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="editFeatured"
+                  checked={selectedAnnouncement.isFeatured}
+                  onChange={(e) =>
+                    setSelectedAnnouncement({
+                      ...selectedAnnouncement,
+                      isFeatured: e.target.checked,
+                    })
+                  }
+                  className="mr-2"
+                />
+                <label
+                  htmlFor="editFeatured"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Mark as featured announcement
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="editPublished"
+                  checked={selectedAnnouncement.isPublished}
+                  onChange={(e) =>
+                    setSelectedAnnouncement({
+                      ...selectedAnnouncement,
+                      isPublished: e.target.checked,
+                    })
+                  }
+                  className="mr-2"
+                />
+                <label
+                  htmlFor="editPublished"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Publish (visible to parents)
+                </label>
+              </div>
             </div>
             <div className="flex justify-end space-x-2">
               <Button

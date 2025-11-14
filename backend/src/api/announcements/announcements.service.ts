@@ -30,6 +30,7 @@ interface UpdateAnnouncementData {
   targetAudience?: TargetAudience;
   targetProgram?: string;
   targetYearLevel?: string;
+  isPublished?: boolean;
   publishDate?: Date;
   expiryDate?: Date;
   attachmentUrl?: string;
@@ -102,7 +103,7 @@ export const createAnnouncement = async (
       targetProgram: data.targetProgram || null,
       targetYearLevel: data.targetYearLevel || null,
       isPublished: data.isPublished || false,
-      publishDate: data.publishDate || null,
+      publishDate: data.isPublished ? data.publishDate || new Date() : null,
       expiryDate: data.expiryDate || null,
       attachmentUrl: data.attachmentUrl || null,
       attachmentName: data.attachmentName || null,
@@ -208,6 +209,7 @@ export const getActiveAnnouncements = async (
 
   const whereClause: any = {
     isPublished: true,
+    isArchived: false,
     OR: [{ expiryDate: null }, { expiryDate: { gte: now } }],
   };
 
@@ -309,9 +311,18 @@ export const updateAnnouncement = async (
     }
   }
 
+  // If changing from unpublished to published, set publishDate
+  const updateData: any = { ...data };
+  if (data.isPublished === true && !announcement.isPublished) {
+    updateData.publishDate = data.publishDate || new Date();
+  } else if (data.isPublished === false && announcement.isPublished) {
+    // If unpublishing, clear publishDate
+    updateData.publishDate = null;
+  }
+
   const updatedAnnouncement = await prisma.announcement.update({
     where: { id },
-    data,
+    data: updateData,
     include: {
       createdBy: {
         select: {
@@ -751,6 +762,27 @@ export const toggleFeatured = async (id: number): Promise<Announcement> => {
   return await prisma.announcement.update({
     where: { id },
     data: { isFeatured: !announcement.isFeatured },
+  });
+};
+
+// Toggle publish status
+export const togglePublish = async (id: number): Promise<Announcement> => {
+  const announcement = await prisma.announcement.findUnique({
+    where: { id },
+  });
+
+  if (!announcement) {
+    throw new ApiError(404, "Announcement not found");
+  }
+
+  const willBePublished = !announcement.isPublished;
+
+  return await prisma.announcement.update({
+    where: { id },
+    data: {
+      isPublished: willBePublished,
+      publishDate: willBePublished ? new Date() : null, // Set publishDate when publishing
+    },
   });
 };
 
