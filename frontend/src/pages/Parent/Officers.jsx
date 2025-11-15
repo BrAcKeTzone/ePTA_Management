@@ -58,7 +58,7 @@ const Officers = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {positions.map((position) => {
           const officer = officers[position.key];
-          
+
           return (
             <div
               key={position.key}
@@ -86,7 +86,8 @@ const Officers = () => {
                         </div>
                       </div>
                       <p className="font-medium text-gray-900 text-lg">
-                        {officer.firstName} {officer.middleName || ""} {officer.lastName}
+                        {officer.firstName} {officer.middleName || ""}{" "}
+                        {officer.lastName}
                       </p>
                     </div>
                   </div>
@@ -118,11 +119,13 @@ const Officers = () => {
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="text-sm font-medium text-blue-900">About PTA Officers</h3>
+            <h3 className="text-sm font-medium text-blue-900">
+              About PTA Officers
+            </h3>
             <p className="text-sm text-blue-700 mt-1">
-              These officers are responsible for leading and managing the activities of the
-              Parent-Teacher Association. They work together to ensure the welfare and success
-              of our school community.
+              These officers are responsible for leading and managing the
+              activities of the Parent-Teacher Association. They work together
+              to ensure the welfare and success of our school community.
             </p>
           </div>
         </div>

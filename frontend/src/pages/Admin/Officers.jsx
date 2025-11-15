@@ -48,9 +48,8 @@ const Officers = () => {
     try {
       const response = await userApi.getAllUsers();
       // Filter only PARENT role users
-      const parentUsers = response.data?.users?.filter(
-        (user) => user.role === "PARENT"
-      ) || [];
+      const parentUsers =
+        response.data?.users?.filter((user) => user.role === "PARENT") || [];
       setUsers(parentUsers);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -67,40 +66,54 @@ const Officers = () => {
   const handleAssignOfficer = async (user) => {
     try {
       await officersApi.assignOfficer(selectedPosition, user.id);
-      
+
       const updatedOfficers = {
         ...officers,
         [selectedPosition]: user,
       };
       setOfficers(updatedOfficers);
-      
+
       setShowSelectModal(false);
       setSelectedPosition(null);
-      alert(`Successfully assigned ${user.firstName} ${user.lastName} as ${getPositionLabel(selectedPosition)}`);
+      alert(
+        `Successfully assigned ${user.firstName} ${
+          user.lastName
+        } as ${getPositionLabel(selectedPosition)}`
+      );
     } catch (error) {
       console.error("Error assigning officer:", error);
-      alert(error.response?.data?.message || "Error assigning officer. Please try again.");
+      alert(
+        error.response?.data?.message ||
+          "Error assigning officer. Please try again."
+      );
     }
   };
 
   const handleRemoveOfficer = async (positionKey) => {
-    if (!window.confirm(`Are you sure you want to remove the ${getPositionLabel(positionKey)}?`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to remove the ${getPositionLabel(positionKey)}?`
+      )
+    ) {
       return;
     }
 
     try {
       await officersApi.removeOfficer(positionKey);
-      
+
       const updatedOfficers = {
         ...officers,
         [positionKey]: null,
       };
       setOfficers(updatedOfficers);
-      
+
       alert(`Successfully removed ${getPositionLabel(positionKey)}`);
     } catch (error) {
       console.error("Error removing officer:", error);
-      alert(error.response?.data?.message || "Error removing officer. Please try again.");
+      alert(
+        error.response?.data?.message ||
+          "Error removing officer. Please try again."
+      );
     }
   };
 
@@ -114,15 +127,20 @@ const Officers = () => {
 
   const filteredUsers = users.filter((user) => {
     const searchLower = searchTerm.toLowerCase();
-    const fullName = `${user.firstName} ${user.middleName || ""} ${user.lastName}`.toLowerCase();
+    const fullName = `${user.firstName} ${user.middleName || ""} ${
+      user.lastName
+    }`.toLowerCase();
     const email = user.email.toLowerCase();
-    
+
     // Exclude users who are already assigned to other positions
     const isAlreadyAssigned = Object.entries(officers).some(
       ([key, officer]) => key !== selectedPosition && officer?.id === user.id
     );
-    
-    return !isAlreadyAssigned && (fullName.includes(searchLower) || email.includes(searchLower));
+
+    return (
+      !isAlreadyAssigned &&
+      (fullName.includes(searchLower) || email.includes(searchLower))
+    );
   });
 
   if (loading) {
@@ -137,7 +155,9 @@ const Officers = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Officers Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Officers Management
+        </h1>
         <p className="text-gray-600 mt-1">
           Manage PTA officers and their positions
         </p>
@@ -147,7 +167,7 @@ const Officers = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {positions.map((position) => {
           const officer = officers[position.key];
-          
+
           return (
             <div
               key={position.key}
@@ -177,17 +197,19 @@ const Officers = () => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-gray-900 truncate">
-                            {officer.firstName} {officer.middleName || ""} {officer.lastName}
+                            {officer.firstName} {officer.middleName || ""}{" "}
+                            {officer.lastName}
                           </p>
                           <p className="text-sm text-gray-500 truncate">
                             {officer.email}
                           </p>
                         </div>
                       </div>
-                      
+
                       {officer.contactNumber && (
                         <div className="text-sm text-gray-600 mt-2">
-                          <span className="font-medium">Contact:</span> {officer.contactNumber}
+                          <span className="font-medium">Contact:</span>{" "}
+                          {officer.contactNumber}
                         </div>
                       )}
                     </div>
@@ -214,7 +236,9 @@ const Officers = () => {
                 ) : (
                   <div className="space-y-3">
                     <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                      <p className="text-gray-500 text-sm mb-3">No officer assigned</p>
+                      <p className="text-gray-500 text-sm mb-3">
+                        No officer assigned
+                      </p>
                       <Button
                         size="sm"
                         onClick={() => handleSelectPosition(position.key)}
@@ -238,7 +262,9 @@ const Officers = () => {
           setSelectedPosition(null);
           setSearchTerm("");
         }}
-        title={`Select ${selectedPosition ? getPositionLabel(selectedPosition) : "Officer"}`}
+        title={`Select ${
+          selectedPosition ? getPositionLabel(selectedPosition) : "Officer"
+        }`}
         size="lg"
       >
         <div className="space-y-4">
@@ -273,7 +299,9 @@ const Officers = () => {
                       <p className="font-medium text-gray-900 truncate">
                         {user.firstName} {user.middleName || ""} {user.lastName}
                       </p>
-                      <p className="text-sm text-gray-500 truncate">{user.email}</p>
+                      <p className="text-sm text-gray-500 truncate">
+                        {user.email}
+                      </p>
                     </div>
                   </div>
                   <Button size="sm">Select</Button>
@@ -308,10 +336,13 @@ const Officers = () => {
             </svg>
           </div>
           <div className="flex-1">
-            <h3 className="text-sm font-medium text-blue-900">About Officers</h3>
+            <h3 className="text-sm font-medium text-blue-900">
+              About Officers
+            </h3>
             <p className="text-sm text-blue-700 mt-1">
-              Officers are selected from existing parent users. Each position can only be
-              assigned to one person at a time. You can change or remove officers at any time.
+              Officers are selected from existing parent users. Each position
+              can only be assigned to one person at a time. You can change or
+              remove officers at any time.
             </p>
           </div>
         </div>

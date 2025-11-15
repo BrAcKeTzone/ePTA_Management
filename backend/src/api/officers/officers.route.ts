@@ -5,11 +5,7 @@ import { authenticate, authorize } from "../../middlewares/auth.middleware";
 const router = Router();
 
 // Get all officers (accessible by both admin and parent)
-router.get(
-  "/",
-  authenticate,
-  officerController.getAllOfficers
-);
+router.get("/", authenticate, officerController.getAllOfficers);
 
 // Assign officer (admin only)
 router.post(

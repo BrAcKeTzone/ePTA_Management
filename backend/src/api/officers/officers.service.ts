@@ -1,7 +1,13 @@
 import prisma from "../../configs/prisma";
 import ApiError from "../../utils/ApiError";
 
-const validPositions = ["president", "vicePresident", "secretary", "treasurer", "pio"];
+const validPositions = [
+  "president",
+  "vicePresident",
+  "secretary",
+  "treasurer",
+  "pio",
+];
 
 // Get all officers with user details
 export const getAllOfficers = async () => {
@@ -64,7 +70,10 @@ export const assignOfficer = async (position: string, userId: number) => {
   });
 
   if (existingOfficer && existingOfficer.position !== position) {
-    throw new ApiError(400, "User is already assigned to another officer position");
+    throw new ApiError(
+      400,
+      "User is already assigned to another officer position"
+    );
   }
 
   // Upsert the officer (create or update)
