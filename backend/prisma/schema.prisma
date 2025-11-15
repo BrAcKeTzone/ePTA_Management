@@ -79,6 +79,7 @@ model User {
   attendances   Attendance[] @relation("ParentAttendance")
   contributions Contribution[]
   penalties     Penalty[]
+  officerPosition Officer?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -86,6 +87,18 @@ model User {
   @@index([email])
   @@index([role])
   @@index([isActive])
+}
+
+model Officer {
+  id        Int      @id @default(autoincrement())
+  position  String   @unique // president, vicePresident, secretary, treasurer, pio
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([position])
+  @@index([userId])
 }
 
 model Student {

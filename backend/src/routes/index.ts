@@ -12,6 +12,7 @@ import contributionRouter from "../api/contributions/contributions.route";
 import announcementRouter from "../api/announcements/announcements.route";
 import settingsRouter from "../api/settings/settings.route";
 import clearanceRouter from "../api/clearance/clearance.route";
+import officerRouter from "../api/officers/officers.route";
 
 router.use("/auth", authRouter);
 router.use("/users", userRouter);
@@ -24,5 +25,6 @@ router.use("/contributions", contributionRouter);
 router.use("/announcements", announcementRouter);
 router.use("/settings", settingsRouter);
 router.use("/clearance", clearanceRouter);
+router.use("/officers", officerRouter);
 
 export default router;

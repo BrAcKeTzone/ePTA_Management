@@ -17,6 +17,7 @@ import AdminStudents from "../pages/Admin/Students";
 import AdminStudentLinks from "../pages/Admin/StudentLinks";
 import MeetingsAndAttendance from "../pages/Admin/MeetingsAndAttendance";
 import AdminUsers from "../pages/Admin/Users";
+import AdminOfficers from "../pages/Admin/Officers";
 
 // Parent pages (PTA System)
 import ParentDashboard from "../pages/Parent/Dashboard";
@@ -26,6 +27,7 @@ import ParentAnnouncements from "../pages/Parent/Announcements";
 import ParentProjects from "../pages/Parent/Projects";
 import ParentClearance from "../pages/Parent/Clearance";
 import ParentMyChildren from "../pages/Parent/MyChildren";
+import ParentOfficers from "../pages/Parent/Officers";
 import QRScanner from "../pages/Parent/QRScanner";
 
 // Legacy HR/Applicant pages (keep for backward compatibility)
@@ -180,6 +182,7 @@ const AppRoutes = () => {
         <Route path="students" element={<AdminStudents />} />
         <Route path="student-links" element={<AdminStudentLinks />} />
         <Route path="users" element={<AdminUsers />} />
+        <Route path="officers" element={<AdminOfficers />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
 
@@ -199,6 +202,7 @@ const AppRoutes = () => {
         <Route path="projects" element={<ParentProjects />} />
         <Route path="clearance" element={<ParentClearance />} />
         <Route path="my-children" element={<ParentMyChildren />} />
+        <Route path="officers" element={<ParentOfficers />} />
         <Route path="qr-scanner" element={<QRScanner />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
