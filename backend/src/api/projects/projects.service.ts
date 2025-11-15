@@ -931,41 +931,33 @@ export const getProjectStats = async (filters: any) => {
 };
 
 /**
- * Get all documents from all projects
+ * Get all documents
  */
 export const getAllDocuments = async (filters: any = {}) => {
-  const { page = 1, limit = 10, projectId, search } = filters;
+  const { page = 1, limit = 10, search, category } = filters;
   const skip = (page - 1) * limit;
 
-  const whereClause: any = {
-    attachments: {
-      not: null,
-    },
-  };
-
-  if (projectId) {
-    whereClause.id = parseInt(projectId);
-  }
+  const whereClause: any = {};
 
   if (search) {
     whereClause.OR = [
-      { name: { contains: search } },
+      { title: { contains: search } },
       { description: { contains: search } },
+      { fileName: { contains: search } },
     ];
   }
 
-  const [projects, totalCount] = await Promise.all([
-    prisma.project.findMany({
+  if (category) {
+    whereClause.category = category;
+  }
+
+  const [documents, totalCount] = await Promise.all([
+    prisma.document.findMany({
       where: whereClause,
       skip,
-      take: limit,
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        attachments: true,
-        createdAt: true,
-        createdBy: {
+      take: parseInt(limit),
+      include: {
+        uploadedBy: {
           select: {
             id: true,
             firstName: true,
@@ -977,49 +969,16 @@ export const getAllDocuments = async (filters: any = {}) => {
       },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.project.count({ where: whereClause }),
+    prisma.document.count({ where: whereClause }),
   ]);
-
-  // Parse attachments and flatten documents
-  const documents: any[] = [];
-  projects.forEach((project) => {
-    if (project.attachments) {
-      try {
-        const attachments = JSON.parse(project.attachments);
-        if (Array.isArray(attachments)) {
-          attachments.forEach((attachment, index) => {
-            documents.push({
-              id: `${project.id}-${index}`,
-              projectId: project.id,
-              projectName: project.name,
-              fileName:
-                attachment.name ||
-                attachment.fileName ||
-                `Document ${index + 1}`,
-              fileUrl: attachment.url || attachment.fileUrl || attachment,
-              fileSize: attachment.size || null,
-              mimeType: attachment.type || attachment.mimeType || null,
-              uploadedAt: project.createdAt,
-              uploadedBy: project.createdBy,
-            });
-          });
-        }
-      } catch (error) {
-        console.error(
-          `Error parsing attachments for project ${project.id}:`,
-          error
-        );
-      }
-    }
-  });
 
   return {
     documents,
     pagination: {
-      total: documents.length,
+      total: totalCount,
       page: parseInt(page),
       limit: parseInt(limit),
-      totalPages: Math.ceil(documents.length / limit),
+      totalPages: Math.ceil(totalCount / limit),
     },
   };
 };
@@ -1274,5 +1233,180 @@ export const deleteCompletionImage = async (
     project: updatedProject,
     deletedImage: imageUrl,
     remainingImages: updatedImages.length,
+  };
+};
+
+/**
+ * Upload a general document (independent from projects)
+ */
+export const uploadGeneralDocument = async (documentData: any) => {
+  // Get the user ID from the request context (you may need to pass this from the controller)
+  const uploadedById = documentData.uploadedById || 1; // Default to admin user ID
+
+  // Create document entry in the database
+  const document = await prisma.document.create({
+    data: {
+      title: documentData.title,
+      description: documentData.description || null,
+      fileName: documentData.fileName,
+      fileUrl: documentData.fileUrl,
+      fileSize: documentData.fileSize || null,
+      mimeType: documentData.mimeType || null,
+      category: documentData.category || "other",
+      isPublic: true,
+      uploadedById: uploadedById,
+    },
+    include: {
+      uploadedBy: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return {
+    document,
+    message: "Document uploaded successfully",
+  };
+};
+
+/**
+ * Upload a document to a project
+ */
+export const uploadProjectDocument = async (
+  projectId: number,
+  documentData: any
+) => {
+  // Verify project exists
+  const project = await prisma.project.findUnique({
+    where: { id: projectId },
+  });
+
+  if (!project) {
+    throw new ApiError(404, "Project not found");
+  }
+
+  // Get existing attachments
+  let attachments = [];
+  if (project.attachments) {
+    try {
+      attachments = JSON.parse(project.attachments);
+    } catch (error) {
+      console.error("Error parsing existing attachments:", error);
+      attachments = [];
+    }
+  }
+
+  // Add new document
+  const newDocument = {
+    name: documentData.title || documentData.fileName || "Untitled Document",
+    fileName:
+      documentData.fileName || documentData.title || `document_${Date.now()}`,
+    url: documentData.fileUrl || documentData.url || "",
+    size: documentData.fileSize || null,
+    type:
+      documentData.mimeType || documentData.type || "application/octet-stream",
+    category: documentData.category || "other",
+    description: documentData.description || "",
+    uploadedAt: new Date().toISOString(),
+  };
+
+  attachments.push(newDocument);
+
+  // Update project with new attachments
+  const updatedProject = await prisma.project.update({
+    where: { id: projectId },
+    data: {
+      attachments: JSON.stringify(attachments),
+    },
+    include: {
+      createdBy: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return {
+    project: updatedProject,
+    document: newDocument,
+    message: "Document uploaded successfully",
+  };
+};
+
+/**
+ * Get document for download
+ */
+export const getDocumentForDownload = async (documentId: string) => {
+  const docId = parseInt(documentId);
+
+  const document = await prisma.document.findUnique({
+    where: { id: docId },
+  });
+
+  if (!document) {
+    throw new ApiError(404, "Document not found");
+  }
+
+  return {
+    fileName: document.fileName,
+    fileUrl: document.fileUrl,
+    mimeType: document.mimeType,
+  };
+};
+
+/**
+ * Update a document
+ */
+export const updateDocument = async (documentId: string, updateData: any) => {
+  const docId = parseInt(documentId);
+
+  const document = await prisma.document.update({
+    where: { id: docId },
+    data: {
+      title: updateData.title,
+      description: updateData.description,
+      category: updateData.category,
+      isPublic: updateData.isPublic,
+    },
+    include: {
+      uploadedBy: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          middleName: true,
+          email: true,
+        },
+      },
+    },
+  });
+
+  return document;
+};
+
+/**
+ * Delete a document
+ */
+export const deleteDocument = async (documentId: string) => {
+  const docId = parseInt(documentId);
+
+  const document = await prisma.document.delete({
+    where: { id: docId },
+  });
+
+  return {
+    message: "Document deleted successfully",
+    deletedDocument: document,
   };
 };

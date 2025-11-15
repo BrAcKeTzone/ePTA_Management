@@ -106,15 +106,16 @@ export const projectsApi = {
     formData.append("description", documentData.description || "");
     formData.append("category", documentData.category);
 
-    return await fetchClient.post(
-      `/api/projects/${projectId}/documents`,
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
+    // If no projectId, upload as general document
+    const endpoint = projectId
+      ? `/api/projects/${projectId}/documents`
+      : `/api/projects/documents`;
+
+    return await fetchClient.post(endpoint, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
   },
 
   getMeetingDocuments: async (projectId, params = {}) => {

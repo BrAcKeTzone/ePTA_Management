@@ -8,12 +8,8 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 import { formatDate } from "../../utils/formatDate";
 
 const ProjectsAndDocuments = () => {
-  // Tab state
-  const [activeTab, setActiveTab] = useState("projects");
-
   // Common state
   const [projects, setProjects] = useState([]);
-  const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Projects state
@@ -40,16 +36,6 @@ const ProjectsAndDocuments = () => {
     priority: "MEDIUM",
   });
 
-  // Documents state
-  const [showUploadDocument, setShowUploadDocument] = useState(false);
-  const [documentUpload, setDocumentUpload] = useState({
-    projectId: "",
-    title: "",
-    description: "",
-    category: "meeting_minutes",
-    file: null,
-  });
-
   // Project status options
   const projectStatuses = [
     { value: "PLANNING", label: "Planning" },
@@ -69,7 +55,6 @@ const ProjectsAndDocuments = () => {
   // Load data on mount
   useEffect(() => {
     fetchProjects();
-    fetchDocuments();
   }, []);
 
   // Fetch projects
@@ -84,18 +69,6 @@ const ProjectsAndDocuments = () => {
       setProjects([]);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Fetch documents
-  const fetchDocuments = async () => {
-    try {
-      const response = await projectsApi.getAllMeetingDocuments();
-      const documentsArray = response.data?.data?.documents || [];
-      setDocuments(documentsArray);
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-      setDocuments([]);
     }
   };
 
@@ -406,67 +379,6 @@ const ProjectsAndDocuments = () => {
     }
   };
 
-  // Document handlers
-  const handleUploadDocument = async (e) => {
-    e.preventDefault();
-    try {
-      if (!documentUpload.file) {
-        alert("Please select a file to upload");
-        return;
-      }
-
-      await projectsApi.uploadMeetingDocument(
-        documentUpload.projectId,
-        documentUpload
-      );
-      setShowUploadDocument(false);
-      setDocumentUpload({
-        projectId: "",
-        title: "",
-        description: "",
-        category: "meeting_minutes",
-        file: null,
-      });
-      fetchDocuments();
-      alert("Document uploaded successfully!");
-    } catch (error) {
-      console.error("Error uploading document:", error);
-      alert(
-        `Error uploading document: ${
-          error.response?.data?.message || error.message
-        }`
-      );
-    }
-  };
-
-  const handleDownloadDocument = async (documentId, fileName) => {
-    try {
-      const response = await projectsApi.downloadDocument(documentId);
-      const blob = new Blob([response], { type: "application/octet-stream" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      a.click();
-    } catch (error) {
-      console.error("Error downloading document:", error);
-      alert("Error downloading document. Please try again.");
-    }
-  };
-
-  const handleDeleteDocument = async (documentId) => {
-    if (window.confirm("Are you sure you want to delete this document?")) {
-      try {
-        await projectsApi.deleteDocument(documentId);
-        fetchDocuments();
-        alert("Document deleted successfully!");
-      } catch (error) {
-        console.error("Error deleting document:", error);
-        alert("Error deleting document. Please try again.");
-      }
-    }
-  };
-
   // Table columns
   const projectColumns = [
     {
@@ -575,60 +487,6 @@ const ProjectsAndDocuments = () => {
     },
   ];
 
-  const documentColumns = [
-    {
-      key: "title",
-      header: "Document Title",
-      render: (doc) => (
-        <div>
-          <div className="font-medium">{doc.title}</div>
-          <div className="text-sm text-gray-600">{doc.description}</div>
-        </div>
-      ),
-    },
-    {
-      key: "category",
-      header: "Category",
-      render: (doc) => (
-        <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-          {doc.category?.replace(/_/g, " ") || "General"}
-        </span>
-      ),
-    },
-    {
-      key: "projectName",
-      header: "Project",
-      render: (doc) => doc.projectName || "General",
-    },
-    {
-      key: "uploadedDate",
-      header: "Upload Date",
-      render: (doc) => formatDate(doc.createdAt),
-    },
-    {
-      key: "actions",
-      header: "Actions",
-      render: (doc) => (
-        <div className="flex space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleDownloadDocument(doc.id, doc.fileName)}
-          >
-            Download
-          </Button>
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => handleDeleteDocument(doc.id)}
-          >
-            Delete
-          </Button>
-        </div>
-      ),
-    },
-  ];
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -643,289 +501,144 @@ const ProjectsAndDocuments = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Projects & Documents Management
+            Projects Management
           </h1>
-          <p className="text-gray-600 mt-1">
-            Manage PTA projects and meeting documents/resolutions
-          </p>
+          <p className="text-gray-600 mt-1">Manage PTA projects</p>
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div className="flex border-b border-gray-200">
-        <button
-          onClick={() => setActiveTab("projects")}
-          className={`px-4 py-2 font-medium transition-colors relative ${
-            activeTab === "projects"
-              ? "text-blue-600"
-              : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Projects
-          {activeTab === "projects" && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600"></div>
+      {/* Projects Section */}
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <Button onClick={() => setShowCreateProject(true)}>
+            Create New Project
+          </Button>
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden lg:block bg-white rounded-lg shadow-sm border">
+          <Table
+            data={projects}
+            columns={projectColumns}
+            emptyMessage="No projects found"
+          />
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="lg:hidden">
+          {projects.length > 0 ? (
+            <div className="space-y-4">
+              {projects.map((project) => (
+                <div
+                  key={project.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm overflow-hidden"
+                >
+                  <div className="mb-3">
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          project.status === "COMPLETED"
+                            ? "bg-green-100 text-green-800"
+                            : project.status === "ACTIVE"
+                            ? "bg-blue-100 text-blue-800"
+                            : project.status === "CANCELLED"
+                            ? "bg-red-100 text-red-800"
+                            : project.status === "ON_HOLD"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {project.status}
+                      </span>
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          project.priority === "URGENT"
+                            ? "bg-red-100 text-red-800"
+                            : project.priority === "HIGH"
+                            ? "bg-orange-100 text-orange-800"
+                            : project.priority === "MEDIUM"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {project.priority}
+                      </span>
+                    </div>
+                    <h3 className="font-medium text-gray-900 break-words mb-1">
+                      {project.name}
+                    </h3>
+                    <p className="text-sm text-gray-500 break-words line-clamp-2">
+                      {project.description || "No description"}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2 text-sm mb-3">
+                    <div className="flex justify-between gap-2">
+                      <span className="text-gray-500 flex-shrink-0">
+                        Budget:
+                      </span>
+                      <span className="text-gray-900 font-medium text-right break-words">
+                        ₱{project.budget?.toLocaleString() || "0"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span className="text-gray-500 flex-shrink-0">
+                        Start Date:
+                      </span>
+                      <span className="text-gray-900 font-medium text-right">
+                        {formatDate(project.startDate)}
+                      </span>
+                    </div>
+                    {project.endDate && (
+                      <div className="flex justify-between gap-2">
+                        <span className="text-gray-500 flex-shrink-0">
+                          End Date:
+                        </span>
+                        <span className="text-gray-900 font-medium text-right">
+                          {formatDate(project.endDate)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between gap-2">
+                      <span className="text-gray-500 flex-shrink-0">
+                        Created By:
+                      </span>
+                      <span className="text-gray-900 font-medium text-right break-words">
+                        {project.createdBy
+                          ? `${project.createdBy.firstName} ${project.createdBy.lastName}`
+                          : "N/A"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEditProject(project)}
+                      className="w-full"
+                    >
+                      View Details
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteProject(project.id)}
+                      className="w-full text-red-600 border-red-300 hover:bg-red-50"
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 bg-white rounded-lg border">
+              <p className="text-gray-500">No projects found</p>
+            </div>
           )}
-        </button>
-        <button
-          onClick={() => setActiveTab("documents")}
-          className={`px-4 py-2 font-medium transition-colors relative ${
-            activeTab === "documents"
-              ? "text-blue-600"
-              : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Meeting Documents & Resolutions
-          {activeTab === "documents" && (
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-600"></div>
-          )}
-        </button>
+        </div>
       </div>
-
-      {/* Projects Tab */}
-      {activeTab === "projects" && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <Button onClick={() => setShowCreateProject(true)}>
-              Create New Project
-            </Button>
-          </div>
-
-          {/* Desktop Table View */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-sm border">
-            <Table
-              data={projects}
-              columns={projectColumns}
-              emptyMessage="No projects found"
-            />
-          </div>
-
-          {/* Mobile Card View */}
-          <div className="lg:hidden">
-            {projects.length > 0 ? (
-              <div className="space-y-4">
-                {projects.map((project) => (
-                  <div
-                    key={project.id}
-                    className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm overflow-hidden"
-                  >
-                    <div className="mb-3">
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            project.status === "COMPLETED"
-                              ? "bg-green-100 text-green-800"
-                              : project.status === "ACTIVE"
-                              ? "bg-blue-100 text-blue-800"
-                              : project.status === "CANCELLED"
-                              ? "bg-red-100 text-red-800"
-                              : project.status === "ON_HOLD"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {project.status}
-                        </span>
-                        <span
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            project.priority === "URGENT"
-                              ? "bg-red-100 text-red-800"
-                              : project.priority === "HIGH"
-                              ? "bg-orange-100 text-orange-800"
-                              : project.priority === "MEDIUM"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {project.priority}
-                        </span>
-                      </div>
-                      <h3 className="font-medium text-gray-900 break-words mb-1">
-                        {project.name}
-                      </h3>
-                      <p className="text-sm text-gray-500 break-words line-clamp-2">
-                        {project.description || "No description"}
-                      </p>
-                    </div>
-
-                    <div className="space-y-2 text-sm mb-3">
-                      <div className="flex justify-between gap-2">
-                        <span className="text-gray-500 flex-shrink-0">
-                          Budget:
-                        </span>
-                        <span className="text-gray-900 font-medium text-right break-words">
-                          ₱{project.budget?.toLocaleString() || "0"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between gap-2">
-                        <span className="text-gray-500 flex-shrink-0">
-                          Start Date:
-                        </span>
-                        <span className="text-gray-900 font-medium text-right">
-                          {formatDate(project.startDate)}
-                        </span>
-                      </div>
-                      {project.endDate && (
-                        <div className="flex justify-between gap-2">
-                          <span className="text-gray-500 flex-shrink-0">
-                            End Date:
-                          </span>
-                          <span className="text-gray-900 font-medium text-right">
-                            {formatDate(project.endDate)}
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex justify-between gap-2">
-                        <span className="text-gray-500 flex-shrink-0">
-                          Created By:
-                        </span>
-                        <span className="text-gray-900 font-medium text-right break-words">
-                          {project.createdBy
-                            ? `${project.createdBy.firstName} ${project.createdBy.lastName}`
-                            : "N/A"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditProject(project)}
-                        className="w-full"
-                      >
-                        View Details
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteProject(project.id)}
-                        className="w-full text-red-600 border-red-300 hover:bg-red-50"
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 bg-white rounded-lg border">
-                <p className="text-gray-500">No projects found</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Documents Tab */}
-      {activeTab === "documents" && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <Button onClick={() => setShowUploadDocument(true)}>
-              Upload Document
-            </Button>
-          </div>
-
-          {/* Desktop Table View */}
-          <div className="hidden lg:block bg-white rounded-lg shadow-sm border">
-            <Table
-              data={documents}
-              columns={documentColumns}
-              emptyMessage="No documents found"
-            />
-          </div>
-
-          {/* Mobile Card View */}
-          <div className="lg:hidden">
-            {documents.length > 0 ? (
-              <div className="space-y-4">
-                {documents.map((doc) => (
-                  <div
-                    key={doc.id}
-                    className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm overflow-hidden"
-                  >
-                    <div className="mb-3">
-                      <div className="flex flex-wrap gap-2 mb-2">
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                          {doc.isPublic ? "Public" : "Private"}
-                        </span>
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                          {doc.category === "meeting_minutes"
-                            ? "Meeting Minutes"
-                            : doc.category === "resolution"
-                            ? "Resolution"
-                            : doc.category === "report"
-                            ? "Report"
-                            : "Other"}
-                        </span>
-                      </div>
-                      <h3 className="font-medium text-gray-900 break-words mb-1">
-                        {doc.title}
-                      </h3>
-                      {doc.description && (
-                        <p className="text-sm text-gray-600 break-words line-clamp-2">
-                          {doc.description}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2 text-sm mb-3">
-                      <div className="flex justify-between gap-2">
-                        <span className="text-gray-500 flex-shrink-0">
-                          Project:
-                        </span>
-                        <span className="text-gray-900 font-medium text-right break-words">
-                          {doc.project?.name || "N/A"}
-                        </span>
-                      </div>
-                      <div className="flex justify-between gap-2">
-                        <span className="text-gray-500 flex-shrink-0">
-                          Uploaded:
-                        </span>
-                        <span className="text-gray-900 font-medium text-right">
-                          {formatDate(doc.uploadedAt)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between gap-2">
-                        <span className="text-gray-500 flex-shrink-0">
-                          Uploaded By:
-                        </span>
-                        <span className="text-gray-900 font-medium text-right break-words">
-                          {doc.uploadedBy
-                            ? `${doc.uploadedBy.firstName} ${doc.uploadedBy.lastName}`
-                            : "N/A"}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownloadDocument(doc.id)}
-                        className="w-full"
-                      >
-                        Download
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDeleteDocument(doc.id)}
-                        className="w-full text-red-600 border-red-300 hover:bg-red-50"
-                      >
-                        Delete
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 bg-white rounded-lg border">
-                <p className="text-gray-500">No documents found</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* Create Project Modal */}
       <Modal
@@ -1060,118 +773,6 @@ const ProjectsAndDocuments = () => {
               Cancel
             </Button>
             <Button type="submit">Create Project</Button>
-          </div>
-        </form>
-      </Modal>
-
-      {/* Upload Document Modal */}
-      <Modal
-        isOpen={showUploadDocument}
-        onClose={() => setShowUploadDocument(false)}
-        title="Upload Meeting Document/Resolution"
-        size="lg"
-      >
-        <form onSubmit={handleUploadDocument} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Project (Optional)
-            </label>
-            <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={documentUpload.projectId}
-              onChange={(e) =>
-                setDocumentUpload({
-                  ...documentUpload,
-                  projectId: e.target.value,
-                })
-              }
-            >
-              <option value="">Select a project</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <Input
-            label="Document Title"
-            placeholder="e.g., Meeting Minutes - November 2024"
-            value={documentUpload.title}
-            onChange={(e) =>
-              setDocumentUpload({ ...documentUpload, title: e.target.value })
-            }
-            required
-          />
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              rows="2"
-              placeholder="Document description"
-              value={documentUpload.description}
-              onChange={(e) =>
-                setDocumentUpload({
-                  ...documentUpload,
-                  description: e.target.value,
-                })
-              }
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category
-            </label>
-            <select
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              value={documentUpload.category}
-              onChange={(e) =>
-                setDocumentUpload({
-                  ...documentUpload,
-                  category: e.target.value,
-                })
-              }
-              required
-            >
-              <option value="meeting_minutes">Meeting Minutes</option>
-              <option value="resolutions">Resolutions</option>
-              <option value="agenda">Agenda</option>
-              <option value="report">Report</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              File <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="file"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              onChange={(e) =>
-                setDocumentUpload({
-                  ...documentUpload,
-                  file: e.target.files?.[0] || null,
-                })
-              }
-              required
-            />
-          </div>
-
-          <div className="flex justify-end space-x-2 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowUploadDocument(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit">Upload Document</Button>
           </div>
         </form>
       </Modal>

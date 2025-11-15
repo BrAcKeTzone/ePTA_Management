@@ -6,54 +6,40 @@ import { formatDate } from "../../utils/formatDate";
 
 const Projects = () => {
   const [projects, setProjects] = useState([]);
-  const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [selectedDocument, setSelectedDocument] = useState(null);
   const [showProjectModal, setShowProjectModal] = useState(false);
-  const [showDocumentModal, setShowDocumentModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(true);
-  const [activeTab, setActiveTab] = useState("projects"); // projects, documents
+  const [showImageGallery, setShowImageGallery] = useState(false);
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     fetchProjects();
-    fetchDocuments();
   }, []);
 
   const fetchProjects = async () => {
     try {
       setLoading(true);
       const response = await projectsApi.getActiveProjects();
-      // Response structure: response.data.data.projects
-      setProjects(response.data?.data?.projects || []);
+      console.log("Projects API Response:", response);
+      console.log("Response data:", response.data);
+
+      // Try multiple possible response structures
+      const projectsData =
+        response.data?.data?.projects ||
+        response.data?.projects ||
+        response.data ||
+        [];
+
+      console.log("Extracted projects:", projectsData);
+      setProjects(projectsData);
     } catch (error) {
       console.error("Error fetching projects:", error);
+      console.error("Error response:", error.response);
+      setProjects([]); // Set empty array as fallback
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchDocuments = async () => {
-    try {
-      const response = await projectsApi.getPublicDocuments();
-      // Response structure: response.data.data.documents
-      setDocuments(response.data?.data?.documents || []);
-    } catch (error) {
-      console.error("Error fetching documents:", error);
-    }
-  };
-
-  const handleDownloadDocument = async (documentId, fileName) => {
-    try {
-      const response = await projectsApi.downloadDocument(documentId);
-      const blob = new Blob([response], { type: "application/octet-stream" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      a.click();
-    } catch (error) {
-      console.error("Error downloading document:", error);
     }
   };
 
@@ -74,29 +60,53 @@ const Projects = () => {
     }
   };
 
-  const getCategoryColor = (category) => {
-    switch (category) {
-      case "meeting_minutes":
-        return "bg-blue-100 text-blue-800";
-      case "resolution":
-        return "bg-purple-100 text-purple-800";
-      case "financial_report":
-        return "bg-green-100 text-green-800";
-      case "project_proposal":
-        return "bg-orange-100 text-orange-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
   const handleProjectClick = (project) => {
     setSelectedProject(project);
     setShowProjectModal(true);
   };
 
-  const handleDocumentClick = (document) => {
-    setSelectedDocument(document);
-    setShowDocumentModal(true);
+  const handleImageClick = (images, index) => {
+    setGalleryImages(images);
+    setCurrentImageIndex(index);
+    setShowImageGallery(true);
+  };
+
+  const handleNextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
+  };
+
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prev) =>
+      prev === 0 ? galleryImages.length - 1 : prev - 1
+    );
+  };
+
+  // Keyboard navigation for gallery
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (!showImageGallery) return;
+
+      if (e.key === "ArrowLeft") {
+        handlePrevImage();
+      } else if (e.key === "ArrowRight") {
+        handleNextImage();
+      } else if (e.key === "Escape") {
+        setShowImageGallery(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showImageGallery, galleryImages.length]);
+
+  const parseCompletionImages = (completionImages) => {
+    if (!completionImages) return [];
+    try {
+      return JSON.parse(completionImages);
+    } catch (error) {
+      console.error("Error parsing completion images:", error);
+      return [];
+    }
   };
 
   const truncateText = (text, maxLength = 120) => {
@@ -114,272 +124,263 @@ const Projects = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* About Modal */}
-      <Modal
-        isOpen={showAboutModal}
-        onClose={() => setShowAboutModal(false)}
-        title="About PTA Projects & Documents"
-        size="md"
-      >
-        <div className="space-y-4">
-          <div className="text-gray-700 space-y-2">
-            <p>• Click on any project or document to view full details</p>
-            <p>
-              • Projects show the current initiatives and activities of the PTA
-            </p>
-            <p>
-              • Documents include meeting minutes, resolutions, and important
-              records
-            </p>
-            <p>• All documents are available for download for transparency</p>
-            <p>
-              • Project progress is updated regularly by the PTA administration
-            </p>
-          </div>
-          <div className="pt-4 border-t">
-            <p className="text-sm text-gray-500 italic">
-              Click anywhere outside this box or press the × button to close
-            </p>
-          </div>
-        </div>
-      </Modal>
+    <>
+      {/* Image Gallery Modal - Outside main container */}
+      {showImageGallery && galleryImages.length > 0 && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-95 z-[9999] flex items-center justify-center"
+          onClick={() => setShowImageGallery(false)}
+        >
+          {/* Close button */}
+          <button
+            onClick={() => setShowImageGallery(false)}
+            className="absolute top-4 right-4 text-white text-4xl font-bold hover:text-gray-300 z-[10000]"
+            title="Close (ESC)"
+          >
+            ×
+          </button>
 
-      {/* Project Detail Modal */}
-      {selectedProject && (
+          {/* Image counter */}
+          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 text-white text-lg font-semibold">
+            {currentImageIndex + 1} / {galleryImages.length}
+          </div>
+
+          {/* Previous button */}
+          {galleryImages.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePrevImage();
+              }}
+              className="absolute left-4 text-white text-6xl font-bold hover:text-gray-300 z-[10000] transition-colors"
+              title="Previous (←)"
+            >
+              ‹
+            </button>
+          )}
+
+          {/* Current image */}
+          <div
+            className="max-w-[90vw] max-h-[90vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={galleryImages[currentImageIndex]}
+              alt={`Completion ${currentImageIndex + 1}`}
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            />
+          </div>
+
+          {/* Next button */}
+          {galleryImages.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNextImage();
+              }}
+              className="absolute right-4 text-white text-6xl font-bold hover:text-gray-300 z-[10000] transition-colors"
+              title="Next (→)"
+            >
+              ›
+            </button>
+          )}
+
+          {/* Thumbnail strip */}
+          {galleryImages.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 overflow-x-auto max-w-[90vw] px-4 py-2 bg-black bg-opacity-50 rounded-lg">
+              {galleryImages.map((img, index) => (
+                <img
+                  key={index}
+                  src={img}
+                  alt={`Thumbnail ${index + 1}`}
+                  className={`h-16 w-16 object-cover rounded cursor-pointer transition-all ${
+                    index === currentImageIndex
+                      ? "border-4 border-blue-500 opacity-100"
+                      : "border-2 border-gray-500 opacity-60 hover:opacity-100"
+                  }`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex(index);
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Main Content Container */}
+      <div className="space-y-6">
+        {/* About Modal */}
         <Modal
-          isOpen={showProjectModal}
-          onClose={() => {
-            setShowProjectModal(false);
-            setSelectedProject(null);
-          }}
-          title={selectedProject.title}
-          size="lg"
+          isOpen={showAboutModal}
+          onClose={() => setShowAboutModal(false)}
+          title="About PTA Projects"
+          size="md"
         >
           <div className="space-y-4">
-            {/* Status Badge */}
-            <div>
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                  selectedProject.status
-                )}`}
-              >
-                {selectedProject.status.replace("_", " ")}
-              </span>
+            <div className="text-gray-700 space-y-2">
+              <p>• Click on any project to view full details</p>
+              <p>
+                • Projects show the current initiatives and activities of the
+                PTA
+              </p>
+              <p>
+                • Project progress is updated regularly by the PTA
+                administration
+              </p>
             </div>
-
-            {/* Description */}
-            <div>
-              <h3 className="font-medium text-gray-900 mb-2">Description</h3>
-              <p className="text-gray-700">{selectedProject.description}</p>
+            <div className="pt-4 border-t">
+              <p className="text-sm text-gray-500 italic">
+                Click anywhere outside this box or press the × button to close
+              </p>
             </div>
+          </div>
+        </Modal>
 
-            {/* Project Details */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+        {/* Project Detail Modal */}
+        {selectedProject && (
+          <Modal
+            isOpen={showProjectModal}
+            onClose={() => {
+              setShowProjectModal(false);
+              setSelectedProject(null);
+            }}
+            title={selectedProject.title}
+            size="lg"
+          >
+            <div className="space-y-4">
+              {/* Status Badge */}
               <div>
-                <label className="text-sm font-medium text-gray-500">
-                  Start Date
-                </label>
-                <p className="text-sm text-gray-900">
-                  {formatDate(selectedProject.startDate)}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">
-                  End Date
-                </label>
-                <p className="text-sm text-gray-900">
-                  {formatDate(selectedProject.endDate)}
-                </p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-500">
-                  Budget
-                </label>
-                <p className="text-sm text-gray-900">
-                  {selectedProject.budget
-                    ? `₱${selectedProject.budget.toLocaleString()}`
-                    : "Not specified"}
-                </p>
-              </div>
-            </div>
-
-            {/* Progress */}
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span className="font-medium text-gray-700">Progress</span>
-                <span className="text-gray-500">
-                  {selectedProject.progress || 0}%
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                    selectedProject.status
+                  )}`}
+                >
+                  {selectedProject.status.replace("_", " ")}
                 </span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className={`h-2 rounded-full ${
-                    selectedProject.status === "completed"
-                      ? "bg-green-500"
-                      : selectedProject.status === "in_progress"
-                      ? "bg-blue-500"
-                      : "bg-yellow-500"
-                  }`}
-                  style={{ width: `${selectedProject.progress || 0}%` }}
-                ></div>
-              </div>
-            </div>
 
-            {/* Accomplishments */}
-            {selectedProject.accomplishments &&
-              selectedProject.accomplishments.length > 0 && (
-                <div className="pt-4 border-t">
-                  <h3 className="font-medium text-gray-900 mb-3">
-                    Accomplishments
-                  </h3>
-                  <ul className="space-y-2">
-                    {selectedProject.accomplishments.map(
-                      (accomplishment, index) => (
-                        <li
-                          key={index}
-                          className="text-sm text-gray-600 flex items-start"
-                        >
-                          <span className="text-green-500 mr-2 mt-1">•</span>
-                          <div className="flex-1">
-                            <span>{accomplishment.description}</span>
-                            {accomplishment.date && (
-                              <span className="text-gray-400 ml-2">
-                                ({formatDate(accomplishment.date)})
-                              </span>
-                            )}
-                          </div>
-                        </li>
-                      )
-                    )}
-                  </ul>
-                </div>
-              )}
-          </div>
-        </Modal>
-      )}
-
-      {/* Document Detail Modal */}
-      {selectedDocument && (
-        <Modal
-          isOpen={showDocumentModal}
-          onClose={() => {
-            setShowDocumentModal(false);
-            setSelectedDocument(null);
-          }}
-          title={selectedDocument.title}
-          size="lg"
-        >
-          <div className="space-y-4">
-            {/* Category Badge */}
-            <div>
-              <span
-                className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getCategoryColor(
-                  selectedDocument.category
-                )}`}
-              >
-                {selectedDocument.category.replace("_", " ")}
-              </span>
-            </div>
-
-            {/* Description */}
-            {selectedDocument.description && (
+              {/* Description */}
               <div>
                 <h3 className="font-medium text-gray-900 mb-2">Description</h3>
-                <p className="text-gray-700">{selectedDocument.description}</p>
+                <p className="text-gray-700">{selectedProject.description}</p>
               </div>
-            )}
 
-            {/* Document Details */}
-            <div className="pt-4 border-t space-y-2 text-sm text-gray-600">
-              <p>
-                <span className="font-medium">Uploaded:</span>{" "}
-                {formatDate(selectedDocument.createdAt)}
-              </p>
-              {selectedDocument.projectTitle && (
-                <p>
-                  <span className="font-medium">Related Project:</span>{" "}
-                  {selectedDocument.projectTitle}
-                </p>
-              )}
-              <p>
-                <span className="font-medium">File Size:</span>{" "}
-                {selectedDocument.fileSize
-                  ? `${(selectedDocument.fileSize / 1024 / 1024).toFixed(2)} MB`
-                  : "Unknown"}
-              </p>
-              <p>
-                <span className="font-medium">File Name:</span>{" "}
-                {selectedDocument.fileName}
-              </p>
+              {/* Project Details */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Start Date
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {formatDate(selectedProject.startDate)}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    End Date
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {formatDate(selectedProject.endDate)}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-500">
+                    Budget
+                  </label>
+                  <p className="text-sm text-gray-900">
+                    {selectedProject.budget
+                      ? `₱${selectedProject.budget.toLocaleString()}`
+                      : "Not specified"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Completion Images */}
+              {selectedProject.status === "COMPLETED" &&
+                selectedProject.completionImages && (
+                  <div className="pt-4 border-t">
+                    <h3 className="font-medium text-gray-900 mb-3">
+                      Completion Images
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {parseCompletionImages(
+                        selectedProject.completionImages
+                      ).map((image, index) => (
+                        <div
+                          key={index}
+                          className="relative aspect-video cursor-pointer overflow-hidden rounded-lg hover:opacity-90 transition-opacity"
+                          onClick={() =>
+                            handleImageClick(
+                              parseCompletionImages(
+                                selectedProject.completionImages
+                              ),
+                              index
+                            )
+                          }
+                        >
+                          <img
+                            src={image}
+                            alt={`Completion ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+              {/* Accomplishments */}
+              {selectedProject.accomplishments &&
+                selectedProject.accomplishments.length > 0 && (
+                  <div className="pt-4 border-t">
+                    <h3 className="font-medium text-gray-900 mb-3">
+                      Accomplishments
+                    </h3>
+                    <ul className="space-y-2">
+                      {selectedProject.accomplishments.map(
+                        (accomplishment, index) => (
+                          <li
+                            key={index}
+                            className="text-sm text-gray-600 flex items-start"
+                          >
+                            <span className="text-green-500 mr-2 mt-1">•</span>
+                            <div className="flex-1">
+                              <span>{accomplishment.description}</span>
+                              {accomplishment.date && (
+                                <span className="text-gray-400 ml-2">
+                                  ({formatDate(accomplishment.date)})
+                                </span>
+                              )}
+                            </div>
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
             </div>
+          </Modal>
+        )}
 
-            {/* Download Button */}
-            <div className="pt-4">
-              <button
-                onClick={() =>
-                  handleDownloadDocument(
-                    selectedDocument.id,
-                    selectedDocument.fileName
-                  )
-                }
-                className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Download Document
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">PTA Projects</h1>
+          <p className="text-gray-600 mt-1">View active PTA projects</p>
+        </div>
 
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">
-          PTA Projects & Documents
-        </h1>
-        <p className="text-gray-600 mt-1">
-          View active PTA projects and access meeting documents
-        </p>
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab("projects")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "projects"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
-          >
-            Active Projects ({projects.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("documents")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "documents"
-                ? "border-blue-500 text-blue-600"
-                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-            }`}
-          >
-            Documents ({documents.length})
-          </button>
-        </nav>
-      </div>
-
-      {/* Projects Tab */}
-      {activeTab === "projects" && (
+        {/* Projects Section */}
         <div className="space-y-6">
           {projects.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {projects.map((project) => (
                 <div
                   key={project.id}
-                  className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-all cursor-pointer"
+                  className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-all cursor-pointer flex flex-col"
                   onClick={() => handleProjectClick(project)}
                 >
-                  <div className="p-5">
+                  <div className="p-5 flex flex-col flex-1">
                     {/* Header */}
                     <div className="mb-3">
                       <div className="flex items-start justify-between mb-2">
@@ -399,32 +400,49 @@ const Projects = () => {
                       </p>
                     </div>
 
-                    {/* Progress Bar */}
-                    <div className="mb-3">
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="font-medium text-gray-700">
-                          Progress
-                        </span>
-                        <span className="text-gray-500">
-                          {project.progress || 0}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div
-                          className={`h-1.5 rounded-full ${
-                            project.status === "completed"
-                              ? "bg-green-500"
-                              : project.status === "in_progress"
-                              ? "bg-blue-500"
-                              : "bg-yellow-500"
-                          }`}
-                          style={{ width: `${project.progress || 0}%` }}
-                        ></div>
-                      </div>
-                    </div>
+                    {/* Completion Images Preview */}
+                    {project.status === "COMPLETED" &&
+                      project.completionImages && (
+                        <div className="mb-3">
+                          <div className="grid grid-cols-3 gap-2">
+                            {parseCompletionImages(project.completionImages)
+                              .slice(0, 3)
+                              .map((image, index) => (
+                                <div
+                                  key={index}
+                                  className="relative aspect-video cursor-pointer overflow-hidden rounded hover:opacity-90 transition-opacity"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleImageClick(
+                                      parseCompletionImages(
+                                        project.completionImages
+                                      ),
+                                      index
+                                    );
+                                  }}
+                                >
+                                  <img
+                                    src={image}
+                                    alt={`Completion ${index + 1}`}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              ))}
+                          </div>
+                          {parseCompletionImages(project.completionImages)
+                            .length > 3 && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              +
+                              {parseCompletionImages(project.completionImages)
+                                .length - 3}{" "}
+                              more images
+                            </p>
+                          )}
+                        </div>
+                      )}
 
-                    {/* Footer Info */}
-                    <div className="pt-3 border-t border-gray-100 space-y-1 text-xs text-gray-600">
+                    {/* Footer Info - Always at bottom */}
+                    <div className="pt-3 border-t border-gray-100 space-y-1 text-xs text-gray-600 mt-auto">
                       <div className="flex justify-between">
                         <span>Start:</span>
                         <span className="font-medium">
@@ -462,102 +480,8 @@ const Projects = () => {
             </div>
           )}
         </div>
-      )}
-
-      {/* Documents Tab */}
-      {activeTab === "documents" && (
-        <div className="space-y-6">
-          {documents.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {documents.map((document) => (
-                <div
-                  key={document.id}
-                  className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-all cursor-pointer"
-                  onClick={() => handleDocumentClick(document)}
-                >
-                  <div className="p-5">
-                    {/* Header */}
-                    <div className="mb-3">
-                      <div className="flex items-start justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 flex-1">
-                          {document.title}
-                        </h3>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ml-2 ${getCategoryColor(
-                            document.category
-                          )}`}
-                        >
-                          {document.category.replace("_", " ")}
-                        </span>
-                      </div>
-                      {document.description && (
-                        <p className="text-sm text-gray-600">
-                          {truncateText(document.description)}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Footer Info */}
-                    <div className="pt-3 border-t border-gray-100 space-y-1 text-xs text-gray-600">
-                      <div className="flex justify-between">
-                        <span>Uploaded:</span>
-                        <span className="font-medium">
-                          {formatDate(document.createdAt)}
-                        </span>
-                      </div>
-                      {document.projectTitle && (
-                        <div className="flex justify-between">
-                          <span>Project:</span>
-                          <span className="font-medium text-blue-600">
-                            {document.projectTitle}
-                          </span>
-                        </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span>Size:</span>
-                        <span className="font-medium">
-                          {document.fileSize
-                            ? `${(document.fileSize / 1024 / 1024).toFixed(
-                                2
-                              )} MB`
-                            : "Unknown"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Download Button */}
-                    <div className="pt-3">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDownloadDocument(
-                            document.id,
-                            document.fileName
-                          );
-                        }}
-                        className="w-full px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                      >
-                        Download
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="text-gray-400 text-6xl mb-4">📄</div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No documents available
-              </h3>
-              <p className="text-gray-600">
-                No meeting documents or resolutions have been published yet.
-              </p>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 };
 

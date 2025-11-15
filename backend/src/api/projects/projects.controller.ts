@@ -3,6 +3,7 @@ import asyncHandler from "../../utils/asyncHandler";
 import ApiResponse from "../../utils/ApiResponse";
 import * as projectService from "./projects.service";
 import ApiError from "../../utils/ApiError";
+import cloudinary from "../../configs/cloudinary";
 
 /**
  * @desc    Create a new project
@@ -387,9 +388,9 @@ export const getProjectStats = asyncHandler(
  */
 export const getActiveProjects = asyncHandler(
   async (req: Request, res: Response) => {
+    // Remove status filter - let parents see all non-cancelled projects
     const filters = {
       ...req.query,
-      status: "ACTIVE",
     };
 
     const result = await projectService.getProjects(filters);
@@ -447,10 +448,10 @@ export const getAllDocuments = asyncHandler(
  */
 export const downloadDocument = asyncHandler(
   async (req: Request, res: Response) => {
-    const documentId = parseInt(req.params.documentId);
+    const documentId = req.params.documentId;
     const document = await projectService.getDocumentForDownload(documentId);
 
-    // In a real app, you would stream the file from storage
+    // Return document info for frontend to handle download
     res
       .status(200)
       .json(new ApiResponse(200, document, "Document download info retrieved"));
@@ -464,7 +465,7 @@ export const downloadDocument = asyncHandler(
  */
 export const updateDocument = asyncHandler(
   async (req: Request, res: Response) => {
-    const documentId = parseInt(req.params.documentId);
+    const documentId = req.params.documentId;
     const document = await projectService.updateDocument(documentId, req.body);
 
     res
@@ -480,7 +481,7 @@ export const updateDocument = asyncHandler(
  */
 export const deleteDocument = asyncHandler(
   async (req: Request, res: Response) => {
-    const documentId = parseInt(req.params.documentId);
+    const documentId = req.params.documentId;
     await projectService.deleteDocument(documentId);
 
     res
@@ -625,16 +626,96 @@ export const getProjectDocuments = asyncHandler(
 );
 
 /**
- * @desc    Upload project document
+ * @desc    Upload a general document (not tied to a specific project)
+ * @route   POST /api/projects/documents
+ * @access  Private (Admin only)
+ */
+export const uploadGeneralDocument = asyncHandler(
+  async (req: Request, res: Response) => {
+    const file = req.file as Express.Multer.File;
+
+    if (!file) {
+      throw new ApiError(400, "No file provided");
+    }
+
+    // Upload file to Cloudinary from buffer
+    const uploadResult = (await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: "epta/documents",
+          resource_type: "auto", // Allow any file type
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(file.buffer);
+    })) as any;
+
+    // Prepare document data
+    const documentData = {
+      title: req.body.title || file.originalname,
+      fileName: file.originalname,
+      fileUrl: uploadResult.secure_url,
+      fileSize: file.size,
+      mimeType: file.mimetype,
+      category: req.body.category || "other",
+      description: req.body.description || "",
+      uploadedById: (req as any).user?.id || 1, // Get from authenticated user
+    };
+
+    const document = await projectService.uploadGeneralDocument(documentData);
+
+    res
+      .status(201)
+      .json(new ApiResponse(201, document, "Document uploaded successfully"));
+  }
+);
+
+/**
+ * @desc    Upload a document to a project
  * @route   POST /api/projects/:id/documents
  * @access  Private (Admin only)
  */
 export const uploadProjectDocument = asyncHandler(
   async (req: Request, res: Response) => {
     const projectId = parseInt(req.params.id);
+    const file = req.file as Express.Multer.File;
+
+    if (!file) {
+      throw new ApiError(400, "No file provided");
+    }
+
+    // Upload file to Cloudinary from buffer
+    const uploadResult = (await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: "epta/documents",
+          resource_type: "auto", // Allow any file type
+        },
+        (error, result) => {
+          if (error) reject(error);
+          else resolve(result);
+        }
+      );
+      uploadStream.end(file.buffer);
+    })) as any;
+
+    // Prepare document data
+    const documentData = {
+      title: req.body.title || file.originalname,
+      fileName: file.originalname,
+      fileUrl: uploadResult.secure_url,
+      fileSize: file.size,
+      mimeType: file.mimetype,
+      category: req.body.category || "other",
+      description: req.body.description || "",
+    };
+
     const document = await projectService.uploadProjectDocument(
       projectId,
-      req.body
+      documentData
     );
 
     res

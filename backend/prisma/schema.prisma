@@ -72,6 +72,7 @@ model User {
   createdProjects      Project[]
   recordedAttendance   Attendance[] @relation("RecordedBy")
   updatedSettings      Settings[]
+  uploadedDocuments    Document[]
 
   // Parent-specific relations
   students      Student[]
@@ -640,4 +641,26 @@ model Settings {
   createdAt   DateTime @default(now())
 
   @@index([key])
+}
+
+// Meeting Documents & Resolutions (independent from projects)
+model Document {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?  @db.Text
+  fileName    String
+  fileUrl     String   @db.Text
+  fileSize    Int?
+  mimeType    String?
+  category    String   @default("other") // meeting_minutes, resolutions, agenda, report, other
+  isPublic    Boolean  @default(true)
+  
+  // Metadata
+  uploadedBy   User     @relation(fields: [uploadedById], references: [id])
+  uploadedById Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([category])
+  @@index([uploadedById])
 }

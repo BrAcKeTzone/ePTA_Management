@@ -3,7 +3,7 @@ import * as projectController from "./projects.controller";
 import { authenticate, authorize } from "../../middlewares/auth.middleware";
 import validate from "../../middlewares/validate.middleware";
 import * as projectValidation from "./projects.validation";
-import upload from "../../middlewares/upload.middleware";
+import upload, { uploadDocument } from "../../middlewares/upload.middleware";
 
 const router = express.Router();
 
@@ -25,6 +25,13 @@ router.get(
 
 // Document management routes
 router.get("/documents", projectController.getAllDocuments);
+
+router.post(
+  "/documents",
+  authorize("ADMIN"),
+  uploadDocument.single("file"),
+  projectController.uploadGeneralDocument
+);
 
 router.get(
   "/documents/:documentId/download",
@@ -136,6 +143,7 @@ router.get("/:id/documents", projectController.getProjectDocuments);
 router.post(
   "/:id/documents",
   authorize("ADMIN"),
+  uploadDocument.single("file"),
   projectController.uploadProjectDocument
 );
 
